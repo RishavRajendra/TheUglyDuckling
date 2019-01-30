@@ -10,19 +10,12 @@ ser = serial.Serial('/dev/ttyACM0', 9600, timeout=.1)
 time.sleep(1)
 
 # motion bytes
-#fwd = b'\x82'
-#rev = b'\x28'
-#rotl = b'\x22'
-#rotr = b'\x88'
-#strl = b'\xAA'
-#strr = b'\x41'
-
 fwd = b'\x88'
 rev = b'\x22'
 rotl = b'\xAA'
-rotr = b'\x41'
-strl = b'\x82'
-strr = b'\x28'
+rotr = b'\x00'
+strl = b'\xA0'
+strr = b'\x0A'
 
 camera = picamera.PiCamera()
 
