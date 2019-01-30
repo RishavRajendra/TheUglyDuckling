@@ -29,12 +29,12 @@ float threshold = 250;
 
 void setup() {
   DDRL = B11111111;
-  kbt();
+  test_bot();
   Serial.begin(9600);
 }
 
 void loop() {
-	readPython();
+  readPython();
 }
 
 void readPython(){
@@ -256,6 +256,15 @@ void kbt() {
   rearmotion = B01000100;
   motion45right = B00010100;
   motion45left = B01000001;
+}
+
+void test_bot(){
+  fwd = B10001000;
+  rev = B00100010;
+  strl = B10100000;
+  strr = B00001010;
+  rotl = B10101010;
+  rotr = B00000000;
 }
 
 void cal() {
