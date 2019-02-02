@@ -1,3 +1,5 @@
+/* Variables */
+
 byte fwd;
 byte rev;
 byte rotl;
@@ -19,8 +21,8 @@ volatile float steps;
 volatile float steps_counter;
 volatile bool flag1;
 
-float distance = 60 * PI / 25.4;
-float steps_per_inch = 1600 / distance;
+float distance = 6 * PI;
+float steps_per_cm = 1600 / distance;
 float steps_per_degree = 23.7;
 float straight = 1.000;
 float arc180 = .3;
@@ -39,14 +41,24 @@ void loop() {
 
 void readPython(){
   if(Serial.available() > 0){
-    byte data = (byte)Serial.read();
-     mov(data, 2, 500);
+    byte data [4];
+    Serial.readBytes(data, 4);
+    int flag = (int) data[0];
+    if (flag == 0){
+     mov(data[1], data[2], 500);
+    }
+    else if (flag == 1){
+      turn(data[1], data[2], 500);
+    }
+    else if (flag == 2){
+      mov45(data[1], data[2], 500, data[3]);
+    }
   }
 }
 
 void mov(byte dir, float dist, long del) {
   PORTL = dir;
-  float stepf = dist * steps_per_inch;
+  float stepf = dist * steps_per_cm;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
@@ -91,7 +103,7 @@ void pivot(byte dir, float dist, long del, byte motors) {
 
 void mov45(byte dir, float dist, long del, byte motors) {
   PORTL = dir;
-  float stepf = 2 * dist * steps_per_inch;
+  float stepf = 2 * dist * steps_per_cm;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
@@ -102,7 +114,7 @@ void mov45(byte dir, float dist, long del, byte motors) {
 
 void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) {
   PORTL = dir;
-  float stepf = dist * steps_per_inch;
+  float stepf = dist * steps_per_cm;
   long steps = stepf;
 
   long masterCounter = 0;
@@ -156,7 +168,7 @@ void varsInt(byte dir, float dist, long del, float ratio, byte master, byte slav
   ctc3_setup();
   ctc4_setup();
   PORTL = dir;
-  float stepf = dist * steps_per_inch;
+  float stepf = dist * steps_per_cm;
   masterWheels = master;
   slaveWheels = slave;
 
@@ -265,6 +277,8 @@ void test_bot(){
   strr = B00001010;
   rotl = B10101010;
   rotr = B00000000;
+
+  motion45right =B00010100;
 }
 
 void cal() {
