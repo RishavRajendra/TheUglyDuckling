@@ -23,30 +23,34 @@ rear = b'\x44'
 right45 = b'\x14'
 left45 = b'\x41'
 
-def motionThread(threading.Thread):
+class motionThread(threading.Thread):
 
     def __init__(self, queue):
-        super(None, self).__init__()
+        super(motionThread, self).__init__()
         self.func = { 'move': self.move,
                       'turn': self.turn,
                       'move45': self.move45}
         self.queue = queue
-        self.stroprequest = threading.Event()
+        self.stoprequest = threading.Event()
 
     def run(self):
         while not self.stoprequest.isSet():
-            work = self.queue.get(True, 0.05)
-            self.func[work[0]](work[1])
+            if not self.queue.empty():
+                work = self.queue.get(True, 0.05)
+                self.func[work[0]](work[1])
+    def join(self, timeout=None):
+        self.stoprequest.set()
+        super(motionThread, self).join(timeout)
 
     # Moves robot X distance (in centimenters) in direction given
-    def move(args):
+    def move(self,args):
         byteArr = b'\x00' + args[0]+bytes([args[1]])+b'\x00'
         # print(byteArr)
         ser.write(byteArr)
 
     # Turn robot by specified degrees
     # only use rotl or rotr for direction.
-    def turn(args):
+    def turn(self, args):
         byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
         ser.write(byteArr) 
 
@@ -60,6 +64,6 @@ def motionThread(threading.Thread):
     # SE = rev, left45
     # SW = rev, right45
 
-    def move45(args):
+    def move45(self, args):
         byteArr = b'\x03'+args[0]+bytes([args[1]])+args[2]
         ser.write(byteArr)

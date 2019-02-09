@@ -2,7 +2,10 @@ import serial
 import keyboard
 import time
 import picamera
+import queue
+import threading
 from subprocess import call
+from motionPi import motionThread
 
 # connect to arduino
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=.1)
@@ -18,26 +21,36 @@ strl = b'\xA0'
 strr = b'\x0A'
 
 camera = picamera.PiCamera()
+in_q = queue.Queue()
+t1 = motionThread(in_q)
+def pictures():
+	a = 0
+	camera.start_preview()
+	while not t1.stoprequest.isSet():
+		time.sleep(2)
+		camera.capture("img{}.jpg".format(a))
+		a = a + 1
 
-t_end = time.time() + 60 * 0.5
-camera.start_recording("testVideo.h264")
-while time.time() < t_end:
+t2 = threading.Thread(target=pictures)			
+t1.start()
+t2.start()
+
+while not t1.stoprequest.isSet():
 	if keyboard.is_pressed('w'):
-		ser.write(fwd)
+		in_q.put(['move', (fwd, 5)])
 	elif keyboard.is_pressed('s'):
-		ser.write(rev)
+		in_q.put(['move', (rev, 5)])
 	elif keyboard.is_pressed('a'):
-		ser.write(strl)
+		in_q.put(['move', (strl, 5)])
 	elif keyboard.is_pressed('d'):
-		ser.write(strr)
+		in_q.put(['move', (strr, 5)])
 	elif keyboard.is_pressed('q'):
-		ser.write(rotl)
+		in_q.put(['move', (rotl, 5)])
 	elif keyboard.is_pressed('e'):
-		ser.write(rotr)
+		in_q.put(['move', (rotr, 5)])
+	elif keyboard.is_pressed('x'):
+		t1.join()
+		t2.join()
 	time.sleep(.2)
-camera.start_recording()
 
-print("Converting video")
-command = "MP4Box -add testVideo.h264 convertedVideo.mp4"
-call([command], shell=True)
-print("Video converted")
+
