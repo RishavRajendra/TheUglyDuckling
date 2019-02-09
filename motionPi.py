@@ -35,7 +35,6 @@ def turn(dir, degree):
 	byteArr = b'\x01' + dir+bytes([degree])+b'\x00'
 	ser.write(byteArr) 
 
-##### Not tested yet ######
 
 # Move 45 degrees diagonally.
 ############################
@@ -44,9 +43,9 @@ def turn(dir, degree):
 # To move:
 # NE = fwd, right45
 # NW = fwd, left45
-# SE = rev, right45
-# SW = rev, left45
+# SE = rev, left45
+# SW = rev, right45
 
 def move45(dir, dist, motors):
-	byteArr = b'\x03'+dir+bytes([dist])+motors
+	byteArr = b'\x02'+dir+bytes([dist])+motors
 	ser.write(byteArr)
