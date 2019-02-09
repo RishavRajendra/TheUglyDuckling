@@ -1,5 +1,5 @@
 # Functions the Raspberry Pi can call to communicate movement to the arduino
-
+import queue, threading
 import serial, time
 
 # Connect to arduino
@@ -23,30 +23,43 @@ rear = b'\x44'
 right45 = b'\x14'
 left45 = b'\x41'
 
-# Moves robot X distance (in centimenters) in direction given
-def move(dir, dist):
-	byteArr = b'\x00' + dir+bytes([dist])+b'\x00'
-	# print(byteArr)
-	ser.write(byteArr)
+def motionThread(threading.Thread):
 
-# Turn robot by specified degrees
-# only use rotl or rotr for direction.
-def turn(dir, degree):
-	byteArr = b'\x01' + dir+bytes([degree])+b'\x00'
-	ser.write(byteArr) 
+    def __init__(self, queue):
+        super(None, self).__init__()
+        self.func = { 'move': self.move,
+                      'turn': self.turn,
+                      'move45': self.move45}
+        self.queue = queue
+        self.stroprequest = threading.Event()
 
-##### Not tested yet ######
+    def run(self):
+        while not self.stoprequest.isSet():
+            work = self.queue.get(True, 0.05)
+            self.func[work[0]](work[1])
 
-# Move 45 degrees diagonally.
-############################
-#   dir and motors combo
-############################
-# To move:
-# NE = fwd, right45
-# NW = fwd, left45
-# SE = rev, right45
-# SW = rev, left45
+    # Moves robot X distance (in centimenters) in direction given
+    def move(args):
+        byteArr = b'\x00' + args[0]+bytes([args[1]])+b'\x00'
+        # print(byteArr)
+        ser.write(byteArr)
 
-def move45(dir, dist, motors):
-	byteArr = b'\x03'+dir+bytes([dist])+motors
-	ser.write(byteArr)
+    # Turn robot by specified degrees
+    # only use rotl or rotr for direction.
+    def turn(args):
+        byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
+        ser.write(byteArr) 
+
+    # Move 45 degrees diagonally.
+    ############################
+    #   dir and motors combo
+    ############################
+    # To move:
+    # NE = fwd, right45
+    # NW = fwd, left45
+    # SE = rev, left45
+    # SW = rev, right45
+
+    def move45(args):
+        byteArr = b'\x03'+args[0]+bytes([args[1]])+args[2]
+        ser.write(byteArr)
