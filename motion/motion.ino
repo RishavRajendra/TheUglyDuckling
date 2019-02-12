@@ -22,8 +22,9 @@ volatile float steps_counter;
 volatile bool flag1;
 
 float distance = 6 * PI;
-float steps_per_cm = 1600 / distance;
-float steps_per_degree = 23.7;
+float steps_per_cm = 3200 / distance;
+//float steps_per_degree = 23.7  for test bot
+float steps_per_degree = 29.5;
 float straight = 1.000;
 float arc180 = .3;
 float start_dis = .25;
@@ -31,12 +32,14 @@ float threshold = 250;
 
 void setup() {
   DDRL = B11111111;
-  test_bot();
+  ud_bot();
   Serial.begin(9600);
+  delay(2000);
+  mov45(rev, 20, 250, motion45right);
 }
 
 void loop() {
-  readPython();
+//  readPython();
 }
 
 void readPython(){
@@ -268,6 +271,15 @@ void kbt() {
   rearmotion = B01000100;
   motion45right = B00010100;
   motion45left = B01000001;
+}
+
+void ud_bot(){
+  fwd = B00100010;
+  rev = B10001000;
+  strl = B00001010;
+  strr = B10100000;
+  rotl = B00000000;
+  rotr = B10101010;
 }
 
 void test_bot(){
