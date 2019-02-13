@@ -1,6 +1,9 @@
 import time
 import torch
 
+def str2bool(s):
+    return s.lower() in ('true', '1')
+
 class Timer:
     def __init__(self):
         self.clock = {}

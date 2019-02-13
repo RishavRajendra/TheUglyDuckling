@@ -1,9 +1,9 @@
 import numpy as np
 
-from vision.utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
+from utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
 
-
-image_size = 300
+#Raspberry pi cam v2 captures video in 600 X 800
+image_size = 600
 image_mean = np.array([127, 127, 127])  # RGB layout
 image_std = 128.0
 iou_threshold = 0.45
