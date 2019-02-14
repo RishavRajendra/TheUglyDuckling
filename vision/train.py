@@ -1,5 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 __author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
 
 import argparse
 import os
@@ -9,12 +12,18 @@ import itertools
 
 import torch
 from utils.misc import str2bool, Timer, freeze_net_layers, store_labels
-from torch.utils.data import DataLoader, ConcatDataset
-from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
-
+from voc_dataset import VOCDataset
+from multibox_loss import MultiboxLoss
+from ssd import MatchPrior
 from mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite
 from data_preprocessing import TrainAugmentation, TestTransform
 import mobilenet_ssd_config
+from torch.utils.data import DataLoader, ConcatDataset
+from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
+
+import warnings
+
+warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser(
 	description = 'Object detector training with Pytorch')
@@ -24,10 +33,6 @@ parser.add_argument('--test_dataset', help='Test dataset directory path.')
 
 parser.add_argument('--net', default="mb2-ssd-lite",
 	help="The network architecture, it can be only be mb2-ssd-lite")
-parser.add_argument('--freeze_base_net', actions='store_true', 
-	help='Freeze base net layers.')
-parser.add_argument('--freeze_net', action='store_true', 
-	help='Freeze all the layers except the prediction head.')
 
 parser.add_argument('--mb2_width_mult', default=1.0, type=float, 
 	help='Width Multiplier for MobileNetV2')
@@ -85,6 +90,17 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() and args.use_cuda el
 if args.use_cuda and torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True
     logging.info("Use Cuda.")
+
+"""
+Classifier training
+:param loader:
+:param net:
+:param criterion:
+:param optimizer:
+:param device:
+:param debug_steps:
+:param epoch:
+"""
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 	net.train(True)
 	running_loss = 0.0
@@ -98,7 +114,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
 		optimizer.zero_grad()
 		confidence, locations = net(images)
-		regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
+		regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
 		loss = regression_loss + classification_loss
 		loss.backward()
 		optimizer.step()
@@ -120,6 +136,14 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 			running_regression_loss = 0.0
 			running_classification_loss = 0.0
 
+"""
+Classifier performance evaluation. Returns running loss, running regression loss and
+running classification loss
+:param loader: 
+:param net:
+:param criterion:
+:param device:"
+"""
 def test(loader, net, criterion, device):
 	net.eval()
 	running_loss = 0.0
@@ -166,18 +190,23 @@ def main():
 
 	logging.info("Preparing training dataset")
 
-	train_dataset = VOCDataset(args.train_dataset, transform=train_transform,
-    	target_transform=target_transform)
+	datasets = []
 
-    #TODO: check os path
-	label_file = os.path.join(args.checkpoint_folder, "voc-model-labels.txt")
+	for dataset_path in args.train_dataset:
+		dataset = VOCDataset(dataset_path, transform=train_transform, 
+			target_transform=target_transform)
 
-	store_labels(label_file, train_dataset.class_names)
-	num_classes = len(train_dataset.class_names)
+		label_file = os.path.join(args.checkpoint_folder, "voc-model-labels.txt")
 
+		store_labels(label_file, dataset.class_names)
+		num_classes = len(dataset.class_names)
+		datasets.append(dataset)
 	logging.info(f"Stored labels into file {label_file}.")
 
-	logging.info(f"Train dataset size:{len(train_dataset)}")
+	train_dataset = ConcatDataset(datasets)
+	logging.info("Train dataset size: {}".format(len(train_dataset)))
+	train_loader = DataLoader(train_dataset, args.batch_size, 
+		num_workers=args.num_workers, shuffle=True)
 	logging.info("Training dataset created")
 
 	logging.info("Preparing test dataset")
@@ -190,10 +219,16 @@ def main():
     	num_workers=args.num_workers, shuffle=False)
 	logging.info("Test dataset ready")
 
+	test_loader = DataLoader(test_dataset, args.batch_size, 
+		num_workers=args.num_workers, shuffle=False)
+
 	logging.info("Build network")
 	net = create_net(num_classes)
 	min_loss = -10000.0
 	last_epoch = -1
+
+	base_net_lr = args.lr
+	extra_layers_lr = args.lr
 
 	timer.start("Load Model")
 	if args.resume:
@@ -206,6 +241,18 @@ def main():
 		logging.info(f"Init from pretrained ssd {args.pretrained_ssd}")
 		net.init_from_pretrained_ssd(args.pretrained_ssd)
 	logging.info(f'Took {timer.end("Load Model"):.2f} seconds to load the model.')
+
+	params = [
+            {'params': net.base_net.parameters(), 'lr': base_net_lr},
+            {'params': itertools.chain(
+                net.source_layer_add_ons.parameters(),
+                net.extras.parameters()
+            ), 'lr': extra_layers_lr},
+            {'params': itertools.chain(
+                net.regression_headers.parameters(),
+                net.classification_headers.parameters()
+            )}
+        ]
 
 	net.to(DEVICE)
 
@@ -236,7 +283,7 @@ def main():
 			device=DEVICE, debug_steps=args.debug_steps, epoch=epoch)
 
 		if epoch % args.validation_epochs == 0 or epoch == args.num_epochs - 1:
-			val_loss, val_regression_loss, val_classification_loss = test(val_loader, net, criterion, DEVICE)
+			val_loss, val_regression_loss, val_classification_loss = test(test_loader, net, criterion, DEVICE)
 			logging.info(
 				f"Epoch: {epoch}, " +
 				f"Validation Loss: {val_loss:.4f}, " +

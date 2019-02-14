@@ -1,10 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 import numpy as np
 import pathlib
 import xml.etree.ElementTree as ET
 import cv2
 
 class VOCDataset:
-    #TODO: Modify this
+    """
+    :param root:
+    :param transform:
+    :param target_transform:
+    :param is_test:
+    :param keep_difficult:
+    """
     def __init__(self, root, transform=None, target_transform=None, is_test=False, keep_difficult=False):
         """Dataset for VOC data.
         Args:
@@ -15,19 +27,15 @@ class VOCDataset:
         self.transform = transform
         self.target_transform = target_transform
         if is_test:
-            image_sets_file = self.root / "ImageSets/Main/test.txt"
+            image_sets_file = self.root / "test.txt"
         else:
-            image_sets_file = self.root / "ImageSets/Main/trainval.txt"
+            image_sets_file = self.root / "train.txt"
         self.ids = VOCDataset._read_image_ids(image_sets_file)
         self.keep_difficult = keep_difficult
 
-        self.class_names = ('BACKGROUND',
-            'aeroplane', 'bicycle', 'bird', 'boat',
-            'bottle', 'bus', 'car', 'cat', 'chair',
-            'cow', 'diningtable', 'dog', 'horse',
-            'motorbike', 'person', 'pottedplant',
-            'sheep', 'sofa', 'train', 'tvmonitor'
-        )
+        self.class_names = ('slope', 'start', 'blockA', 'blockB', 'blockC',
+            'blockD', 'blockE', 'blockF', 'obstacle', 'side', 'corner')
+
         self.class_dict = {class_name: i for i, class_name in enumerate(self.class_names)}
 
     def __getitem__(self, index):
@@ -72,7 +80,7 @@ class VOCDataset:
         labels = []
         is_difficult = []
         for object in objects:
-            class_name = object.find('name').text.lower().strip()
+            class_name = object.find('name').text.strip()
             bbox = object.find('bndbox')
             # VOC dataset format follows Matlab, in which indexes start from 0
             x1 = float(bbox.find('xmin').text) - 1
