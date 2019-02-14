@@ -1,10 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 import torch.nn as nn
 import torch
 import numpy as np
 from typing import List, Tuple
 import torch.nn.functional as F
 
-import utils.box_utils
+from utils import box_utils
 from collections import namedtuple
 GraphPath = namedtuple("GraphPath", ['s0', 'name', 's1'])  #
 

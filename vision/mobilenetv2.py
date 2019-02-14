@@ -1,23 +1,48 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 import torch.nn as nn
 import math
 
-def conv_bn(inp, oup, stride):
-    return nn.Sequential(
-        nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
-        nn.BatchNorm2d(oup),
-        nn.ReLU6(inplace=True)
-    )
+def conv_bn(inp, oup, stride, use_batch_norm=True, onnx_compatible=False):
+    ReLU = nn.ReLU if onnx_compatible else nn.ReLU6
 
-def conv_1x1_bn(inp, oup):
-    return nn.Sequential(
-        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-        nn.BatchNorm2d(oup),
-        nn.ReLU6(inplace=True)
-    )
+    if use_batch_norm:
+        return nn.Sequential(
+            nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
+            nn.BatchNorm2d(oup),
+            ReLU(inplace=True)
+        )
+    else:
+        return nn.Sequential(
+            nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
+            ReLU(inplace=True)
+        )
+
+
+def conv_1x1_bn(inp, oup, use_batch_norm=True, onnx_compatible=False):
+    ReLU = nn.ReLU if onnx_compatible else nn.ReLU6
+    if use_batch_norm:
+        return nn.Sequential(
+            nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(oup),
+            ReLU(inplace=True)
+        )
+    else:
+        return nn.Sequential(
+            nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
+            ReLU(inplace=True)
+        )
+
 
 class InvertedResidual(nn.Module):
-    def __init__(self, inp, oup, stride, expand_ratio):
+    def __init__(self, inp, oup, stride, expand_ratio, use_batch_norm=True, onnx_compatible=False):
         super(InvertedResidual, self).__init__()
+        ReLU = nn.ReLU if onnx_compatible else nn.ReLU6
+
         self.stride = stride
         assert stride in [1, 2]
 
@@ -25,29 +50,50 @@ class InvertedResidual(nn.Module):
         self.use_res_connect = self.stride == 1 and inp == oup
 
         if expand_ratio == 1:
-            self.conv = nn.Sequential(
-                # dw
-                nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
-                nn.BatchNorm2d(hidden_dim),
-                nn.ReLU6(inplace=True),
-                # pw-linear
-                nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
-                nn.BatchNorm2d(oup),
-            )
+            if use_batch_norm:
+                self.conv = nn.Sequential(
+                    # dw
+                    nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
+                    nn.BatchNorm2d(hidden_dim),
+                    ReLU(inplace=True),
+                    # pw-linear
+                    nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
+                    nn.BatchNorm2d(oup),
+                )
+            else:
+                self.conv = nn.Sequential(
+                    # dw
+                    nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
+                    ReLU(inplace=True),
+                    # pw-linear
+                    nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
+                )
         else:
-            self.conv = nn.Sequential(
-                # pw
-                nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
-                nn.BatchNorm2d(hidden_dim),
-                nn.ReLU6(inplace=True),
-                # dw
-                nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
-                nn.BatchNorm2d(hidden_dim),
-                nn.ReLU6(inplace=True),
-                # pw-linear
-                nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
-                nn.BatchNorm2d(oup),
-            )
+            if use_batch_norm:
+                self.conv = nn.Sequential(
+                    # pw
+                    nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
+                    nn.BatchNorm2d(hidden_dim),
+                    ReLU(inplace=True),
+                    # dw
+                    nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
+                    nn.BatchNorm2d(hidden_dim),
+                    ReLU(inplace=True),
+                    # pw-linear
+                    nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
+                    nn.BatchNorm2d(oup),
+                )
+            else:
+                self.conv = nn.Sequential(
+                    # pw
+                    nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
+                    ReLU(inplace=True),
+                    # dw
+                    nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
+                    ReLU(inplace=True),
+                    # pw-linear
+                    nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
+                )
 
     def forward(self, x):
         if self.use_res_connect:
@@ -55,8 +101,10 @@ class InvertedResidual(nn.Module):
         else:
             return self.conv(x)
 
+
 class MobileNetV2(nn.Module):
-    def __init__(self, n_class=1000, input_size=224, width_mult=1.):
+    def __init__(self, n_class=1000, input_size=224, width_mult=1., dropout_ratio=0.2,
+                 use_batch_norm=True, onnx_compatible=False):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         input_channel = 32
@@ -76,24 +124,29 @@ class MobileNetV2(nn.Module):
         assert input_size % 32 == 0
         input_channel = int(input_channel * width_mult)
         self.last_channel = int(last_channel * width_mult) if width_mult > 1.0 else last_channel
-        self.features = [conv_bn(3, input_channel, 2)]
+        self.features = [conv_bn(3, input_channel, 2, onnx_compatible=onnx_compatible)]
         # building inverted residual blocks
         for t, c, n, s in interverted_residual_setting:
             output_channel = int(c * width_mult)
             for i in range(n):
                 if i == 0:
-                    self.features.append(block(input_channel, output_channel, s, expand_ratio=t))
+                    self.features.append(block(input_channel, output_channel, s,
+                                               expand_ratio=t, use_batch_norm=use_batch_norm,
+                                               onnx_compatible=onnx_compatible))
                 else:
-                    self.features.append(block(input_channel, output_channel, 1, expand_ratio=t))
+                    self.features.append(block(input_channel, output_channel, 1,
+                                               expand_ratio=t, use_batch_norm=use_batch_norm,
+                                               onnx_compatible=onnx_compatible))
                 input_channel = output_channel
         # building last several layers
-        self.features.append(conv_1x1_bn(input_channel, self.last_channel))
+        self.features.append(conv_1x1_bn(input_channel, self.last_channel,
+                                         use_batch_norm=use_batch_norm, onnx_compatible=onnx_compatible))
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
         # building classifier
         self.classifier = nn.Sequential(
-            nn.Dropout(0.2),
+            nn.Dropout(dropout_ratio),
             nn.Linear(self.last_channel, n_class),
         )
 

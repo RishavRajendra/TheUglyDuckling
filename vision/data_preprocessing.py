@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 from transforms import *
 
 class TrainAugmentation:

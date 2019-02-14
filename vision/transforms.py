@@ -1,5 +1,8 @@
-# from https://github.com/amdegroot/ssd.pytorch
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
 
 import torch
 from torchvision import transforms

@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Benji Lee, Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 # Functions the Raspberry Pi can call to communicate movement to the arduino
 import queue, threading
 import serial, time
