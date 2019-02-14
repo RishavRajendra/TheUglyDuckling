@@ -21,10 +21,16 @@ pip install numpy
 pip install pandas
 ```
 
+### Training
+```
+python3.7 train.py --train_dataset datasets/images/train/ --test_dataset datasets/images/test/ --net mb2-ssd-lite --pretrained_ssd models/mb2-ssd-lite-mp-0_686.pth --batch_size 24 --num_epochs 200 --scheduler cosine --lr 0.01 --t_max 200
+```
+You can use multiple datasets to train. Run the command inside the vision directory.
+
 ## Authors
 
 * **Rishav Rajendra** - [Website](https://rishavrajendra.github.io)
-* **Benji Lee**)
+* **Benji Lee**
 
 ## License
 
