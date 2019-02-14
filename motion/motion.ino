@@ -21,8 +21,9 @@ volatile float steps;
 volatile float steps_counter;
 volatile bool flag1;
 
-float distance = 6 * PI;
+float distance = 6 * PI; // This is for centimeters. For inch: distance/2.54
 float steps_per_cm = 3200 / distance;
+float steps_per_inch = 3200 / (distance /2.54)
 //float steps_per_degree = 23.7  for test bot
 float steps_per_degree = 29.5;
 float straight = 1.000;
@@ -35,7 +36,6 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   delay(2000);
-  mov45(rev, 20, 250, motion45right);
 }
 
 void loop() {
