@@ -4,7 +4,7 @@ __author__ = "Rishav Rajendra"
 __license__ = "MIT"
 __status__ = "Development"
 
-from transforms import *
+from .transforms import *
 
 class TrainAugmentation:
     def __init__(self, size, mean=0, std=1.0):
