@@ -23,10 +23,16 @@ pip install pandas
 
 ### Training
 ```
-python3.7 train.py --train_dataset datasets/images/train/ --test_dataset datasets/images/test/ --net mb2-ssd-lite --pretrained_ssd models/mb2-ssd-lite-mp-0_686.pth --batch_size 24 --num_epochs 200 --scheduler cosine --lr 0.01 --t_max 200
+python train.py --train_dataset datasets/images/train/ --test_dataset datasets/images/test/ --net mb2-ssd-lite --pretrained_ssd models/mb2-ssd-lite-mp-0_686.pth --batch_size 24 --num_epochs 200 --scheduler cosine --lr 0.01 --t_max 200
 ```
 You can use multiple datasets to train. Run the command inside the vision directory.
 
+### Run live demo
+```
+python ssd_lite_demo.py mb2-ssd-lite vision/models/mb2-ssd-lite-Epoch-199-Loss-4.174241065979004.pth vision/models/voc-model-labels.txt <Video file> 
+```
+<Video file>: Enter relative path to video file you want to process.
+  
 ## Authors
 
 * **Rishav Rajendra** - [Website](https://rishavrajendra.github.io)
