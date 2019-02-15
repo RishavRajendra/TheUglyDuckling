@@ -23,19 +23,22 @@ volatile bool flag1;
 
 float distance = 6 * PI; // This is for centimeters. For inch: distance/2.54
 float steps_per_cm = 3200 / distance;
-float steps_per_inch = 3200 / (distance /2.54)
+float steps_per_inch = 3200 / (distance /2.54);
 //float steps_per_degree = 23.7  for test bot
 float steps_per_degree = 29.5;
 float straight = 1.000;
 float arc180 = .3;
 float start_dis = .25;
 float threshold = 250;
+float tile_dist = 12;
 
 void setup() {
   DDRL = B11111111;
+  byte test = B10100000;
   ud_bot();
   Serial.begin(9600);
   delay(2000);
+  vars(fwd,213,300, straight, rightmotion, leftmotion);
 }
 
 void loop() {
@@ -48,13 +51,16 @@ void readPython(){
     Serial.readBytes(data, 4);
     int flag = (int) data[0];
     if (flag == 0){
-     mov(data[1], data[2], 500);
+     mov(data[1], data[2], 300);
     }
     else if (flag == 1){
-      turn(data[1], data[2], 500);
+      turn(data[1], data[2], 300);
     }
     else if (flag == 2){
-      mov45(data[1], data[2], 500, data[3]);
+      mov45(data[1], data[2], 300, data[3]);
+    }
+    else if (flag == 3){
+      gridMov(data[1], tile_dist, 300, data[2])
     }
   }
 }
@@ -67,6 +73,16 @@ void mov(byte dir, float dist, long del) {
     delayMicroseconds(del);
     PORTL ^= motion;
     //      PORTL^= motion;
+  }
+}
+
+void gridMov(byte dir, float dist, long del, byte motors) {
+  PORTL = dir;
+  float stepf = 2 * dist * steps_per_inch;
+  long steps = stepf;
+  for (long i = 0; i < steps; i++) {
+    delayMicroseconds(del);
+    PORTL ^= motors;
   }
 }
 
@@ -274,10 +290,10 @@ void kbt() {
 }
 
 void ud_bot(){
-  fwd = B00100010;
-  rev = B10001000;
-  strl = B00001010;
-  strr = B10100000;
+  fwd = B10100000;
+  rev = B00001010;
+  strl = B00100010;
+  strr = B10001000;
   rotl = B00000000;
   rotr = B10101010;
 }

@@ -7,12 +7,12 @@ ser = serial.Serial('/dev/ttyACM0', 9600, timeout=.1)
 time.sleep(1)
 
 # direction bytes
-fwd = b'\x88'
-rev = b'\x22'
-rotl = b'\xAA'
-rotr = b'\x00'
-strl = b'\xA0'
-strr = b'\x0A'
+fwd = b'\xA0'
+rev = b'\x0A'
+rotl = b'\x00'
+rotr = b'\xAA'
+strl = b'\x22'
+strr = b'\x88'
 
 # motion bytes
 allmotors = b'\x55'
@@ -42,14 +42,19 @@ class motionThread(threading.Thread):
         self.stoprequest.set()
         super(motionThread, self).join(timeout)
 
+    # Movement instructions sent to Queue should follow
+    # this format: ['function_name', (args)]
+    # args format is function dependent.
+
     # Moves robot X distance (in centimenters) in direction given
+    # (args) format: (direction, distance)
     def move(self,args):
         byteArr = b'\x00' + args[0]+bytes([args[1]])+b'\x00'
-        # print(byteArr)
         ser.write(byteArr)
 
     # Turn robot by specified degrees
     # only use rotl or rotr for direction.
+    # (args) format: (direction, degrees)
     def turn(self, args):
         byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
         ser.write(byteArr) 
@@ -64,6 +69,15 @@ class motionThread(threading.Thread):
     # SE = rev, left45
     # SW = rev, right45
 
+    # (args) format: (direction, distance, motors)
     def move45(self, args):
-        byteArr = b'\x03'+args[0]+bytes([args[1]])+args[2]
+        byteArr = b'\x02'+args[0]+bytes([args[1]])
+        ser.write(byteArr)
+
+    # Moves robot a predefined distance dependent on 
+    # distance from center of tile1 to tile2
+
+    # (args) format: (direction, motors)
+    def gridMove(self, args):
+        byteArr = b'\x03' + args[0] + bytes([args[1]])
         ser.write(byteArr)
