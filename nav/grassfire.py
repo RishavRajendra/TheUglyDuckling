@@ -1,8 +1,8 @@
 from grid import Grid
-from queue import Queue
+from myqueue import MyQueue
 
 def search(graph, start, goal):
-	unvisited = Queue()
+	unvisited = MyQueue()
 	unvisited.put(goal)
 	visited = {}
 	visited[goal] = 0

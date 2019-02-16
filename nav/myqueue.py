@@ -1,6 +1,6 @@
 import collections
 
-class Queue:
+class MyQueue:
 	def __init__(self):
 		self.elements = collections.deque()
 
