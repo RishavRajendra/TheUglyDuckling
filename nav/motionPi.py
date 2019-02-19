@@ -21,6 +21,10 @@ left45 = b'\x41'
 
 class MotionThread(threading.Thread):
 
+
+    # (queue) = Queue()
+    # (serial) = serial connection to arduino
+    # (lock) = threading.Lock()
     def __init__(self, queue, serial, lock):
         super(MotionThread, self).__init__()
         self.func = { 'move': self.move,
@@ -34,17 +38,13 @@ class MotionThread(threading.Thread):
 
     def run(self):
         while not self.stoprequest.isSet():
-            # print('checking')
             if not self.queue.empty():
                 self.lock.acquire(True)
                 time.sleep(1)
                 print("motion send")
                 work = self.queue.get(True, 0.05)
-                
-                # print(work)
                 self.func[work[0]](work[1])
                 self.lock.release()
-                # time.sleep(1)
             time.sleep(.2)
     def join(self, timeout=None):
         self.stoprequest.set()

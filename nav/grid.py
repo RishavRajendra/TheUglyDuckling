@@ -1,10 +1,15 @@
+# Grid class
+# Holds information related to field of play.
+# Takes width and height based on number of squares/tiles not actual measurements
+
 class Grid:
 
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
 		self.obstacles = []
-		self.blocks = []
+		self.blocks = [] #Not used yet
+		self.mothership = [] #Not used yet
 
 	def in_bounds(self, id):
 		(x, y) = id
