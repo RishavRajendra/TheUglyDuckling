@@ -259,8 +259,6 @@ run6-101
 run6-102
 run6-103
 run6-104
-run6-105
-run6-105d
 run6-106
 run6-107
 run6-108
@@ -271,8 +269,6 @@ run6-111
 run6-112
 run6-113
 run6-114
-run6-115
-run6-115w
 run6-116
 run6-117
 run6-118
