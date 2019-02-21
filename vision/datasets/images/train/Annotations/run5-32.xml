@@ -1,0 +1,26 @@
+<annotation>
+	<folder>SuzuBatch</folder>
+	<filename>run5-32.jpg</filename>
+	<path>C:\Users\Suzu\Desktop\SuzuBatch\SuzuBatch\run5-32.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>800</width>
+		<height>600</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>obstacle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>344</xmin>
+			<ymin>216</ymin>
+			<xmax>417</xmax>
+			<ymax>374</ymax>
+		</bndbox>
+	</object>
+</annotation>

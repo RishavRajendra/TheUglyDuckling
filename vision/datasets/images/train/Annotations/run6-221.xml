@@ -1,0 +1,26 @@
+<annotation>
+	<folder>run6 150-255</folder>
+	<filename>run6-221.jpg</filename>
+	<path>C:\Users\Tony\Desktop\run6 150-255\run6-221.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>800</width>
+		<height>600</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>blockC</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>691</xmin>
+			<ymin>304</ymin>
+			<xmax>800</xmax>
+			<ymax>484</ymax>
+		</bndbox>
+	</object>
+</annotation>
