@@ -1,0 +1,26 @@
+<annotation>
+	<folder>tonylabelledimg</folder>
+	<filename>run13-80.jpg</filename>
+	<path>C:\Users\Tony\Desktop\tonylabelledimg\run13-80.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>300</width>
+		<height>300</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>blockF</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>52</xmin>
+			<ymin>179</ymin>
+			<xmax>105</xmax>
+			<ymax>236</ymax>
+		</bndbox>
+	</object>
+</annotation>
