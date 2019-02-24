@@ -1,6 +1,6 @@
 from gridMovement import GridMovement
 from grid import Grid
-from motionPi import MotionThread
+from commandThread import CommandThread
 from listenerThread import ListenerThread
 import queue, time, serial, threading
 
@@ -16,12 +16,12 @@ label6 = (6,6)
 
 in_q = queue.Queue()
 lock = threading.Lock()
-mThread = MotionThread(in_q, ser, lock)
+cThread = CommandThread(in_q, ser, lock)
 lThread = ListenerThread(in_q, ser, lock)
-mThread.start()
+cThread.start()
 lThread.start()
 grid = Grid(8,8)
-grid.obstacles = [label1, label2,label3, label4]
+# grid.obstacles = [label1, label2,label3, label4]
 # grid.obstacles = [label1, label2, label3, label4, label5, label6]
 movement = GridMovement(grid, in_q)
 
@@ -35,5 +35,5 @@ movement.follow_path()
 while not in_q.empty():
 	pass
 
-mThread.join()
+cThread.join()
 lThread.join()

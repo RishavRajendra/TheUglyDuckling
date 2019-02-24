@@ -21,7 +21,7 @@ class ListenerThread(threading.Thread):
 			if not self.queue.empty():
 				self.lock.acquire(True)
 				print(' l locked')
-				time.sleep(4)
+				# time.sleep(1)
 				flag = self.serial.read()
 				self.lock.release()
 				print('l released')
