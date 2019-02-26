@@ -29,9 +29,29 @@ You can use multiple datasets to train. Run the command inside the vision direct
 
 ### Run live demo
 ```
-python ssd_lite_demo.py mb2-ssd-lite vision/models/mb2-ssd-lite-Epoch-199-Loss-4.174241065979004.pth vision/models/voc-model-labels.txt <Video file> 
+python ssd_lite_demo.py mb2-ssd-lite <trained model path> vision/models/voc-model-labels.txt <Video file path> 
+python run_ssd_demo.py mb2-ssd-lite <trained model path> vision/models/voc-model-labels.txt <Image file path>
 ```
-<Video file>: Enter relative path to video file you want to process.
+### Evaluate Training
+```
+Average Precision Per-class:
+start: 0.3444457841009565
+blockA: 0.08031108961960026
+blockB: 0.18432601880877744
+blockC: 0.18694415340756804
+blockD: 0.3126812163320044
+blockE: 0.25913768033331286
+blockF: 0.18424260178516613
+obstacle: 0.6296255317719224
+side: 0.4578452604821188
+corner: 0.5763307895753582
+
+Average Precision Across All Classes:0.32158901262167844
+```
+Code to reproduce model:
+```
+python eval_ssd.py --net mb2-ssd-lite --dataset vision/datasets/images/test/ --trained_model <trained model path> --label_file vision/models/voc-model-labels.txt
+```
   
 ## Authors
 
