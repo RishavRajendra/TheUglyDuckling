@@ -35,18 +35,18 @@ python run_ssd_demo.py mb2-ssd-lite <trained model path> vision/models/voc-model
 ### Evaluate Training
 ```
 Average Precision Per-class:
-start: 0.3444457841009565
-blockA: 0.08031108961960026
-blockB: 0.18432601880877744
-blockC: 0.18694415340756804
-blockD: 0.3126812163320044
-blockE: 0.25913768033331286
-blockF: 0.18424260178516613
-obstacle: 0.6296255317719224
-side: 0.4578452604821188
-corner: 0.5763307895753582
+start: 0.2950170396978908
+blockA: 0.1090909090909091
+blockB: 0.13636363636363635
+blockC: 0.17349640650611525
+blockD: 0.2740371733360128
+blockE: 0.377404371048673
+blockF: 0.31433934059094526
+obstacle: 0.6017093755498263
+side: 0.3591425086781124
+corner: 0.6141706643674154
 
-Average Precision Across All Classes:0.32158901262167844
+Average Precision Across All Classes:0.3254771425229537
 ```
 Code to reproduce model:
 ```
