@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 from vision.mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite, create_mobilenetv2_ssd_lite_predictor
 from vision.utils.misc import Timer
 from constants import CENTER_LINEx1y1, CENTER_LINEx2y2
@@ -60,7 +66,6 @@ boxes, labels, probs = predictor.predict(image, 10, 0.4)
 cv2.line(orig_image, CENTER_LINEx1y1, CENTER_LINEx2y2, (0, 0, 0))
 
 for i in range(boxes.size(0)):
-    interiorAngle = 0
     box = boxes[i, :]
     cv2.rectangle(orig_image, (box[0], box[1]), (box[2], box[3]), (255, 255, 0), 4)
 
@@ -68,9 +73,8 @@ for i in range(boxes.size(0)):
     # if class_names[labels[i]] == 'obstacle':
         # interiorAngle = int(obstacleDetected(orig_image, box[0], box[1], box[2], box[3]))
     angle = detectObjects(orig_image, box[0], box[1], box[2], box[3])
-    
-    # label = f"{class_names[labels[i]]}: {probs[i]:.2f}, {interiorAngle}"
-    label = f"{angle}"
+    print(f"{class_names[labels[i]]}: {probs[i]:.2f}, {angle}{chr(176)}")
+    label = f"{class_names[labels[i]]}: {probs[i]:.2f}, {angle}"
 
     cv2.putText(orig_image, label,
                 (box[0] + 20, box[1] + 40),

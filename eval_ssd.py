@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = "Rishav Rajendra"
+__license__ = "MIT"
+__status__ = "Development"
+
 import torch
 from vision.mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite, create_mobilenetv2_ssd_lite_predictor
 from vision.voc_dataset import VOCDataset
@@ -8,6 +14,9 @@ import pathlib
 import numpy as np 
 import logging
 import sys
+
+import warnings
+warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser(description="SSD Evaluation on VOC Dataset.")
 parser.add_argument('--net', default="mb2-ssd-lite",
