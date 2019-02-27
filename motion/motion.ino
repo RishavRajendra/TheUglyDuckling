@@ -1,54 +1,14 @@
 #include <QueueArray.h>
 #include <Servo.h>
+#include "constants.h"
 
 /* Variables */
 
-//Direction
-byte fwd;
-byte rev;
-byte rotl;
-byte rotr;
-byte strl;
-byte strr;
-
-//Motor Pairs
-byte motion = B01010101;
-byte leftmotion = B00010001;
-byte rightmotion = B01000100;
-byte frontmotion = B01010000;
-byte rearmotion = B00000101;
-byte motion45right = B00010100;
-byte motion45left = B01000001;
-
-volatile byte masterWheels;
-volatile byte slaveWheels;
-volatile float steps;
-volatile float steps_counter;
-volatile bool flag1;
-
-//Measurements
-float distance = 6 * PI; // This is for centimeters.
-float steps_per_cm = 3200 / distance;
-float steps_per_inch = 3200 / (60 * PI / 25.4);
-float steps_per_degree = 23.7;  //Needs to be calibrated
-float straight = 1.000;
-float arc180 = .3;
-float start_dis = .25;
-float threshold = 250;
-float tile_dist = 12;
-
-// Declare the Servo pin
-int servoPin1 = 2;
-int servoPin2 = 3;
 // Create a servo object
 Servo Servo1;
 Servo Servo2;
 Servo ServoCam;
-//Declare positions for servos
-int up1 = 0;
-int up2 = 180;
-int down1 = 160;
-int down2 = 20;
+
 //Declare queue for commands
 QueueArray <byte> queue;
 
@@ -123,10 +83,10 @@ void pickup(){
 
 /*Motor Code*/
 
-//Move using centimeters
+//Move using inches
 void mov(byte dir, float dist, long del) {
   PORTL = dir;
-  float stepf = dist * steps_per_cm;
+  float stepf = dist * steps_per_inch;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
@@ -159,10 +119,10 @@ void turn(byte dir, float dist, long del) {
   }
 }
 
-//Move 45 degrees in centimeters
+//Move 45 degrees in inches
 void mov45(byte dir, float dist, long del, byte motors) {
   PORTL = dir;
-  float stepf = 2 * dist * steps_per_cm;
+  float stepf = 2 * dist * steps_per_inches;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
