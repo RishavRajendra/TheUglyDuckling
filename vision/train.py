@@ -11,13 +11,15 @@ import sys
 import itertools
 
 import torch
-from utils.misc import str2bool, Timer, freeze_net_layers, store_labels
-from voc_dataset import VOCDataset
-from multibox_loss import MultiboxLoss
-from ssd import MatchPrior
-from mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite
-from data_preprocessing import TrainAugmentation, TestTransform
-import mobilenet_ssd_config
+from .utils.misc import str2bool, Timer, freeze_net_layers, store_labels
+from .voc_dataset import VOCDataset
+from .multibox_loss import MultiboxLoss
+from .ssd import MatchPrior
+from .vgg_ssd import create_vgg_ssd
+from .mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite
+from .data_preprocessing import TrainAugmentation, TestTransform
+from . import mobilenet_ssd_config
+from . import vgg_ssd_config
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
@@ -32,7 +34,7 @@ parser.add_argument('--train_dataset', nargs='+', help='Train dataset directory 
 parser.add_argument('--test_dataset', help='Test dataset directory path.')
 
 parser.add_argument('--net', default="mb2-ssd-lite",
-	help="The network architecture, it can be only be mb2-ssd-lite")
+	help="The network architecture, it can be only be mb2-ssd-lite or vgg16-ssd")
 
 parser.add_argument('--mb2_width_mult', default=1.0, type=float, 
 	help='Width Multiplier for MobileNetV2')
@@ -173,6 +175,9 @@ def main():
 	if args.net == "mb2-ssd-lite":
 		create_net = lambda num: create_mobilenetv2_ssd_lite(num, width_mult=args.mb2_width_mult)
 		config = mobilenet_ssd_config
+	elif args.net == "vgg16-ssd":
+		create_net = create_vgg_ssd
+		config = vgg_ssd_config
 	else:
 		logging.fatal("The net type is wrong.")
 		parser.print_help(sys.stderr)
