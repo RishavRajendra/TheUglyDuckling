@@ -52,7 +52,26 @@ Code to reproduce model:
 ```
 python eval_ssd.py --net mb2-ssd-lite --dataset vision/datasets/images/test/ --trained_model <trained model path> --label_file vision/models/voc-model-labels.txt
 ```
-  
+
+```
+Average Precision Per-class:
+start: 0.6644306719561556
+blockA: 0.32447063535564824
+blockB: 0.23398957377105215
+blockC: 0.4250320574160577
+blockD: 0.7446259793558014
+blockE: 0.6657902435290295
+blockF: 0.5846939265384001
+obstacle: 0.8851199111546342
+side: 0.6430556619779979
+corner: 0.9090909090909093
+
+Average Precision Across All Classes:0.6080299570145686
+```
+Code to reproduce model:
+```
+python eval_ssd.py --net vgg16-ssd --dataset vision/datasets/images/test/ --trained_model vision/models/vgg16-ssd-VGG16-Epoch-20-Loss-2.440702438354492.pth --label_file vision/models/voc-model-labels.txt
+```
 ## Authors
 
 * **Rishav Rajendra** - [Website](https://rishavrajendra.github.io)
