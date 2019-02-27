@@ -60,18 +60,6 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>blockB</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>194</xmin>
-			<ymin>85</ymin>
-			<xmax>213</xmax>
-			<ymax>101</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>obstacle</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>

@@ -59,16 +59,4 @@
 			<ymax>65</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>start</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>68</xmin>
-			<ymin>81</ymin>
-			<xmax>106</xmax>
-			<ymax>95</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

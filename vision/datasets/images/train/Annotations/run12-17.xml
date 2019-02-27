@@ -60,18 +60,6 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>blockE</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>149</xmin>
-			<ymin>93</ymin>
-			<xmax>173</xmax>
-			<ymax>118</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>slope</name>
 		<pose>Unspecified</pose>
 		<truncated>1</truncated>

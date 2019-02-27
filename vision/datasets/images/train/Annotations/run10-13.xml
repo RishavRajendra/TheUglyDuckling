@@ -24,18 +24,6 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>60</xmin>
-			<ymin>13</ymin>
-			<xmax>74</xmax>
-			<ymax>48</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>obstacle</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
@@ -81,18 +69,6 @@
 			<ymin>53</ymin>
 			<xmax>174</xmax>
 			<ymax>83</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>blockD</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>229</xmin>
-			<ymin>60</ymin>
-			<xmax>241</xmax>
-			<ymax>76</ymax>
 		</bndbox>
 	</object>
 	<object>

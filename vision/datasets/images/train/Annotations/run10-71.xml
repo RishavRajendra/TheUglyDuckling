@@ -12,30 +12,6 @@
 	</size>
 	<segmented>0</segmented>
 	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>271</xmin>
-			<ymin>17</ymin>
-			<xmax>281</xmax>
-			<ymax>45</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>start</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>238</xmin>
-			<ymin>79</ymin>
-			<xmax>271</xmax>
-			<ymax>88</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>obstacle</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
@@ -69,18 +45,6 @@
 			<ymin>41</ymin>
 			<xmax>155</xmax>
 			<ymax>60</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>blockD</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>125</xmin>
-			<ymin>60</ymin>
-			<xmax>138</xmax>
-			<ymax>70</ymax>
 		</bndbox>
 	</object>
 	<object>

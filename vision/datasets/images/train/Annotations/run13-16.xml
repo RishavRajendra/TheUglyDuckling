@@ -83,16 +83,4 @@
 			<ymax>63</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>256</xmin>
-			<ymin>18</ymin>
-			<xmax>272</xmax>
-			<ymax>60</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

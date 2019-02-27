@@ -48,18 +48,6 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>blockA</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>215</xmin>
-			<ymin>136</ymin>
-			<xmax>264</xmax>
-			<ymax>180</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>side</name>
 		<pose>Unspecified</pose>
 		<truncated>1</truncated>

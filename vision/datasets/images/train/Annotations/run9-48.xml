@@ -71,28 +71,4 @@
 			<ymax>76</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>240</xmin>
-			<ymin>11</ymin>
-			<xmax>258</xmax>
-			<ymax>47</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>start</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>71</xmin>
-			<ymin>85</ymin>
-			<xmax>100</xmax>
-			<ymax>97</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

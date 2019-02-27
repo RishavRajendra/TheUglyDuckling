@@ -11,16 +11,4 @@
 		<depth>3</depth>
 	</size>
 	<segmented>0</segmented>
-	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>112</xmin>
-			<ymin>16</ymin>
-			<xmax>135</xmax>
-			<ymax>91</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

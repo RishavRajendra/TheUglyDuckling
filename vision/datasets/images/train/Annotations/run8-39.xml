@@ -59,28 +59,4 @@
 			<ymax>65</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>251</xmin>
-			<ymin>20</ymin>
-			<xmax>267</xmax>
-			<ymax>45</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>blockB</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>145</xmin>
-			<ymin>70</ymin>
-			<xmax>159</xmax>
-			<ymax>89</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

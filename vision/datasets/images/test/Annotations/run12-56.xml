@@ -48,18 +48,6 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>blockE</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>85</xmin>
-			<ymin>65</ymin>
-			<xmax>99</xmax>
-			<ymax>80</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>slope</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
@@ -95,16 +83,4 @@
 			<ymax>66</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>1</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>284</xmin>
-			<ymin>19</ymin>
-			<xmax>300</xmax>
-			<ymax>58</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

@@ -23,16 +23,4 @@
 			<ymax>232</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>blockB</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>111</xmin>
-			<ymin>159</ymin>
-			<xmax>156</xmax>
-			<ymax>210</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

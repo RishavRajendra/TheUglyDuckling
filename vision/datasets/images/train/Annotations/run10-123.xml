@@ -168,18 +168,6 @@
 		</bndbox>
 	</object>
 	<object>
-		<name>start</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>187</xmin>
-			<ymin>50</ymin>
-			<xmax>200</xmax>
-			<ymax>58</ymax>
-		</bndbox>
-	</object>
-	<object>
 		<name>slope</name>
 		<pose>Unspecified</pose>
 		<truncated>1</truncated>
@@ -191,16 +179,4 @@
 			<ymax>46</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>corner</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>56</xmin>
-			<ymin>15</ymin>
-			<xmax>66</xmax>
-			<ymax>41</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

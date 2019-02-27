@@ -59,16 +59,4 @@
 			<ymax>76</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>blockD</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>217</xmin>
-			<ymin>82</ymin>
-			<xmax>236</xmax>
-			<ymax>103</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

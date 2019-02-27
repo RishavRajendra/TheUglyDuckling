@@ -11,16 +11,4 @@
 		<depth>3</depth>
 	</size>
 	<segmented>0</segmented>
-	<object>
-		<name>blockF</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>93</xmin>
-			<ymin>143</ymin>
-			<xmax>134</xmax>
-			<ymax>186</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

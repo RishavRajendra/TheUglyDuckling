@@ -95,16 +95,4 @@
 			<ymax>89</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>blockC</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>129</xmin>
-			<ymin>67</ymin>
-			<xmax>141</xmax>
-			<ymax>81</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>

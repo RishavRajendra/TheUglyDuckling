@@ -71,16 +71,4 @@
 			<ymax>192</ymax>
 		</bndbox>
 	</object>
-	<object>
-		<name>blockF</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>168</xmin>
-			<ymin>72</ymin>
-			<xmax>184</xmax>
-			<ymax>89</ymax>
-		</bndbox>
-	</object>
-</annotation>
+	</annotation>
