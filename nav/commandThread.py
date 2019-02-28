@@ -19,14 +19,14 @@ rear = b'\x44'
 right45 = b'\x14'
 left45 = b'\x41'
 
-class MotionThread(threading.Thread):
+class CommandThread(threading.Thread):
 
 
     # (queue) = Queue()
     # (serial) = serial connection to arduino
     # (lock) = threading.Lock()
     def __init__(self, queue, serial, lock):
-        super(MotionThread, self).__init__()
+        super(CommandThread, self).__init__()
         self.func = { 'move': self.move,
                       'turn': self.turn,
                       'move45': self.move45,
@@ -40,7 +40,7 @@ class MotionThread(threading.Thread):
         while not self.stoprequest.isSet():
             if not self.queue.empty():
                 self.lock.acquire(True)
-                time.sleep(1)
+                # time.sleep(1)
                 print("motion send")
                 work = self.queue.get(True, 0.05)
                 self.func[work[0]](work[1])
@@ -48,7 +48,7 @@ class MotionThread(threading.Thread):
             time.sleep(.2)
     def join(self, timeout=None):
         self.stoprequest.set()
-        super(MotionThread, self).join(timeout)
+        super(CommandThread, self).join(timeout)
 
     # Movement instructions sent to Queue should follow
     # this format: ['function_name', (args)]
@@ -87,5 +87,8 @@ class MotionThread(threading.Thread):
 
     # (args) format: (direction, motors)
     def gridMove(self, args):
-        byteArr = b'\x03' + args[0] + args[1]
+        byteArr = b'\x03' + args[0] + args[1] + b'\x00'
         self.serial.write(byteArr)
+
+    def armsMove(self, args):
+        byteArr = b'\x04' 
