@@ -18,6 +18,7 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
+//  mov(fwd, 12, 500);
 }
 
 void loop() {
@@ -38,22 +39,22 @@ void readPython(){
 // Run commands waiting in queue
 void runCommand(){
   if (!queue.isEmpty()){
-    int flag = (int) queue.pop();
+    int flag = (int)queue.pop();
     byte data1 = queue.pop();
     byte data2 = queue.pop();
     byte data3 = queue.pop();
     
     if (flag == 0){
-     mov(data1, data2, 300);
+     mov(data1, data2, 500);
     }
     else if (flag == 1){
-      turn(data1, data2, 300);
+      turn(data1, data2, 500);
     }
     else if (flag == 2){
-      mov45(data1, data2, 300, data3);
+      mov45(data1, data2, 500, data3);
     }
     else if (flag == 3){
-      gridMov(data1, 300, data2);
+      gridMov(data1, 500, data2);
     }
     //Signal back to RaspberryPi    
     Serial.write(B11111111);
@@ -122,13 +123,34 @@ void turn(byte dir, float dist, long del) {
 //Move 45 degrees in inches
 void mov45(byte dir, float dist, long del, byte motors) {
   PORTL = dir;
-  float stepf = 2 * dist * steps_per_inches;
+  float stepf = 2 * dist * steps_per_inch;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
     PORTL ^= motors;
   }
 }
+
+//void acceleration(byte dir, float dist, long del, int N) {
+//  float total_dis = N * (N + 1) / 2 * 3 * start_dis;
+//
+//  if (total_dis > dist) {
+//    float m = sqrt((dist / start_dis) * 2 / 3);
+//    N = m;
+//  }
+//
+//  float mid_dis = dist - start_dis * 3 * N * (N + 1) / 2;
+//
+//  for (int i = 1; i <= N; i++) {
+//    vars(dir, start_dis * i, del / i, straight, rightmotion, leftmotion);
+//  }
+//
+//  vars(dir, mid_dis, del / N, straight, rightmotion, leftmotion);
+//
+//  for (int i = N; i > 0; i--) {
+//    vars(dir, start_dis * 2 * i, del / i, straight, rightmotion, leftmotion);
+//  }
+//}
 
 //Declares directional bytes for UglyDuckling bot
 void ud_bot(){

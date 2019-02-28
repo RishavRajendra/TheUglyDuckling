@@ -40,7 +40,7 @@ class CommandThread(threading.Thread):
         while not self.stoprequest.isSet():
             if not self.queue.empty():
                 self.lock.acquire(True)
-                time.sleep(1)
+                # time.sleep(1)
                 print("motion send")
                 work = self.queue.get(True, 0.05)
                 self.func[work[0]](work[1])
