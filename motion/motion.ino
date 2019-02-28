@@ -1,54 +1,14 @@
 #include <QueueArray.h>
 #include <Servo.h>
+#include "constants.h"
 
 /* Variables */
 
-//Direction
-byte fwd;
-byte rev;
-byte rotl;
-byte rotr;
-byte strl;
-byte strr;
-
-//Motor Pairs
-byte motion = B01010101;
-byte leftmotion = B00010001;
-byte rightmotion = B01000100;
-byte frontmotion = B01010000;
-byte rearmotion = B00000101;
-byte motion45right = B00010100;
-byte motion45left = B01000001;
-
-volatile byte masterWheels;
-volatile byte slaveWheels;
-volatile float steps;
-volatile float steps_counter;
-volatile bool flag1;
-
-//Measurements
-float distance = 6 * PI; // This is for centimeters.
-float steps_per_cm = 3200 / distance;
-float steps_per_inch = 3200 / (60 * PI / 25.4);
-float steps_per_degree = 23.7;  //Needs to be calibrated
-float straight = 1.000;
-float arc180 = .3;
-float start_dis = .25;
-float threshold = 250;
-float tile_dist = 12;
-
-// Declare the Servo pin
-int servoPin1 = 2;
-int servoPin2 = 3;
 // Create a servo object
 Servo Servo1;
 Servo Servo2;
 Servo ServoCam;
-//Declare positions for servos
-int up1 = 0;
-int up2 = 180;
-int down1 = 160;
-int down2 = 20;
+
 //Declare queue for commands
 QueueArray <byte> queue;
 
@@ -58,6 +18,7 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
+//  mov(fwd, 12, 500);
 }
 
 void loop() {
@@ -78,22 +39,22 @@ void readPython(){
 // Run commands waiting in queue
 void runCommand(){
   if (!queue.isEmpty()){
-    int flag = (int) queue.pop();
+    int flag = (int)queue.pop();
     byte data1 = queue.pop();
     byte data2 = queue.pop();
     byte data3 = queue.pop();
     
     if (flag == 0){
-     mov(data1, data2, 300);
+     mov(data1, data2, 500);
     }
     else if (flag == 1){
-      turn(data1, data2, 300);
+      turn(data1, data2, 500);
     }
     else if (flag == 2){
-      mov45(data1, data2, 300, data3);
+      mov45(data1, data2, 500, data3);
     }
     else if (flag == 3){
-      gridMov(data1, 300, data2);
+      gridMov(data1, 500, data2);
     }
     //Signal back to RaspberryPi    
     Serial.write(B11111111);
@@ -123,10 +84,10 @@ void pickup(){
 
 /*Motor Code*/
 
-//Move using centimeters
+//Move using inches
 void mov(byte dir, float dist, long del) {
   PORTL = dir;
-  float stepf = dist * steps_per_cm;
+  float stepf = dist * steps_per_inch;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
@@ -159,16 +120,37 @@ void turn(byte dir, float dist, long del) {
   }
 }
 
-//Move 45 degrees in centimeters
+//Move 45 degrees in inches
 void mov45(byte dir, float dist, long del, byte motors) {
   PORTL = dir;
-  float stepf = 2 * dist * steps_per_cm;
+  float stepf = 2 * dist * steps_per_inch;
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
     PORTL ^= motors;
   }
 }
+
+//void acceleration(byte dir, float dist, long del, int N) {
+//  float total_dis = N * (N + 1) / 2 * 3 * start_dis;
+//
+//  if (total_dis > dist) {
+//    float m = sqrt((dist / start_dis) * 2 / 3);
+//    N = m;
+//  }
+//
+//  float mid_dis = dist - start_dis * 3 * N * (N + 1) / 2;
+//
+//  for (int i = 1; i <= N; i++) {
+//    vars(dir, start_dis * i, del / i, straight, rightmotion, leftmotion);
+//  }
+//
+//  vars(dir, mid_dis, del / N, straight, rightmotion, leftmotion);
+//
+//  for (int i = N; i > 0; i--) {
+//    vars(dir, start_dis * 2 * i, del / i, straight, rightmotion, leftmotion);
+//  }
+//}
 
 //Declares directional bytes for UglyDuckling bot
 void ud_bot(){
