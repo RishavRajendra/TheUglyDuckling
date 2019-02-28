@@ -21,14 +21,6 @@ run12-92
 run12-99
 run13-0
 run13-118
-run13-149
-run13-15
-run13-160
-run13-18
-run13-31
-run13-59
-run13-66
-run13-78
 run13-90
 run14-0
 run14-1
@@ -48,7 +40,6 @@ run14-21
 run14-22
 run14-23
 run14-24
-run14-25
 run14-26
 run14-27
 run14-28
@@ -72,14 +63,11 @@ run14-43
 run14-44
 run14-47
 run14-48
-run14-49
 run14-5
 run14-50
 run14-51
-run14-52
 run14-53
 run14-54
-run14-55
 run14-57
 run14-58
 run14-59
@@ -93,8 +81,3 @@ run14-67
 run14-68
 run14-69
 run14-7
-run14-71
-run14-73
-run14-74
-run14-8
-run14-9

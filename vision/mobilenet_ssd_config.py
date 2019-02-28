@@ -6,7 +6,7 @@ __status__ = "Development"
 
 import numpy as np
 
-from utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
+from .utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
 
 #Raspberry pi cam v2 captures video in 600 X 800
 image_size = 300

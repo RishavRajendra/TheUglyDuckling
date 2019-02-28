@@ -1,6 +1,6 @@
 import numpy as np
 
-from .utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
+from utils.box_utils import SSDSpec, SSDBoxSizes, generate_ssd_priors
 
 
 image_size = 300

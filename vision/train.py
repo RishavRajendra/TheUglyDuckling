@@ -11,15 +11,15 @@ import sys
 import itertools
 
 import torch
-from .utils.misc import str2bool, Timer, freeze_net_layers, store_labels
-from .voc_dataset import VOCDataset
-from .multibox_loss import MultiboxLoss
-from .ssd import MatchPrior
-from .vgg_ssd import create_vgg_ssd
-from .mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite
-from .data_preprocessing import TrainAugmentation, TestTransform
-from . import mobilenet_ssd_config
-from . import vgg_ssd_config
+from utils.misc import str2bool, Timer, freeze_net_layers, store_labels
+from voc_dataset import VOCDataset
+from multibox_loss import MultiboxLoss
+from ssd import MatchPrior
+from vgg_ssd import create_vgg_ssd
+from mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite
+from data_preprocessing import TrainAugmentation, TestTransform
+import mobilenet_ssd_config
+import vgg_ssd_config
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
@@ -60,6 +60,7 @@ parser.add_argument('--resume', default=None, type=str,
 # Scheduler
 parser.add_argument('--scheduler', default="multi-step", type=str,
 	help="Scheduler for SGD. It can one of multi-step and cosine")
+parser.add_argument('--milestones', default="80, 100", type=str, help="milestones for MultiStepLR")
 
 # Params for Cosine Annealing
 parser.add_argument('--t_max', default=120, type=float,

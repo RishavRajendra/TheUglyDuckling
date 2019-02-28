@@ -1,11 +1,4 @@
+BACKGROUND
 slope
-start
-blockA
-blockB
-blockC
-blockD
-blockE
-blockF
 obstacle
 side
-corner
