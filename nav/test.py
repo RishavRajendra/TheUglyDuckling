@@ -1,27 +1,27 @@
 from gridMovement import GridMovement
 from grid import Grid
-from motionPi import MotionThread
+from commandThread import CommandThread
 from listenerThread import ListenerThread
 import queue, time, serial, threading
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
 time.sleep(1)
 
-label1 = (0,1)
-label2 = (1,1)
-label3 = (1,2)
+label1 = (7,1)
+label2 = (7,2)
+label3 = (6,1)
 label4 = (1,4)
 label5 = (5,3)
 label6 = (6,6)
 
 in_q = queue.Queue()
 lock = threading.Lock()
-mThread = MotionThread(in_q, ser, lock)
-lThread = ListenerThread(in_q, ser, lock)
-mThread.start()
-lThread.start()
+cThread = CommandThread(in_q, ser, lock)
+# lThread = ListenerThread(in_q, ser, lock)
+cThread.start()
+# lThread.start()
 grid = Grid(8,8)
-grid.obstacles = [label1, label2,label3, label4]
+grid.obstacles = [label1, label2,label3]
 # grid.obstacles = [label1, label2, label3, label4, label5, label6]
 movement = GridMovement(grid, in_q)
 
@@ -35,5 +35,5 @@ movement.follow_path()
 while not in_q.empty():
 	pass
 
-mThread.join()
-lThread.join()
+cThread.join()
+# lThread.join()
