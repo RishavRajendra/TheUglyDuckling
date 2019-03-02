@@ -85,9 +85,9 @@ class CommandThread(threading.Thread):
     # Moves robot a predefined distance dependent on 
     # distance from center of tile1 to tile2
 
-    # (args) format: (direction, motors)
+    # (args) format: (direction, motors, dist)
     def gridMove(self, args):
-        byteArr = b'\x03' + args[0] + args[1] + b'\x00'
+        byteArr = b'\x03' + args[0] + args[1] + bytes([args[2]])
         self.serial.write(byteArr)
 
     def armsMove(self, args):

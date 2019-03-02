@@ -21,7 +21,7 @@ cThread = CommandThread(in_q, ser, lock)
 cThread.start()
 # lThread.start()
 grid = Grid(8,8)
-grid.obstacles = [label1, label2,label3]
+# grid.obstacles = [label1, label2,label3]
 # grid.obstacles = [label1, label2, label3, label4, label5, label6]
 movement = GridMovement(grid, in_q)
 
