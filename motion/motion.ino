@@ -19,6 +19,7 @@ void setup() {
   Servo2.attach(servoPin2);
   Serial.begin(9600);
 //  mov(fwd, 12, 500);
+//  vars(fwd, 72, 500, 1.005, rightmotion, leftmotion);
 }
 
 void loop() {
@@ -54,7 +55,7 @@ void runCommand(){
       mov45(data1, data2, 500, data3);
     }
     else if (flag == 3){
-      gridMov(data1, 500, data2);
+      gridMov(data1,data3, 500, data2);
     }
     //Signal back to RaspberryPi    
     Serial.write(B11111111);
@@ -96,9 +97,9 @@ void mov(byte dir, float dist, long del) {
 }
 
 //Grid movement - 12 inches per call
-void gridMov(byte dir, long del, byte motors) {
+void gridMov(byte dir, long dist, long del, byte motors) {
   PORTL = dir;
-  float stepf = tile_dist * steps_per_inch;
+  float stepf = dist * steps_per_inch;
   if (motors != B01010101){
     stepf *= 2;
   }
@@ -128,6 +129,35 @@ void mov45(byte dir, float dist, long del, byte motors) {
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
     PORTL ^= motors;
+  }
+}
+
+void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) {
+  PORTL = dir;
+  float stepf = dist * steps_per_inch;
+  long steps = stepf;
+
+  long masterCounter = 0;
+  long slaveCounter = 0;
+  long stepCounter = 0;
+
+  float temp = del * ratio;
+  long slaveDelay = temp;
+
+  while (stepCounter < steps) {
+
+    if (masterCounter > del) {
+      PORTL ^= master;
+      masterCounter = 0;
+      stepCounter++;
+    }
+
+    if (slaveCounter > slaveDelay) {
+      PORTL ^= slave;
+      slaveCounter = 0;
+    }
+    masterCounter++;
+    slaveCounter++;
   }
 }
 
