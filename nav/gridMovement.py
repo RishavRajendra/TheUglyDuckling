@@ -66,8 +66,13 @@ class GridMovement:
 					dist = dist +12
 					self.current = mov
 					continue
-			args = (self.movement[currentResult][0], self.movement[currentResult][1], dist)
-			self.queue.put(['gridMove', args])
+			if(currentResult == (0,1) and dist > 12):
+				args = (self.movement[currentResult][0], dist)
+				self.queue.put(['accelerate', args])
+			else:
+				args = (self.movement[currentResult][0], dist, self.movement[currentResult][1])
+				self.queue.put(['gridMove', args])
+			
 			self.current = mov
 			# reset distance in case there was a stacked call 
 			dist = 12

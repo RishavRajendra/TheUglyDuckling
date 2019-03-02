@@ -25,10 +25,10 @@ volatile bool flag1;
 float distance = (60 * PI)/ 25.4;
 float steps_per_inch = 3200 / distance;
 float steps_per_degree = 30;
-float straight = 1.000;
+float straight = 0.980;
 float arc180 = .3;
 float start_dis = .25;
-float threshold = 250;
+float threshold = 300;
 float tile_dist = 12;
 
 // Declare the Servo pin

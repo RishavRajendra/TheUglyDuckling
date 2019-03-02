@@ -19,7 +19,8 @@ void setup() {
   Servo2.attach(servoPin2);
   Serial.begin(9600);
 //  mov(fwd, 12, 500);
-//  vars(fwd, 72, 500, 1.005, rightmotion, leftmotion);
+//  vars(fwd, 72, 300, 0.983, rightmotion, leftmotion);
+//  acceleration(fwd, 36, 300, 8);
 }
 
 void loop() {
@@ -46,16 +47,16 @@ void runCommand(){
     byte data3 = queue.pop();
     
     if (flag == 0){
-     mov(data1, data2, 500);
+     mov(data1, data2, 300);
     }
     else if (flag == 1){
-      turn(data1, data2, 500);
+      turn(data1, data2, 300);
     }
     else if (flag == 2){
-      mov45(data1, data2, 500, data3);
+      accelerate(data1, data2, 300, 8);
     }
     else if (flag == 3){
-      gridMov(data1,data3, 500, data2);
+      gridMov(data1,data2, 300, data3);
     }
     //Signal back to RaspberryPi    
     Serial.write(B11111111);
@@ -161,26 +162,26 @@ void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) 
   }
 }
 
-//void acceleration(byte dir, float dist, long del, int N) {
-//  float total_dis = N * (N + 1) / 2 * 3 * start_dis;
-//
-//  if (total_dis > dist) {
-//    float m = sqrt((dist / start_dis) * 2 / 3);
-//    N = m;
-//  }
-//
-//  float mid_dis = dist - start_dis * 3 * N * (N + 1) / 2;
-//
-//  for (int i = 1; i <= N; i++) {
-//    vars(dir, start_dis * i, del / i, straight, rightmotion, leftmotion);
-//  }
-//
-//  vars(dir, mid_dis, del / N, straight, rightmotion, leftmotion);
-//
-//  for (int i = N; i > 0; i--) {
-//    vars(dir, start_dis * 2 * i, del / i, straight, rightmotion, leftmotion);
-//  }
-//}
+void acceleration(byte dir, float dist, long del, int N) {
+  float total_dis = N * (N + 1) / 2 * 3 * start_dis;
+
+  if (total_dis > dist) {
+    float m = sqrt((dist / start_dis) * 2 / 3);
+    N = m;
+  }
+
+  float mid_dis = dist - start_dis * 3 * N * (N + 1) / 2;
+
+  for (int i = 1; i <= N; i++) {
+    vars(dir, start_dis * i, del / i, straight, rightmotion, leftmotion);
+  }
+
+  vars(dir, mid_dis, del / N, straight, rightmotion, leftmotion);
+
+  for (int i = N; i > 0; i--) {
+    vars(dir, start_dis * 2 * i, del / i, straight, rightmotion, leftmotion);
+  }
+}
 
 //Declares directional bytes for UglyDuckling bot
 void ud_bot(){

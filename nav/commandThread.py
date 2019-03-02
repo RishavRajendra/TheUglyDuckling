@@ -29,7 +29,7 @@ class CommandThread(threading.Thread):
         super(CommandThread, self).__init__()
         self.func = { 'move': self.move,
                       'turn': self.turn,
-                      'move45': self.move45,
+                      'accelerate': self.accelerate,
                       'gridMove': self.gridMove}
         self.queue = queue
         self.serial = serial
@@ -67,7 +67,16 @@ class CommandThread(threading.Thread):
         byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
         self.serial.write(byteArr) 
 
-    # Move 45 degrees diagonally.
+    # Acceleration. fwd only
+    # (args) format: (direction, distance, motors)
+    def accelerate(self, args):
+        byteArr = b'\x02'+args[0]+bytes([args[1]]) + b'\x00'
+        self.serial.write(byteArr)
+
+    # Moves robot a predefined distance dependent on 
+    # distance from center of tile1 to tile2
+
+     # Move 45 degrees diagonally.
     ############################
     #   dir and motors combo
     ############################
@@ -78,16 +87,8 @@ class CommandThread(threading.Thread):
     # SW = rev, right45
 
     # (args) format: (direction, distance, motors)
-    def move45(self, args):
-        byteArr = b'\x02'+args[0]+bytes([args[1]]) + args[2]
-        self.serial.write(byteArr)
-
-    # Moves robot a predefined distance dependent on 
-    # distance from center of tile1 to tile2
-
-    # (args) format: (direction, motors, dist)
     def gridMove(self, args):
-        byteArr = b'\x03' + args[0] + args[1] + bytes([args[2]])
+        byteArr = b'\x03' + args[0] + bytes([args[1]]) + args[2]
         self.serial.write(byteArr)
 
     def armsMove(self, args):
