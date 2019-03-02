@@ -93,5 +93,5 @@ class CommandThread(threading.Thread):
         self.serial.write(byteArr)
     # (args) format: (distance)
     def pickup(self, args):
-        byteArr = b'\x04'  + byte([args[0]]) +b'\x00' + b'\x00'
+        byteArr = b'\x04'  + bytes([args]) +b'\x00' + b'\x00'
         self.serial.write(byteArr)
