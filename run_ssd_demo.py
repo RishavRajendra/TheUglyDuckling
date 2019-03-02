@@ -6,13 +6,16 @@ __status__ = "Development"
 
 from vision.mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite, create_mobilenetv2_ssd_lite_predictor
 from vision.utils.misc import Timer
-from constants import CENTER_LINEx1y1, CENTER_LINEx2y2
+from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, KNOWN_DISTANCE, KNOWN_WIDTH
 import math
 import cv2
 import sys
 
 import warnings
 warnings.filterwarnings('ignore')
+
+def distanceToCamera(knownWidth, focalLength, perWidth):
+    return (knownWidth * focalLength) / perWidth
     
 """
 If an obstacle is detected, draw a line from CENTER_LINEx2y2
@@ -73,8 +76,14 @@ for i in range(boxes.size(0)):
     # if class_names[labels[i]] == 'obstacle':
         # interiorAngle = int(obstacleDetected(orig_image, box[0], box[1], box[2], box[3]))
     angle = detectObjects(orig_image, box[0], box[1], box[2], box[3])
-    print(f"{class_names[labels[i]]}: {probs[i]:.2f}, {angle}{chr(176)}")
-    label = f"{class_names[labels[i]]}: {probs[i]:.2f}, {angle}"
+
+    # focalLength = (box[2]-box[0])*KNOWN_DISTANCE/KNOWN_WIDTH
+    focalLength = 356.2625427246094
+
+    inches = distanceToCamera(KNOWN_WIDTH, focalLength, box[2]-box[0])
+
+    print("{}: {}, {}{}, Distance:{}".format(class_names[labels[i]], probs[i], angle, chr(176), inches))
+    label = "{}: {}, {}, {}".format(class_names[labels[i]], probs[i], angle, inches)
 
     cv2.putText(orig_image, label,
                 (box[0] + 20, box[1] + 40),
@@ -85,4 +94,4 @@ for i in range(boxes.size(0)):
 
 path = "run_ssd_example_output.jpg"
 cv2.imwrite(path, orig_image)
-print(f"Found {len(probs)} objects. The output image is {path}")
+print("Found {} objects. The output image is {}".format(len(probs), path))
