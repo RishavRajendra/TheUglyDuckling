@@ -47,19 +47,19 @@ void runCommand(){
     byte data3 = queue.pop();
     
     if (flag == 0){
-     mov(data1, data2, 300);
+     mov(data1, data2, 400);
     }
     else if (flag == 1){
-      turn(data1, data2, 300);
+      turn(data1, data2, 400);
     }
     else if (flag == 2){
-      accelerate(data1, data2, 300, 8);
+      acceleration(data1, data2, 350, 8);
     }
     else if (flag == 3){
-      gridMov(data1,data2, 300, data3);
+      gridMov(data1,data2, 400, data3);
     }
     //Signal back to RaspberryPi    
-    Serial.write(B11111111);
+//    Serial.write(B11111111);
   }
 }
 
