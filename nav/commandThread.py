@@ -30,7 +30,8 @@ class CommandThread(threading.Thread):
         self.func = { 'move': self.move,
                       'turn': self.turn,
                       'accelerate': self.accelerate,
-                      'gridMove': self.gridMove}
+                      'gridMove': self.gridMove,
+                      'pickup': self.pickup}
         self.queue = queue
         self.serial = serial
         self.lock = lock
@@ -90,6 +91,7 @@ class CommandThread(threading.Thread):
     def gridMove(self, args):
         byteArr = b'\x03' + args[0] + bytes([args[1]]) + args[2]
         self.serial.write(byteArr)
-
-    def armsMove(self, args):
-        byteArr = b'\x04' 
+    # (args) format: (distance)
+    def pickup(self, args):
+        byteArr = b'\x04'  + byte([args[0]]) +b'\x00' + b'\x00'
+        self.serial.write(byteArr)

@@ -58,6 +58,11 @@ void runCommand(){
     else if (flag == 3){
       gridMov(data1,data2, 400, data3);
     }
+    else if (flag == 4){
+      armsDown();
+      mov(fwd, data1, 400);
+      pickup();
+    }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
   }

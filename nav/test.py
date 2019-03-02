@@ -14,6 +14,8 @@ label4 = (5,1)
 label5 = (6,3)
 label6 = (6,6)
 label7 = (6,4)
+label8 = (5,2)
+label9 = (6,2)
 
 in_q = queue.Queue()
 lock = threading.Lock()
@@ -23,7 +25,8 @@ cThread.start()
 # lThread.start()
 grid = Grid(8,8)
 # grid.obstacles = [label1, label2,label3, label4]
-grid.obstacles = [label1, label2, label3, label4, label5, label6, label7]
+grid.obstacles = [label1, label2, label3, label4,
+ label5, label6, label7, label8, label9]
 movement = GridMovement(grid, in_q)
 in_q.put(['turn', (b'\xAA', 90)])
 in_q.put(['turn', (b'\x00', 90)])
