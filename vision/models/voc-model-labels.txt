@@ -1,4 +1,12 @@
 BACKGROUND
+corner
+start
+blockA
+blockB
+blockC
+blockD
+blockE
+blockF
 slope
 obstacle
 side
