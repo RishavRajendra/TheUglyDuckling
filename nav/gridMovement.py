@@ -34,8 +34,8 @@ class GridMovement:
 		self.movement = {
 			(0,1): [self.fwd, self.allmotors, 0], (0, -1): [self.rev, self.allmotors, 180],
 			(1,0): [self.strr, self.allmotors, 90], (-1, 0): [self.strl, self.allmotors, -90],
-			(1,1): [self.fwd, self.right45, 45], (-1, 1): [self.fwd, self.left45, -45],
-			(1,-1): [self.rev, self.left45, 135], (-1,-1): [self.rev, self.right45, -135]
+			(1,1): [self.fwd, self.allmotors, 45], (-1, 1): [self.fwd, self.allmotors, -45],
+			(1,-1): [self.rev, self.allmotors, 135], (-1,-1): [self.rev, self.allmotors, -135]
 			}
 
 	# Not yet implemented
@@ -53,6 +53,7 @@ class GridMovement:
 	# to determine the proper movement
 	def follow_path(self):
 		dist = 12 # Default distance we want to move
+		prev_diagonal = False # True if previous move was diagonal
 		
 		# Loop with index so that we can check the next movement
 		# along with curent move
@@ -72,10 +73,20 @@ class GridMovement:
 					self.face(mov)
 					dist = dist +12
 					self.current = mov
+					# reset diagonal flag since we turned toward mov anyway
+					prev_diagonal = False
 					# We want to skip over the rest of the loop
 					# We're not ready to push a movement call to queue
 					continue
 
+			# If previous move was diagonal, turn towards next tile
+			if(prev_diagonal):
+					self.face(mov)
+					prev_diagonal = False
+			# If mov is diagonal, turn towards the tile 
+			if(gf.is_diagonal(self.current, mov)):
+				self.face(mov)
+				prev_diagonal = True
 			# if dist > 12 then we have duplicate movements
 			# We will accelerate
 			if(dist > 12):
@@ -93,6 +104,7 @@ class GridMovement:
 		# face goal after following path
 		self.face(self.goal)
 
+	# Face a tile connected to current tile
 	def face(self, obj):
 		result = (obj[0] - self.current[0], obj[1] - self.current[1])
 		result = self.translate_dir(result)
