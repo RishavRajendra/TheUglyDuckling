@@ -33,7 +33,7 @@ class VOCDataset:
         self.ids = VOCDataset._read_image_ids(image_sets_file)
         self.keep_difficult = keep_difficult
 
-        self.class_names = ('BACKGROUND', 'slope', 'obstacle', 'side')
+        self.class_names = ('BACKGROUND', 'corner','start','blockA', 'blockB', 'blockC', 'blockD', 'blockE', 'blockF','slope', 'obstacle', 'side')
 
         self.class_dict = {class_name: i for i, class_name in enumerate(self.class_names)}
 

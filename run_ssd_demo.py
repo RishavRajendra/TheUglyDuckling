@@ -6,16 +6,13 @@ __status__ = "Development"
 
 from vision.mobilenetv2_ssd_lite import create_mobilenetv2_ssd_lite, create_mobilenetv2_ssd_lite_predictor
 from vision.utils.misc import Timer
-from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, KNOWN_DISTANCE, KNOWN_WIDTH
+from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PIXEL_PER_MM, ERROR_VAL, FOCAL_LENGTH, OBJECT_HEIGHT
 import math
 import cv2
 import sys
 
 import warnings
 warnings.filterwarnings('ignore')
-
-def distanceToCamera(knownWidth, focalLength, perWidth):
-    return (knownWidth * focalLength) / perWidth
     
 """
 If an obstacle is detected, draw a line from CENTER_LINEx2y2
@@ -65,7 +62,6 @@ orig_image = cv2.imread(image_path)
 image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
 boxes, labels, probs = predictor.predict(image, 10, 0.4)
 
-
 cv2.line(orig_image, CENTER_LINEx1y1, CENTER_LINEx2y2, (0, 0, 0))
 
 for i in range(boxes.size(0)):
@@ -76,14 +72,13 @@ for i in range(boxes.size(0)):
     # if class_names[labels[i]] == 'obstacle':
         # interiorAngle = int(obstacleDetected(orig_image, box[0], box[1], box[2], box[3]))
     angle = detectObjects(orig_image, box[0], box[1], box[2], box[3])
+    # -3.3 just to balance it out
 
-    # focalLength = (box[2]-box[0])*KNOWN_DISTANCE/KNOWN_WIDTH
-    focalLength = 356.2625427246094
+    height_of_obstacle_pixels = box[3]-box[1]
+    inches = ((OBJECT_HEIGHT * FOCAL_LENGTH)/((height_of_obstacle_pixels-ERROR_VAL)/PIXEL_PER_MM)) / 10
 
-    inches = distanceToCamera(KNOWN_WIDTH, focalLength, box[2]-box[0])
-
-    print("{}: {}, {}{}, Distance:{}".format(class_names[labels[i]], probs[i], angle, chr(176), inches))
-    label = "{}: {}, {}, {}".format(class_names[labels[i]], probs[i], angle, inches)
+    print("{}: {}, {}{} Distance: {} inches".format(class_names[labels[i]], probs[i], angle, chr(176), inches))
+    label = "{}: {}, {}".format(class_names[labels[i]], probs[i], angle)
 
     cv2.putText(orig_image, label,
                 (box[0] + 20, box[1] + 40),
