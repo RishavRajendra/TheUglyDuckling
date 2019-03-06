@@ -35,7 +35,7 @@ class GridMovement:
 			(0,1): [self.fwd, self.allmotors, 0], (0, -1): [self.rev, self.allmotors, 180],
 			(1,0): [self.strr, self.allmotors, 90], (-1, 0): [self.strl, self.allmotors, -90],
 			(1,1): [self.fwd, self.allmotors, 45], (-1, 1): [self.fwd, self.allmotors, -45],
-			(1,-1): [self.rev, self.allmotors, 135], (-1,-1): [self.rev, self.allmotors, -135]
+			(1,-1): [self.fwd, self.allmotors, 135], (-1,-1): [self.fwd, self.allmotors, -135]
 			}
 
 	# Not yet implemented
@@ -81,8 +81,8 @@ class GridMovement:
 
 			# If previous move was diagonal, turn towards next tile
 			if(prev_diagonal):
-					print(self.current)
-					print(mov)
+					# print(self.current)
+					# print(mov)
 					self.face(mov)
 					prev_diagonal = False
 			# If mov is diagonal, turn towards the tile 
