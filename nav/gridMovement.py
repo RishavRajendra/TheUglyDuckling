@@ -81,10 +81,12 @@ class GridMovement:
 
 			# If previous move was diagonal, turn towards next tile
 			if(prev_diagonal):
-					# print(self.current)
-					# print(mov)
-					self.face(mov)
-					prev_diagonal = False
+				# print(self.current)
+				# print(mov)
+				self.queue.put(['turn', (self.rotr, 45)])
+				self.facing = self.facing + 45
+				self.trim_facing()
+				prev_diagonal = False
 			# If mov is diagonal, turn towards the tile 
 			if(gf.is_diagonal(self.current, mov)):
 				self.face(mov)
