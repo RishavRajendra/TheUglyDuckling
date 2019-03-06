@@ -53,9 +53,14 @@ class GridMovement:
 	# to determine the proper movement
 	def follow_path(self):
 		dist = 12 # Default distance we want to move
+		
+		# Loop with index so that we can check the next movement
+		# along with curent move
 		for index, mov in enumerate(self.path):
 			currentResult = (mov[0] - self.current[0], mov[1] - self.current[1])
 			currentResult = self.translate_dir(currentResult)
+			
+			# Don't bother checking next move if it doesn't exist
 			if (index != len(self.path) -1):
 				nextMov = self.path[index+1]
 				nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
@@ -63,25 +68,33 @@ class GridMovement:
 				# If next move request is the same as current 
 				# increase distance moved
 				if (currentResult == nextResult):
+					# Turn to face toward movement in order to accelerate
+					self.face(mov)
 					dist = dist +12
 					self.current = mov
+					# We want to skip over the rest of the loop
+					# We're not ready to push a movement call to queue
 					continue
-			if(currentResult == (0,1) and dist > 12):
+
+			# if dist > 12 then we have duplicate movements
+			# We will accelerate
+			if(dist > 12):
 				args = (self.movement[currentResult][0], dist)
-				print('we here')
 				self.queue.put(['accelerate', args])
+			# Otherwise normal movement
 			else:
 				args = (self.movement[currentResult][0], dist, self.movement[currentResult][1])
 				self.queue.put(['gridMove', args])
-			print(currentResult)
+
 			self.current = mov
 			# reset distance in case there was a stacked call 
 			dist = 12
+		
 		# face goal after following path
-		self.face_goal()
+		self.face(self.goal)
 
-	def face_goal(self):
-		result = (self.goal[0] - self.current[0], self.goal[1] - self.current[1])
+	def face(self, obj):
+		result = (obj[0] - self.current[0], obj[1] - self.current[1])
 		result = self.translate_dir(result)
 		degrees = self.movement[result][2]
 		if( degrees > 0):
