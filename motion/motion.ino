@@ -18,14 +18,14 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
-//  mov(fwd, 12, 500);
+  mov(strl, 24, 400);
 //  vars(fwd, 72, 300, 0.983, rightmotion, leftmotion);
 //  acceleration(fwd, 36, 300, 8);
 }
 
 void loop() {
-  readPython();
-  runCommand();
+//  readPython();
+//  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
@@ -106,9 +106,10 @@ void mov(byte dir, float dist, long del) {
 void gridMov(byte dir, long dist, long del, byte motors) {
   PORTL = dir;
   float stepf = dist * steps_per_inch;
-  if (motors != B01010101){
-    stepf *= 2;
+  if (dir == strr || dir == strl){
+    stepf = dist * steps_per_inch_strafe;
   }
+  
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
