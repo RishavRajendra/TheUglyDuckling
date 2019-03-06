@@ -81,6 +81,8 @@ class GridMovement:
 
 			# If previous move was diagonal, turn towards next tile
 			if(prev_diagonal):
+					print(self.current)
+					print(mov)
 					self.face(mov)
 					prev_diagonal = False
 			# If mov is diagonal, turn towards the tile 
@@ -108,6 +110,7 @@ class GridMovement:
 	def face(self, obj):
 		result = (obj[0] - self.current[0], obj[1] - self.current[1])
 		result = self.translate_dir(result)
+		print(result)
 		degrees = self.movement[result][2]
 		if( degrees > 0):
 			self.queue.put(['turn', (self.rotr, degrees)])
@@ -125,15 +128,29 @@ class GridMovement:
 			self.facing = self.facing + 180
 
 	# Use facing to translate proper movement
-	def translate_dir(self, mov):
+	def translate_dir(self, mov, degrees=None):
+		# Default to self.facing
+		if (degrees is None):
+			degrees = self.facing
+		
 		result = None
-		if(self.facing == 0):
+		if(degrees == 0):
 			result = mov
-		elif(self.facing == 180 or self.facing == -180):
+		elif(degrees == 180 or degrees == -180):
 			result = (mov[0] * -1, mov[1] * -1)
-		elif(self.facing == -90):
+		elif(degrees == -90):
 			result = (mov[1], mov[0] * -1)
-		elif(self.facing == 90):
+		elif(degrees == 90):
 			result = (mov[1] * -1, mov[0])
+		# Translate diagonal facings
+		else:
+			x = mov[0] + mov[1]
+			y = mov[1] - mov[0]
+			if x is not 0:
+				x = x/abs(x)
+			if y is not 0:
+				y = y/abs(y)
+			temp = (x,y)
+			result = self.translate_dir(temp, self.facing -45)
 
 		return result
