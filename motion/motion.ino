@@ -18,12 +18,14 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
-//  mov(fwd, 12, 500);
+  mov(strl, 24, 400);
+//  vars(fwd, 72, 300, 0.983, rightmotion, leftmotion);
+//  acceleration(fwd, 36, 300, 8);
 }
 
 void loop() {
-  readPython();
-  runCommand();
+//  readPython();
+//  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
@@ -45,19 +47,24 @@ void runCommand(){
     byte data3 = queue.pop();
     
     if (flag == 0){
-     mov(data1, data2, 500);
+     mov(data1, data2, 400);
     }
     else if (flag == 1){
-      turn(data1, data2, 500);
+      turn(data1, data2, 400);
     }
     else if (flag == 2){
-      mov45(data1, data2, 500, data3);
+      acceleration(data1, data2, 350, 8);
     }
     else if (flag == 3){
-      gridMov(data1, 500, data2);
+      gridMov(data1,data2, 400, data3);
+    }
+    else if (flag == 4){
+      armsDown();
+      mov(fwd, data1, 400);
+      pickup();
     }
     //Signal back to RaspberryPi    
-    Serial.write(B11111111);
+//    Serial.write(B11111111);
   }
 }
 
@@ -96,12 +103,13 @@ void mov(byte dir, float dist, long del) {
 }
 
 //Grid movement - 12 inches per call
-void gridMov(byte dir, long del, byte motors) {
+void gridMov(byte dir, long dist, long del, byte motors) {
   PORTL = dir;
-  float stepf = tile_dist * steps_per_inch;
-  if (motors != B01010101){
-    stepf *= 2;
+  float stepf = dist * steps_per_inch;
+  if (dir == strr || dir == strl){
+    stepf = dist * steps_per_inch_strafe;
   }
+  
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
@@ -131,26 +139,55 @@ void mov45(byte dir, float dist, long del, byte motors) {
   }
 }
 
-//void acceleration(byte dir, float dist, long del, int N) {
-//  float total_dis = N * (N + 1) / 2 * 3 * start_dis;
-//
-//  if (total_dis > dist) {
-//    float m = sqrt((dist / start_dis) * 2 / 3);
-//    N = m;
-//  }
-//
-//  float mid_dis = dist - start_dis * 3 * N * (N + 1) / 2;
-//
-//  for (int i = 1; i <= N; i++) {
-//    vars(dir, start_dis * i, del / i, straight, rightmotion, leftmotion);
-//  }
-//
-//  vars(dir, mid_dis, del / N, straight, rightmotion, leftmotion);
-//
-//  for (int i = N; i > 0; i--) {
-//    vars(dir, start_dis * 2 * i, del / i, straight, rightmotion, leftmotion);
-//  }
-//}
+void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) {
+  PORTL = dir;
+  float stepf = dist * steps_per_inch;
+  long steps = stepf;
+
+  long masterCounter = 0;
+  long slaveCounter = 0;
+  long stepCounter = 0;
+
+  float temp = del * ratio;
+  long slaveDelay = temp;
+
+  while (stepCounter < steps) {
+
+    if (masterCounter > del) {
+      PORTL ^= master;
+      masterCounter = 0;
+      stepCounter++;
+    }
+
+    if (slaveCounter > slaveDelay) {
+      PORTL ^= slave;
+      slaveCounter = 0;
+    }
+    masterCounter++;
+    slaveCounter++;
+  }
+}
+
+void acceleration(byte dir, float dist, long del, int N) {
+  float total_dis = N * (N + 1) / 2 * 3 * start_dis;
+
+  if (total_dis > dist) {
+    float m = sqrt((dist / start_dis) * 2 / 3);
+    N = m;
+  }
+
+  float mid_dis = dist - start_dis * 3 * N * (N + 1) / 2;
+
+  for (int i = 1; i <= N; i++) {
+    vars(dir, start_dis * i, del / i, straight, rightmotion, leftmotion);
+  }
+
+  vars(dir, mid_dis, del / N, straight, rightmotion, leftmotion);
+
+  for (int i = N; i > 0; i--) {
+    vars(dir, start_dis * 2 * i, del / i, straight, rightmotion, leftmotion);
+  }
+}
 
 //Declares directional bytes for UglyDuckling bot
 void ud_bot(){
