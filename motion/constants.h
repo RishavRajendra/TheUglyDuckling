@@ -22,9 +22,10 @@ volatile float steps_counter;
 volatile bool flag1;
 
 //Measurements
+float diagonal_dist = 1.40;
 float distance = (60 * PI)/ 25.4;
 float steps_per_inch = 3200 / distance;
-float steps_per_inch_strafe = 3200 / (56 * PI) / 25.4
+float steps_per_inch_strafe = 3200 / (56 * PI) / 25.4;
 float steps_per_degree = 30;
 float straight = 0.980;
 float arc180 = .3;
