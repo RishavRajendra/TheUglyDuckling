@@ -1,0 +1,54 @@
+item {
+ id: 1
+ name: 'start'
+}
+
+item {
+ id: 2
+ name: 'blockA'
+}
+
+item {
+ id: 3
+ name: 'blockB'
+}
+
+item {
+ id: 4
+ name: 'blockC'
+}
+
+item {
+ id: 5
+ name: 'blockD'
+}
+
+item {
+ id: 6
+ name: 'blockE'
+}
+
+item {
+ id: 7
+ name: 'blockF'
+}
+
+item {
+ id: 8
+ name: 'obstacle'
+}
+
+item {
+ id: 9
+ name: 'side'
+}
+
+item {
+ id: 10
+ name: 'slope'
+}
+
+item {
+ id: 11
+ name: 'corner'
+}

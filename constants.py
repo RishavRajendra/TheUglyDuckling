@@ -24,4 +24,5 @@ PIXEL_PER_MM = 102.3
 ERROR_VAL = 3.3
 
 # Height of object in inches
-OBJECT_HEIGHT = 35
+OBSTACLE_HEIGHT = 35
+TARGET_HEIGHT = 15
