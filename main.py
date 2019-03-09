@@ -10,6 +10,10 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE
 import get_stats_from_image
+import nav.gridMovement
+import nav.grid
+import nav.commandThread
+import queue, threading, serial, time
 
 import sys
 sys.path.append("../tensorflow_duckling/models/research/object_detection/")
@@ -33,6 +37,16 @@ def main():
 
     objectifier = Model()
 
+    # Start serial connection to arduino
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
+    time.sleep(1)
+
+    # Initialize queue
+    in_q = queue.Queue()
+    # Inizilaize commandThread
+    lock = threading.Lock()
+    ct = CommandThread(in_q, ser, lock)
+    ct.start()
     for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
         t1 = cv2.getTickCount()
 
@@ -41,6 +55,7 @@ def main():
 
         cv2.putText(processed_frame, "FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
 
+        result = (180,0)
         for i, b in enumerate(boxes[0]):
             inches = 0
             angle = 0
@@ -66,12 +81,22 @@ def main():
             if scores[0][i] > 0.5:
                 angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)
                 print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
+
+            obj = (inches, angle)
+            if (obj[0]<result[0]):
+                result = obj
+        if (result[1] < 0):
+            direction = rotl
+        else:
+            direction = rotr
+        in_q.put(['turn',(direction ,abs(result[1]))])
         cv2.imshow('Object detector', processed_frame)
 
         t2 = cv2.getTickCount()
         time1 = (t2-t1)/freq
         frame_rate_calc=1/time1
 
+        ct.join()
         if cv2.waitKey(1) == ord('q'):
             break
 
