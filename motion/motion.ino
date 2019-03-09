@@ -18,14 +18,11 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
-  mov(strl, 24, 400);
-//  vars(fwd, 72, 300, 0.983, rightmotion, leftmotion);
-//  acceleration(fwd, 36, 300, 8);
 }
 
 void loop() {
-//  readPython();
-//  runCommand();
+  readPython();
+  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
@@ -53,15 +50,15 @@ void runCommand(){
       turn(data1, data2, 400);
     }
     else if (flag == 2){
-      acceleration(data1, data2, 350, 8);
+      acceleration(data1, data2, 350, 8, data3);
     }
     else if (flag == 3){
       gridMov(data1,data2, 400, data3);
     }
     else if (flag == 4){
-      armsDown();
+//      armsDown();
       mov(fwd, data1, 400);
-      pickup();
+//      pickup();
     }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
@@ -106,6 +103,9 @@ void mov(byte dir, float dist, long del) {
 void gridMov(byte dir, long dist, long del, byte motors) {
   PORTL = dir;
   float stepf = dist * steps_per_inch;
+  if (motors != motion){
+    stepf *= 2;
+  }
   if (dir == strr || dir == strl){
     stepf = dist * steps_per_inch_strafe;
   }
@@ -113,7 +113,7 @@ void gridMov(byte dir, long dist, long del, byte motors) {
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
-    PORTL ^= motors;
+    PORTL ^= motion;
   }
 }
 
@@ -168,7 +168,10 @@ void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) 
   }
 }
 
-void acceleration(byte dir, float dist, long del, int N) {
+void acceleration(byte dir, float dist, long del, int N, byte flag) {
+  if (flag != motion){
+    dist *= diagonal_dist;
+  }
   float total_dis = N * (N + 1) / 2 * 3 * start_dis;
 
   if (total_dis > dist) {

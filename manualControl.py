@@ -37,26 +37,35 @@ def pictures():
 		camera.capture("img{}.jpg".format(a))
 		a = a + 1
 
-t2 = threading.Thread(target=pictures)			
+# t2 = threading.Thread(target=pictures)			
 t1.start()
-t2.start()
+# t2.start()
+camera.resolution = (300,300)
+camera.start_preview()
+time.sleep(2)
+i = 0
+while (i < 180/5):
+	camera.capture("run35_img{}.jpg".format(i))
+	in_q.put(['turn',(rotl, 5)])
+	time.sleep(1)
 
-while not t1.stoprequest.isSet():
-	if keyboard.is_pressed('w'):
-		in_q.put(['move', (fwd, 5)])
-	elif keyboard.is_pressed('s'):
-		in_q.put(['move', (rev, 5)])
-	elif keyboard.is_pressed('a'):
-		in_q.put(['move', (strl, 5)])
-	elif keyboard.is_pressed('d'):
-		in_q.put(['move', (strr, 5)])
-	elif keyboard.is_pressed('q'):
-		in_q.put(['move', (rotl, 5)])
-	elif keyboard.is_pressed('e'):
-		in_q.put(['move', (rotr, 5)])
-	elif keyboard.is_pressed('x'):
-		t1.join()
-		t2.join()
-	time.sleep(.2)
+t1.join()
+# while not t1.stoprequest.isSet():
+# 	if keyboard.is_pressed('w'):
+# 		in_q.put(['move', (fwd, 5)])
+# 	elif keyboard.is_pressed('s'):
+# 		in_q.put(['move', (rev, 5)])
+# 	elif keyboard.is_pressed('a'):
+# 		in_q.put(['move', (strl, 5)])
+# 	elif keyboard.is_pressed('d'):
+# 		in_q.put(['move', (strr, 5)])
+# 	elif keyboard.is_pressed('q'):
+# 		in_q.put(['move', (rotl, 5)])
+# 	elif keyboard.is_pressed('e'):
+# 		in_q.put(['move', (rotr, 5)])
+# 	elif keyboard.is_pressed('x'):
+# 		t1.join()
+# 		t2.join()
+# 	time.sleep(.2)
 
 

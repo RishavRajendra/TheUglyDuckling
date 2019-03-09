@@ -47,9 +47,7 @@ def construct_path(graph, visited, start):
 				next_value = visited[next_tile] * 1
 				# Check if next is diagonal. If it is add weight
 				if ( is_diagonal(current, next_tile)):
-					x = next_tile[0] - current[0]
-					y = next_tile[1] - current[1]
-					if ((x,0) in graph.obstacles or (0,y) in graph.obstacles):
+					if ((next_tile[0],current[1]) in graph.obstacles or (current[0],next_tile[1]) in graph.obstacles):
 						next_value = next_value + weight 
 				
 				# Check if next_tile is better move call than

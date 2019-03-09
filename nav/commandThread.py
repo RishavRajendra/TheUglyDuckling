@@ -44,6 +44,7 @@ class CommandThread(threading.Thread):
                 # time.sleep(1)
                 print("motion send")
                 work = self.queue.get(True, 0.05)
+                print(work)
                 self.func[work[0]](work[1])
                 self.lock.release()
             time.sleep(.2)
