@@ -8,6 +8,7 @@ strr = b'\x88'
 
 # Our neural network is trained on 300 x 300 images
 CAMERA_RESOLUTION = (300, 300)
+CAMERA_FRAMERATE = 10
 
 #Assuming that the picture is 300x300
 CENTER_LINEx1y1 = (150, 0)
@@ -23,4 +24,5 @@ PIXEL_PER_MM = 102.3
 ERROR_VAL = 3.3
 
 # Height of object in inches
-OBJECT_HEIGHT = 35
+OBSTACLE_HEIGHT = 35
+TARGET_HEIGHT = 15
