@@ -1,8 +1,8 @@
 # GridMovement class 
 # Handles all grid based navigation for the robot
 
-from grid import Grid
-import grassfire as gf 
+from .grid import Grid
+from . import grassfire as gf 
 import queue, time, math
 
 class GridMovement:

@@ -10,9 +10,9 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, rotr, rotl
 import get_stats_from_image
-import .nav.gridMovement
-import .nav.grid
-from .nav.commandThread import CommandThread
+import nav.gridMovement
+import nav.grid
+from nav.commandThread import CommandThread
 import queue, threading, serial, time
 
 import sys
@@ -81,14 +81,14 @@ def main():
             if scores[0][i] > 0.5:
                 angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)
                 print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
-
-            obj = (inches, angle)
+                obj = (inches, angle)
             if (obj[0]<result[0]):
                 result = obj
         if (result[1] < 0):
             direction = rotl
         else:
             direction = rotr
+        print(result)
         in_q.put(['turn',(direction ,abs(result[1]))])
         cv2.imshow('Object detector', processed_frame)
 

@@ -1,6 +1,6 @@
 # Grassfire algorithim used for pathfinding.
 
-from grid import Grid
+from .grid import Grid
 import collections, copy, time
 
 
