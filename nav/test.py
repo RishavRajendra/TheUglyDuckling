@@ -30,16 +30,18 @@ grid = Grid(8,8)
 movement = GridMovement(grid, in_q)
 # in_q.put(['turn', (b'\xAA', 90)])
 # in_q.put(['turn', (b'\x00', 90)])
-movement.find_path()
-movement.follow_path()
+# movement.find_path()
+# movement.follow_path()
 # in_q.put(['gridMove', (b'\x22', b'\x55')], True, 0.05)
 # time.sleep(.5)
 # in_q.put(['gridMove', (b'\x0A', b'\x55')], True, 0.05)
 # movement.facing = 135
 # print(movement.translate_dir((-1,1)))
 
-while not in_q.empty():
-	print(in_q.get())
+movement.map(('blah', -37, 37))
+
+# while not in_q.empty():
+	# print(in_q.get())
 
 # cThread.join()
 # lThread.join()

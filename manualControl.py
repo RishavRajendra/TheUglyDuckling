@@ -40,6 +40,7 @@ def pictures():
 # t2 = threading.Thread(target=pictures)			
 t1.start()
 # t2.start()
+camera.resolution = (300,300)
 camera.start_preview()
 time.sleep(2)
 i = 0

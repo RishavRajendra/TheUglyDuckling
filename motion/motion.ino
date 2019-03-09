@@ -18,9 +18,6 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
-//  mov(strl, 24, 400);
-//  vars(fwd, 72, 300, 0.983, rightmotion, leftmotion);
-//  acceleration(fwd, 36, 300, 8);
 }
 
 void loop() {
@@ -59,9 +56,9 @@ void runCommand(){
       gridMov(data1,data2, 400, data3);
     }
     else if (flag == 4){
-      armsDown();
+//      armsDown();
       mov(fwd, data1, 400);
-      pickup();
+//      pickup();
     }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
