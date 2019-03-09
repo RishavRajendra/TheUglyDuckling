@@ -8,11 +8,11 @@ import cv2
 import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, rotr, rotl
 import get_stats_from_image
-import nav.gridMovement
-import nav.grid
-import nav.commandThread
+import .nav.gridMovement
+import .nav.grid
+from .nav.commandThread import CommandThread
 import queue, threading, serial, time
 
 import sys
