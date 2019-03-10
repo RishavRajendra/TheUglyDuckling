@@ -70,6 +70,11 @@ def main():
 
     # Initialize queue
     in_q = queue.Queue()
+    
+    # Inizialize grid anf gridmovement
+    grid = Grid(8,8)
+    movement = GridMovement(grid, in_q)
+
     # Initialize commandThread
     lock = threading.Lock()
     ct = CommandThread(in_q, ser, lock)
@@ -83,9 +88,7 @@ def main():
         print(object_stats)
         for stat in object_stats:
             if stat[0] > 1 and stat[0] < 8:
-                rot_dir = rotl if stat[1] < 0 else rotr
-                in_q.put(['turn', (rot_dir, abs(stat[1]))])
-                in_q.put(['move', (fwd, stat[2])])
+                movement.map(stat)
                 break
     
     cv2.waitKey(0)
