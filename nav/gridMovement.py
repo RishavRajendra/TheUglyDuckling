@@ -169,22 +169,29 @@ class GridMovement:
 	def map(self,args):
 		current = self.current
 		angle = math.radians(90 - abs(args[1]))
-		print(angle)
 		distance = args[2]
-		print(distance)
-		# print(math.sin(math.radians(angle)))
-		# print(math.cos(math.radians(angle)))
-		a_length = math.ceil(math.sin(angle) * distance / 12)
-		o_length = math.ceil(math.cos(angle) * distance / 12)
-		# print(a_length)
-		# print(o_length)
+		
+		# Find x and y distances in inches
+		a_length = math.sin(angle) * distance 
+		o_length = math.cos(angle) * distance
+
+		# Convert a_length and o_length into grid distance
+		a_length = math.ceil(a_length/12)
+		o_length = math.ceil((o_length-6)/12)
+
+		
 		if (args[1] < 0):
 			o_length = o_length * -1
+
 		result = (o_length, a_length)
-		if (self.facing == -90 or self.facing == 90):
+		if (self.facing == -90 or self.facing == 90): 
 			degrees = self.facing * -1
 			result = self.translate_dir(result, degrees)
 		else:
 			result = self.translate_dir(result)
 		result = (current[0] + result[0], current[1] + result[1])
-		print(result)
+		
+		if (arg[0] == 8):
+			self.grid.add_obstacle(result)
+		else
+			self.grid.add_target(result)

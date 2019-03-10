@@ -81,15 +81,21 @@ def main():
     ct.start()
     
     #Example usage
-    for _ in range(2):
+    for _ in range(4):
         frame = take_picture(camera)
         processed_frame, classes, boxes, scores = objectifier.predict(frame)
         object_stats = get_data(processed_frame, classes, boxes, scores)
         print(object_stats)
         for stat in object_stats:
-            if stat[0] > 1 and stat[0] < 8:
+            if stat[0] > 1 and stat[0] < 9:
                 movement.map(stat)
-                break
+
+        in_q.push(['turn', (rotl, 90)])
+        movement.facing = movement.facing - 90
+        movement.trim_facing()
+
+    movement.find_path()
+    movement.follow_path()        
     
     cv2.waitKey(0)
 

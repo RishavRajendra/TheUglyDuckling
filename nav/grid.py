@@ -8,7 +8,7 @@ class Grid:
 		self.width = width
 		self.height = height
 		self.obstacles = []
-		self.blocks = [] #Not used yet
+		self.targets = [] #Not used yet
 		self.mothership = [] #Not used yet
 
 	def in_bounds(self, id):
@@ -16,7 +16,7 @@ class Grid:
 		return 0 <= x < self.width and 0 <= y < self.height
 
 	def passable(self, id):
-		return id not in self.obstacles
+		return id not in self.obstacles or self.targets
 
 	def neighbors(self, id):
 		(x, y) = id
@@ -27,3 +27,11 @@ class Grid:
 		results = filter(self.in_bounds, results) # Only coordinates in bounds
 		results = filter(self.passable, results) # Only unoccupied coordinates 
 		return results
+
+		def add_obstacle(self, obstacle):
+			if (obstacle not in self.obstacles):
+				self.obstacles.append(obstacle)
+
+		def add_target(self, target):
+			if (target not in self.targets):
+				self.targets.append(target)
