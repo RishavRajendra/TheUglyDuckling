@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, rotr, rotl
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, fwd, rotr, rotl
 import get_stats_from_image
 import nav.gridMovement
 import nav.grid
@@ -22,18 +22,45 @@ from image_processing import Model
 import warnings
 warnings.filterwarnings('ignore')
 
+def take_picture(camera):
+    camera.capture("command.jpg")
+    return cv2.imread("command.jpg")
+    
+def get_data(processed_frame, classes, boxes, scores):
+    result = []
+    for i, b in enumerate(boxes[0]):
+        if scores[0][i] > 0.5:
+            #extract pixel coordinates of detected objects
+            ymin = boxes[0][i][0]*300
+            xmin = boxes[0][i][1]*300
+            ymax = boxes[0][i][2]*300
+            xmax = boxes[0][i][3]*300
+
+            # Calculate mid_pount of the detected object
+            mid_x = (xmax + xmin) / 2
+            mid_y = (ymax + ymin) / 2
+
+            height_of_object_pixels = ymax - ymin
+
+            if classes[0][i] == 8:
+                inches = get_stats_from_image.get_distance(0, height_of_object_pixels)
+            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
+                inches = get_stats_from_image.get_distance(1, height_of_object_pixels)
+                
+            angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)
+            #print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
+            result.append([classes[0][i], angle, inches])
+    return result
+
 def main():
     # Initialize frame rate calculation
     frame_rate_calc = 1
     freq = cv2.getTickFrequency()
     font = cv2.FONT_HERSHEY_SIMPLEX
-
-    # Initialize camera and grab reference to the raw capture
+    
+    #Initialise camera
     camera = PiCamera()
-    camera.resolution = CAMERA_RESOLUTION
-    camera.framerate = CAMERA_FRAMERATE
-    rawCapture = PiRGBArray(camera, size=CAMERA_RESOLUTION)
-    rawCapture.truncate(0)
+    camera.resolution = (300,300)
 
     objectifier = Model()
 
@@ -43,65 +70,28 @@ def main():
 
     # Initialize queue
     in_q = queue.Queue()
-    # Inizilaize commandThread
+    # Initialize commandThread
     lock = threading.Lock()
     ct = CommandThread(in_q, ser, lock)
     ct.start()
-    for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-        t1 = cv2.getTickCount()
-
-        frame = np.copy(frame1.array)
+    
+    #Example usage
+    for _ in range(2):
+        frame = take_picture(camera)
         processed_frame, classes, boxes, scores = objectifier.predict(frame)
+        object_stats = get_data(processed_frame, classes, boxes, scores)
+        print(object_stats)
+        for stat in object_stats:
+            if stat[0] > 1 and stat[0] < 8:
+                rot_dir = rotl if stat[1] < 0 else rotr
+                in_q.put(['turn', (rot_dir, abs(stat[1]))])
+                in_q.put(['move', (fwd, stat[2])])
+                break
+    
+    cv2.waitKey(0)
 
-        cv2.putText(processed_frame, "FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
-
-        result = (180,0)
-        for i, b in enumerate(boxes[0]):
-            inches = 0
-            angle = 0
-            # extract pixel coordinates of tdetected objects
-            ymin = boxes[0][i][0]*300
-            xmin = boxes[0][i][1]*300
-            ymax = boxes[0][i][2]*300
-            xmax = boxes[0][i][3]*300
-
-            # CAlculate mid_pount of the detected object
-            mid_x = (xmax + xmin) / 2
-            mid_y = (ymax + ymin) / 2
-
-            height_of_object_pixels = ymax - ymin
-
-            if classes[0][i] == 8:
-                if scores[0][i] > 0.5:
-                    inches = get_stats_from_image.get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
-                if scores[0][i] > 0.3:
-                    inches = get_stats_from_image.get_distance(1, height_of_object_pixels)
-
-            if scores[0][i] > 0.5:
-                angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)
-                print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
-                obj = (inches, angle)
-            if (obj[0]<result[0]):
-                result = obj
-        if (result[1] < 0):
-            direction = rotl
-        else:
-            direction = rotr
-        print(result)
-        in_q.put(['turn',(direction ,abs(result[1]))])
-        cv2.imshow('Object detector', processed_frame)
-
-        t2 = cv2.getTickCount()
-        time1 = (t2-t1)/freq
-        frame_rate_calc=1/time1
-
-        ct.join()
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-        rawCapture.truncate(0)
-    camera.close()
+        
+    #camera.close()
 
 if __name__ == '__main__':
     main()
