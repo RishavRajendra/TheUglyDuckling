@@ -28,10 +28,10 @@ class Grid:
 		results = filter(self.passable, results) # Only unoccupied coordinates 
 		return results
 
-		def add_obstacle(self, obstacle):
-			if (obstacle not in self.obstacles):
-				self.obstacles.append(obstacle)
+	def add_obstacle(self, obstacle):
+		if (obstacle not in self.obstacles):
+			self.obstacles.append(obstacle)
 
-		def add_target(self, target):
-			if (target not in self.targets):
-				self.targets.append(target)
+	def add_target(self, target):
+		if (target not in self.targets):
+			self.targets.append(target)
