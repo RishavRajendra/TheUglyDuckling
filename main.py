@@ -4,27 +4,27 @@ __author__ = "Rishav Rajendra"
 __license__ = "MIT"
 __status__ = "Development"
 
-import cv2
+# import cv2
 import numpy as np
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+# from picamera.array import PiRGBArray
+# from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, fwd, rotr, rotl
-import get_stats_from_image
+# import get_stats_from_image
 import nav.gridMovement
 import nav.grid
-from nav.commandThread import CommandThread
+from nav.command import Command
 import queue, threading, serial, time
 
 import sys
 sys.path.append("../tensorflow_duckling/models/research/object_detection/")
-from image_processing import Model
+# from image_processing import Model
 
 import warnings
 warnings.filterwarnings('ignore')
 
-def take_picture(camera):
-    camera.capture("command.jpg")
-    return cv2.imread("command.jpg")
+# def take_picture(camera):
+#     camera.capture("command.jpg")
+#     return cv2.imread("command.jpg")
     
 def get_data(processed_frame, classes, boxes, scores):
     result = []
@@ -72,13 +72,11 @@ def main():
     in_q = queue.Queue()
     
     # Inizialize grid anf gridmovement
-    grid = Grid(8,8)
-    movement = GridMovement(grid, in_q)
+    grid = nav.grid.Grid(8,8)
+    movement = nav.gridMovement.GridMovement(grid, in_q)
 
-    # Initialize commandThread
-    lock = threading.Lock()
-    ct = CommandThread(in_q, ser, lock)
-    ct.start()
+    # Initialize command
+    commands = Command(in_q, ser)
     
     #Example usage
     for _ in range(4):
@@ -91,11 +89,13 @@ def main():
                 movement.map(stat)
 
         in_q.push(['turn', (rotl, 90)])
+        commands.execute()
         movement.facing = movement.facing - 90
         movement.trim_facing()
 
     movement.find_path()
-    movement.follow_path()        
+    movement.follow_path()
+    commands.execute()      
     
     cv2.waitKey(0)
 

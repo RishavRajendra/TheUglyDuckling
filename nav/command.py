@@ -1,5 +1,5 @@
 # Functions the Raspberry Pi can call to communicate movement to the arduino
-import queue, threading
+import queue
 import serial, time
 
 # direction bytes
@@ -19,14 +19,12 @@ rear = b'\x44'
 right45 = b'\x14'
 left45 = b'\x41'
 
-class CommandThread(threading.Thread):
+class Command():
 
 
     # (queue) = Queue()
     # (serial) = serial connection to arduino
-    # (lock) = threading.Lock()
-    def __init__(self, queue, serial, lock):
-        super(CommandThread, self).__init__()
+    def __init__(self, queue, serial):
         self.func = { 'move': self.move,
                       'turn': self.turn,
                       'accelerate': self.accelerate,
@@ -34,23 +32,13 @@ class CommandThread(threading.Thread):
                       'pickup': self.pickup}
         self.queue = queue
         self.serial = serial
-        self.lock = lock
-        self.stoprequest = threading.Event()
 
-    def run(self):
-        while not self.stoprequest.isSet():
-            if not self.queue.empty():
-                self.lock.acquire(True)
-                # time.sleep(1)
-                print("motion send")
-                work = self.queue.get(True, 0.05)
-                print(work)
-                self.func[work[0]](work[1])
-                self.lock.release()
-            time.sleep(.2)
-    def join(self, timeout=None):
-        self.stoprequest.set()
-        super(CommandThread, self).join(timeout)
+    def execute(self):
+        while not self.queue.empty():
+            print("motion send")
+            work = self.queue.get(True, 0.05)
+            print(work)
+            self.func[work[0]](work[1])
 
     # Movement instructions sent to Queue should follow
     # this format: ['function_name', (args)]
