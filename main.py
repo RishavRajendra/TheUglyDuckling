@@ -58,13 +58,13 @@ def main():
     freq = cv2.getTickFrequency()
     font = cv2.FONT_HERSHEY_SIMPLEX
     
-    #Initialise camera
+    Initialise camera
     camera = PiCamera()
     camera.resolution = (300,300)
 
     objectifier = Model()
 
-    # Start serial connection to arduino
+    Start serial connection to arduino
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
     time.sleep(1)
 
@@ -98,7 +98,6 @@ def main():
     commands.execute()      
     
     cv2.waitKey(0)
-
         
     #camera.close()
 

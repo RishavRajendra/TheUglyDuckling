@@ -168,34 +168,66 @@ class GridMovement:
 
 		return result
 
-	# use information from args to map
-	# where obstacles and blocks are
-	def map(self,args):
-		current = self.current
-		angle = math.radians(90 - abs(args[1]))
-		distance = args[2]
-		
-		# Find x and y distances in inches
-		a_length = math.sin(angle) * distance 
-		o_length = math.cos(angle) * distance
+	def map(self, args):
+		angle = math.radians(args[1])
+		dist = args[2]
+		result = None
 
-		# Convert a_length and o_length into grid distance
-		a_length = math.ceil(a_length/12)
-		o_length = math.ceil((o_length-6)/12)
-
-		
-		if (args[1] < 0):
-			o_length = o_length * -1
-
-		result = (o_length, a_length)
-		if (self.facing == -90 or self.facing == 90): 
-			degrees = self.facing * -1
-			result = self.translate_dir(result, degrees)
+		if abs(self.facing) == 45 or abs(self.facing) == 135:
+			result = self.map_diag(angle, dist)
 		else:
-			result = self.translate_dir(result)
-		result = (current[0] + result[0], current[1] + result[1])
-		
-		if (arg[0] == 8):
+			result = self.map_reg(angle, dist)
+
+		if (args[0] == 8):
 			self.grid.add_obstacle(result)
 		else:
 			self.grid.add_target(result)
+
+	def map_reg(self, angle, dist):
+		left_side = angle < 0
+		offset = 6
+
+		a_length = math.cos(abs(angle)) * dist
+		o_length = math.sin(abs(angle)) * dist
+
+		x = math.ceil((o_length - offset)/12)
+		y = math.ceil(a_length/12)
+
+		if left_side:
+			x = x * -1
+
+		if self.facing == -90:
+			x,y = y* -1, x
+		elif self.facing == 90:
+			x,y = y, x * -1
+		elif self.facing == 180 or self.facing == -180:
+			x,y = x * -1, y *-1
+
+		return (self.current[0] + x, self.current[1] + y) 
+
+	def map_diag(self, angle, dist):
+		left_side = angle < 0
+		angle = math.radians(45) - abs(angle)
+		offset = math.sqrt(288) / 2
+
+		a_length = math.cos(angle) * dist
+		o_length = math.sin(angle) * dist
+
+		if(not left_side):
+			x = a_length
+			y = o_length
+		else:
+			x = o_length
+			y = a_length
+
+		x = math.ceil((x - offset)/12)
+		y = math.ceil((y - offset)/12)
+
+		if(self.facing == -45):
+			x,y = y * -1,x
+		elif(self.facing == -135):
+			x,y = x*-1,y*-1
+		elif(self.facing == 135):
+			x,y = y, x*-1
+
+		return (self.current[0] + x, self.current[1] + y) 

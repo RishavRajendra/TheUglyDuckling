@@ -18,13 +18,13 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
-  turn(rotr, 35/1.22, 400);
-  mov(fwd, 10, 400);
+//  turn(rotr, 35/1.22, 400);
+//  mov(fwd, 10, 400);
 }
 
 void loop() {
-//  readPython();
-//  runCommand();
+  readPython();
+  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
