@@ -117,8 +117,12 @@ class GridMovement:
 	def trim_facing(self):
 		if (self.facing > 180):
 			self.facing = self.facing - 180
+			self.facing = self.facing * -1
 		elif (self.facing < -180):
 			self.facing = self.facing + 180
+			self.facing = self.facing * -1
+
+
 
 	# Use facing to translate proper movement
 	def translate_dir(self, mov, degrees=None):

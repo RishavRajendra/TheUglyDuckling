@@ -23,10 +23,11 @@ volatile bool flag1;
 
 //Measurements
 float diagonal_dist = 1.40;
+float camera_degree_ratio = 1.22;
 float distance = (60 * PI)/ 25.4;
 float steps_per_inch = 3200 / distance;
 float steps_per_inch_strafe = 3200 / (56 * PI) / 25.4;
-float steps_per_degree = 30;
+float steps_per_degree = 29.8;
 float straight = 0.980;
 float arc180 = .3;
 float start_dis = .25;

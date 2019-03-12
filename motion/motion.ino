@@ -18,11 +18,13 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
+  turn(rotr, 35/1.22, 400);
+  mov(fwd, 10, 400);
 }
 
 void loop() {
-  readPython();
-  runCommand();
+//  readPython();
+//  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
@@ -169,9 +171,9 @@ void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) 
 }
 
 void acceleration(byte dir, float dist, long del, int N, byte flag) {
-  if (flag != motion){
-    dist *= diagonal_dist;
-  }
+//  if (flag != motion){
+//    dist *= diagonal_dist;
+//  }
   float total_dis = N * (N + 1) / 2 * 3 * start_dis;
 
   if (total_dis > dist) {
