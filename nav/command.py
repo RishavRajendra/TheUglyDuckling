@@ -29,7 +29,8 @@ class Command():
                       'turn': self.turn,
                       'accelerate': self.accelerate,
                       'gridMove': self.gridMove,
-                      'pickup': self.pickup}
+                      'pickup': self.pickup
+                      'drop': self.drop}
         self.queue = queue
         self.serial = serial
 
@@ -52,9 +53,12 @@ class Command():
 
     # Turn robot by specified degrees
     # only use rotl or rotr for direction.
-    # (args) format: (direction, degrees)
+    # (args) format: (direction, degrees, target turn bool)
     def turn(self, args):
-        byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
+        byte = b'\x00'
+        if args[2]:
+            byte = b'\x01'
+        byteArr = b'\x01' + args[0]+bytes([args[1]])+byte
         self.serial.write(byteArr) 
 
     # Acceleration. fwd only
@@ -80,7 +84,11 @@ class Command():
     def gridMove(self, args):
         byteArr = b'\x03' + args[0] + bytes([args[1]]) + args[2]
         self.serial.write(byteArr)
-    # (args) format: (distance)
-    def pickup(self, args):
-        byteArr = b'\x04'  + bytes([args]) +b'\x00' + b'\x00'
+    # (args) format: (0)
+    def pickup(self, args): 
+        byteArr = b'\x04'  + b'\x00' + b'\x00' + b'\x00'
+        self.serial.write(byteArr)
+
+    def drop(self, args): 
+        byteArr = b'\x05'  + b'\x00' + b'\x00' + b'\x00'
         self.serial.write(byteArr)

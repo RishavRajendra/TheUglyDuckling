@@ -111,7 +111,7 @@ def main():
         for stat in object_stats:
             if stat[0] > 1 and stat[0] < 9:
                 movement.map(stat)
-        command_q.put(['turn', (rotl, 45)])
+        command_q.put(['turn', (rotl, 45, False)])
         commands.execute()
         movement.facing = movement.facing - 45
         movement.trim_facing()

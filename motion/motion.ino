@@ -18,11 +18,15 @@ void setup() {
   Servo1.attach(servoPin1);
   Servo2.attach(servoPin2);
   Serial.begin(9600);
+  armsDown();
 //  turn(rotr, 35/1.22, 400);
 //  mov(fwd, 10, 400);
 }
 
 void loop() {
+//  armsDown();
+//  delay(1000);
+//  pickup();
   readPython();
   runCommand();
 }
@@ -49,7 +53,7 @@ void runCommand(){
      mov(data1, data2, 400);
     }
     else if (flag == 1){
-      turn(data1, data2, 400);
+      turn(data1, data2, 400, data3);
     }
     else if (flag == 2){
       acceleration(data1, data2, 350, 8, data3);
@@ -58,9 +62,10 @@ void runCommand(){
       gridMov(data1,data2, 400, data3);
     }
     else if (flag == 4){
-//      armsDown();
-      mov(fwd, data1, 400);
-//      pickup();
+      pickup();
+    }
+    else if (flag == 5){
+      armsDown();
     }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
@@ -83,9 +88,9 @@ void armsDown(){
 
 //Pick up and hold objects
 void pickup(){
-  Servo2.write(120);
+  Servo2.write(180);
   delay(15);
-  Servo1.write(60);
+  Servo1.write(0);
 }
 
 /*Motor Code*/
@@ -120,7 +125,10 @@ void gridMov(byte dir, long dist, long del, byte motors) {
 }
 
 //Turn given degrees- Only used with rotl or rotr
-void turn(byte dir, float dist, long del) {
+void turn(byte dir, float dist, long del, byte flag) {
+  if( flag ==1){
+    dist/camera_degree_ratio;
+  }
   PORTL = dir;
   float stepf = dist * steps_per_degree;
   long steps = stepf;
@@ -171,9 +179,9 @@ void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) 
 }
 
 void acceleration(byte dir, float dist, long del, int N, byte flag) {
-//  if (flag != motion){
-//    dist *= diagonal_dist;
-//  }
+  if (flag == 0){
+    dist *= diagonal_dist;
+  }
   float total_dis = N * (N + 1) / 2 * 3 * start_dis;
 
   if (total_dis > dist) {

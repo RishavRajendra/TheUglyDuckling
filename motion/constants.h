@@ -35,11 +35,11 @@ float threshold = 300;
 float tile_dist = 12;
 
 // Declare the Servo pin
-int servoPin1 = 2;
-int servoPin2 = 3;
+int servoPin1 = 9;
+int servoPin2 = 10;
 
 //Declare positions for servos
 int up1 = 0;
 int up2 = 180;
-int down1 = 160;
-int down2 = 20;
+int down1 = 70;
+int down2 = 110;

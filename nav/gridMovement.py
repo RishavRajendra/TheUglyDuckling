@@ -106,9 +106,9 @@ class GridMovement:
 		result = self.translate_dir(result)
 		degrees = self.movement[result][2]
 		if( degrees > 0):
-			self.queue.put(['turn', (self.rotr, degrees)])
+			self.queue.put(['turn', (self.rotr, degrees, False)])
 		elif(degrees < 0):
-			self.queue.put(['turn', (self.rotl, degrees*-1)])
+			self.queue.put(['turn', (self.rotl, degrees*-1, False)])
 		self.facing = self.facing + degrees
 		self.trim_facing()
 
