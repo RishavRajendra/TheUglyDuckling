@@ -34,8 +34,8 @@ class GridMovement:
 		self.movement = {
 			(0,1): [self.fwd, self.allmotors, 0], (0, -1): [self.rev, self.allmotors, 180],
 			(1,0): [self.strr, self.allmotors, 90], (-1, 0): [self.strl, self.allmotors, -90],
-			(1,1): [self.fwd, self.right45, 45], (-1, 1): [self.fwd, self.right45, -45],
-			(1,-1): [self.fwd, self.right45, 135], (-1,-1): [self.fwd, self.right45, -135]
+			(1,1): [self.fwd, b'\x00', 45], (-1, 1): [self.fwd, b'\x00', -45],
+			(1,-1): [self.fwd, b'\x00', 135], (-1,-1): [self.fwd, b'\x00', -135]
 			}
 
 	# Not yet implemented
@@ -115,12 +115,19 @@ class GridMovement:
 	# Should be called anytime facing is updated
 	# Keeps facing between -180 and 180 
 	def trim_facing(self):
-		if (self.facing > 180):
-			self.facing = self.facing - 180
-			self.facing = self.facing * -1
-		elif (self.facing < -180):
-			self.facing = self.facing + 180
-			self.facing = self.facing * -1
+		sign = 1
+		if self.facing >0:
+			sign = -1
+		if (abs(self.facing) == 360):
+			self.facing = 0 * sign
+		elif( abs(self.facing) == 225):
+			self.facing = 135 * sign
+		elif(abs(self.facing) == 270):
+			self.facing = 90 * sign
+		elif(abs(self.facing) == 315):
+			self.facing = 45 * sign
+		elif( abs(self.facing) == 180): 
+			self.facing = 180 * -1
 
 
 
