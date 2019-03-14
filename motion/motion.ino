@@ -19,11 +19,15 @@ void setup() {
   Servo2.attach(servoPin2);
   Serial.begin(9600);
   armsDown();
+//  acceleration(fwd, 24, 350, 8, motion);
 //  turn(rotr, 35/1.22, 400);
 //  mov(fwd, 10, 400);
 }
 
 void loop() {
+//  Servo2.write(up2);
+//  delay(100);
+//  Servo2.write(down2);
 //  armsDown();
 //  delay(1000);
 //  pickup();
@@ -53,7 +57,7 @@ void runCommand(){
      mov(data1, data2, 400);
     }
     else if (flag == 1){
-      turn(data1, data2, 400, data3);
+      turn(data1, data2, 700, data3);
     }
     else if (flag == 2){
       acceleration(data1, data2, 350, 8, data3);
@@ -126,9 +130,9 @@ void gridMov(byte dir, long dist, long del, byte motors) {
 
 //Turn given degrees- Only used with rotl or rotr
 void turn(byte dir, float dist, long del, byte flag) {
-  if( flag ==1){
-    dist/camera_degree_ratio;
-  }
+//  if( flag == 1){
+//    dist/camera_degree_ratio;
+//  }
   PORTL = dir;
   float stepf = dist * steps_per_degree;
   long steps = stepf;
@@ -179,9 +183,9 @@ void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) 
 }
 
 void acceleration(byte dir, float dist, long del, int N, byte flag) {
-  if (flag == 0){
-    dist *= diagonal_dist;
-  }
+//  if (flag == 0){
+//    dist *= diagonal_dist;
+//  }
   float total_dis = N * (N + 1) / 2 * 3 * start_dis;
 
   if (total_dis > dist) {
