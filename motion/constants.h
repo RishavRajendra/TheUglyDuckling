@@ -23,6 +23,7 @@ volatile bool flag1;
 
 //Measurements
 float diagonal_dist = 1.40;
+float camera_degree_ratio = 1.20;
 float distance = (60 * PI)/ 25.4;
 float steps_per_inch = 3200 / distance;
 float steps_per_inch_strafe = 3200 / (56 * PI) / 25.4;
@@ -34,11 +35,11 @@ float threshold = 300;
 float tile_dist = 12;
 
 // Declare the Servo pin
-int servoPin1 = 2;
-int servoPin2 = 3;
+int servoPin1 = 9;
+int servoPin2 = 10;
 
 //Declare positions for servos
 int up1 = 0;
 int up2 = 180;
-int down1 = 160;
-int down2 = 20;
+int down1 = 70;
+int down2 = 110;

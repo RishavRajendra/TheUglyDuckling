@@ -1,5 +1,5 @@
 # Functions the Raspberry Pi can call to communicate movement to the arduino
-import queue, threading
+import queue
 import serial, time
 
 # direction bytes
@@ -19,38 +19,27 @@ rear = b'\x44'
 right45 = b'\x14'
 left45 = b'\x41'
 
-class CommandThread(threading.Thread):
+class Command():
 
 
     # (queue) = Queue()
     # (serial) = serial connection to arduino
-    # (lock) = threading.Lock()
-    def __init__(self, queue, serial, lock):
-        super(CommandThread, self).__init__()
+    def __init__(self, queue, serial):
         self.func = { 'move': self.move,
                       'turn': self.turn,
                       'accelerate': self.accelerate,
                       'gridMove': self.gridMove,
-                      'pickup': self.pickup}
+                      'pickup': self.pickup
+                      'drop': self.drop}
         self.queue = queue
         self.serial = serial
-        self.lock = lock
-        self.stoprequest = threading.Event()
 
-    def run(self):
-        while not self.stoprequest.isSet():
-            if not self.queue.empty():
-                self.lock.acquire(True)
-                # time.sleep(1)
-                print("motion send")
-                work = self.queue.get(True, 0.05)
-                print(work)
-                self.func[work[0]](work[1])
-                self.lock.release()
-            time.sleep(.2)
-    def join(self, timeout=None):
-        self.stoprequest.set()
-        super(CommandThread, self).join(timeout)
+    def execute(self):
+        while not self.queue.empty():
+            print("motion send")
+            work = self.queue.get(True, 0.05)
+            print(work)
+            self.func[work[0]](work[1])
 
     # Movement instructions sent to Queue should follow
     # this format: ['function_name', (args)]
@@ -64,9 +53,12 @@ class CommandThread(threading.Thread):
 
     # Turn robot by specified degrees
     # only use rotl or rotr for direction.
-    # (args) format: (direction, degrees)
+    # (args) format: (direction, degrees, target turn bool)
     def turn(self, args):
-        byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
+        byte = b'\x00'
+        if args[2]:
+            byte = b'\x01'
+        byteArr = b'\x01' + args[0]+bytes([args[1]])+byte
         self.serial.write(byteArr) 
 
     # Acceleration. fwd only
@@ -92,7 +84,11 @@ class CommandThread(threading.Thread):
     def gridMove(self, args):
         byteArr = b'\x03' + args[0] + bytes([args[1]]) + args[2]
         self.serial.write(byteArr)
-    # (args) format: (distance)
-    def pickup(self, args):
-        byteArr = b'\x04'  + bytes([args]) +b'\x00' + b'\x00'
+    # (args) format: (0)
+    def pickup(self, args): 
+        byteArr = b'\x04'  + b'\x00' + b'\x00' + b'\x00'
+        self.serial.write(byteArr)
+
+    def drop(self, args): 
+        byteArr = b'\x05'  + b'\x00' + b'\x00' + b'\x00'
         self.serial.write(byteArr)

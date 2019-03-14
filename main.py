@@ -12,7 +12,7 @@ from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, fwd, rotr, rotl
 import get_stats_from_image
 import nav.gridMovement
 import nav.grid
-from nav.commandThread import CommandThread
+from nav.command import Command
 import queue, threading, serial, time
 
 import sys
@@ -58,38 +58,46 @@ def main():
     freq = cv2.getTickFrequency()
     font = cv2.FONT_HERSHEY_SIMPLEX
     
-    #Initialise camera
+    Initialise camera
     camera = PiCamera()
     camera.resolution = (300,300)
 
     objectifier = Model()
 
-    # Start serial connection to arduino
+    Start serial connection to arduino
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
     time.sleep(1)
 
     # Initialize queue
     in_q = queue.Queue()
-    # Initialize commandThread
-    lock = threading.Lock()
-    ct = CommandThread(in_q, ser, lock)
-    ct.start()
     
-    #Example usage
-    for _ in range(2):
+    # Inizialize grid anf gridmovement
+    grid = nav.grid.Grid(8,8)
+    movement = nav.gridMovement.GridMovement(grid, in_q)
+
+    # Initialize command
+    commands = Command(in_q, ser)
+    
+    # #Example usage
+    for _ in range(4):
         frame = take_picture(camera)
         processed_frame, classes, boxes, scores = objectifier.predict(frame)
         object_stats = get_data(processed_frame, classes, boxes, scores)
         print(object_stats)
         for stat in object_stats:
-            if stat[0] > 1 and stat[0] < 8:
-                rot_dir = rotl if stat[1] < 0 else rotr
-                in_q.put(['turn', (rot_dir, abs(stat[1]))])
-                in_q.put(['move', (fwd, stat[2])])
-                break
+            if stat[0] > 1 and stat[0] < 9:
+                movement.map(stat)
+
+        in_q.push(['turn', (rotl, 90)])
+        commands.execute()
+        movement.facing = movement.facing - 90
+        movement.trim_facing()
+
+    movement.find_path()
+    movement.follow_path()
+    commands.execute()      
     
     cv2.waitKey(0)
-
         
     #camera.close()
 
