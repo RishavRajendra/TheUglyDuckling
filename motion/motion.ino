@@ -49,13 +49,19 @@ void runCommand(){
       acceleration(data1, data2, 350, 8, data3);
     }
     else if (flag == 3){
-      gridMov(data1,data2, 400, data3);
-    }
-    else if (flag == 4){
       pickup();
     }
-    else if (flag == 5){
+    else if (flag == 4){
       drop();
+    }
+    else if (flag == 5){
+      reset_servo();
+    }
+    else if (flag == 6){
+      cam_up();
+    }
+    else if (flag == 7){
+      cam_down();
     }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
@@ -110,6 +116,14 @@ void reset_servo(){
   delayMicroseconds(2999 - i);
   digitalWrite(3, LOW);
   delay(10);
+}
+
+void cam_up(){
+  
+}
+
+void cam_down(){
+  
 }
 
 ////Move servos to default position
