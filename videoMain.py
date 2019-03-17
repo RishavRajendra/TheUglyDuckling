@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-__author__ = "Rishav Rajendra"
+__author__ = "Rishav Rajendra, Benji Lee"
 __license__ = "MIT"
 __status__ = "Development"
 
@@ -51,22 +51,21 @@ def get_data(processed_frame, classes, boxes, scores):
     return result
 
 def corrected_angle(angle, dist):
-    angle = 180 - angle
+    sign = -1 if angle < 0 else 1
+    angle = 180 - abs(angle)
     a = math.sqrt(math.pow(dist,2) + math.pow(CENTER_DISTANCE, 2) - 2*dist*CENTER_DISTANCE*math.cos(math.radians(angle)))
     angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
-    return math.ceil(180-angle-math.degrees(angle_c))
+    return math.ceil(180-angle-math.degrees(angle_c)) * sign
 
-def approach(command_q, pic_q, commands, first_call=True):
-    adj_degrees = 10 if first_call else 20
-    adj_dir = rotr if first_call else rotl
+def approach(movement, pic_q, first_call=True):
+    adj_degrees = 10 if first_call else -20
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     print(object_stats)
     if not object_stats:
-        command_q.put(['turn',(adj_dir, adj_degrees, False)])
-        commands.execute()
+        movement.turn(adj_degrees)
         time.sleep(2)
-        approach(command_q, pic_q, commands, False)
+        approach(movement, pic_q, False)
     else:
         target_found = False
         for stats in object_stats:
@@ -78,17 +77,15 @@ def approach(command_q, pic_q, commands, first_call=True):
             #print(dist) 
             if(obj_type > 1 and obj_type < 8):
                 turn_dir = rotl if angle < 0 else rotr
-                angle = corrected_angle(abs(angle), dist) 
-                command_q.put(['turn', (turn_dir, angle, False)])
-                command_q.put(['move',(fwd, dist )])
-                commands.execute()
+                angle = corrected_angle(angle, dist) 
+                movement.turn(angle)
+                movement.move(fwd, dist)
                 target_found = True
                 break
         if not target_found:
-            command_q.put(['turn',(adj_dir, adj_degrees, False)])
-            commands.execute()
+            movement.turn(adj_degrees)
             time.sleep(2)
-            approach(command_q, pic_q, commands, False)
+            approach(movement, pic_q, False)
     
     
 
@@ -117,7 +114,7 @@ def main():
     vt.start()
 
     #Testing approach
-    # approach(command_q, pic_q, commands) 
+    approach(movement, pic_q) 
                 
     vt.join()
     #camera.close()

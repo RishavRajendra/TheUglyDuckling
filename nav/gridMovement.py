@@ -177,28 +177,28 @@ class GridMovement:
 
 	def move(self,dir, dist):
 		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
-    self.serial.write(byteArr)
+		self.serial.write(byteArr)
 
-  def accelerate(self,dist, is_diagonal=False):
-  	byte = b'\x00' if is_diagonal else b'\x01'
-  	byteArr = b'\x02' + self.fwd + bytes([dist]) + byte
+	def accelerate(self,dist, is_diagonal=False):
+		byte = b'\x00' if is_diagonal else b'\x01'
+		byteArr = b'\x02' + self.fwd + bytes([dist]) + byte
 
-  def pickup(self): 
-      byteArr = b'\x03'  + b'\x00' + b'\x00' + b'\x00'
-      self.serial.write(byteArr)
+	def pickup(self): 
+		byteArr = b'\x03'  + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
 
-  def drop(self): 
-      byteArr = b'\x04'  + b'\x00' + b'\x00' + b'\x00'
-      self.serial.write(byteArr)
+	def drop(self): 
+		byteArr = b'\x04'  + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
 
-  def reset_servo(self): 
-      byteArr = b'\x05'  + b'\x00' + b'\x00' + b'\x00'
-      self.serial.write(byteArr)
+	def reset_servo(self): 
+		byteArr = b'\x05'  + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
 
-  def cam_up(self): 
-      byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
-      self.serial.write(byteArr)
+	def cam_up(self): 
+		byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
 
-  def cam_down(self): 
-      byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
-      self.serial.write(byteArr)
+	def cam_down(self): 
+		byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
