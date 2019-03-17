@@ -1,13 +1,7 @@
 #include <QueueArray.h>
-#include <Servo.h>
 #include "constants.h"
 
 /* Variables */
-
-// Create a servo object
-Servo Servo1;
-Servo Servo2;
-Servo ServoCam;
 
 //Declare queue for commands
 QueueArray <byte> queue;
@@ -15,22 +9,14 @@ QueueArray <byte> queue;
 void setup() {
   DDRL = B11111111;
   ud_bot();
-  Servo1.attach(servoPin1);
-  Servo2.attach(servoPin2);
   Serial.begin(9600);
-  armsDown();
+  reset_servo();
 //  acceleration(fwd, 24, 350, 8, motion);
 //  turn(rotr, 35/1.22, 400);
 //  mov(fwd, 10, 400);
 }
 
 void loop() {
-//  Servo2.write(up2);
-//  delay(100);
-//  Servo2.write(down2);
-//  armsDown();
-//  delay(1000);
-//  pickup();
   readPython();
   runCommand();
 }
@@ -69,7 +55,7 @@ void runCommand(){
       pickup();
     }
     else if (flag == 5){
-      armsDown();
+      drop();
     }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
@@ -78,24 +64,72 @@ void runCommand(){
 
 /*Servo Code*/
 
-//Move servos to default position
-void resetArms(){
-  Servo1.write(up1);
-  Servo2.write(up2);
-}
-
-//Moves into position to pick up object
-void armsDown(){
-  Servo1.write(down1);
-  Servo2.write(down2);
-}
-
-//Pick up and hold objects
 void pickup(){
-  Servo2.write(180);
-  delay(15);
-  Servo1.write(0);
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  int i = 1850;
+
+  digitalWrite(2, HIGH);
+  delayMicroseconds(i);
+  digitalWrite(2, LOW);
+  delay(10);
+
+  digitalWrite(3, HIGH);
+  delayMicroseconds(3000 - i);
+  digitalWrite(3, LOW);
+  delay(10);
 }
+
+void drop(){
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  int i = 2500;
+
+  digitalWrite(2, HIGH);
+  delayMicroseconds(i);
+  digitalWrite(2, LOW);
+  delay(10);
+
+  digitalWrite(3, HIGH);
+  delayMicroseconds(3000 - i);
+  digitalWrite(3, LOW);
+  delay(10);
+}
+
+void reset_servo(){
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  int i = 500;
+
+  digitalWrite(2, HIGH);
+  delayMicroseconds(i);
+  digitalWrite(2, LOW);
+  delay(10);
+
+  digitalWrite(3, HIGH);
+  delayMicroseconds(2999 - i);
+  digitalWrite(3, LOW);
+  delay(10);
+}
+
+////Move servos to default position
+//void resetArms(){
+//  Servo1.write(up1);
+//  Servo2.write(up2);
+//}
+//
+////Moves into position to pick up object
+//void armsDown(){
+//  Servo1.write(down1);
+//  Servo2.write(down2);
+//}
+//
+////Pick up and hold objects
+//void pickup(){
+//  Servo2.write(180);
+//  delay(15);
+//  Servo1.write(0);
+//}
 
 /*Motor Code*/
 

@@ -26,3 +26,6 @@ ERROR_VAL = 3.3
 # Height of object in inches
 OBSTACLE_HEIGHT = 35
 TARGET_HEIGHT = 15
+
+# Distance from beginning of camera range to center of robot
+CENTER_DISTANCE = 6.5
