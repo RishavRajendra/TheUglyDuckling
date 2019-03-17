@@ -145,8 +145,8 @@ def main():
     #Inizialize commands
     commands = Command(command_q, ser)
     # Inizialize grid anf gridmovement
-    grid = nav.grid.Grid(8,8)
-    movement = nav.gridMovement.GridMovement(grid, command_q, commands)
+    grid = Grid(8,8)
+    movement = GridMovement(grid, command_q, commands)
     # Initialize VideoThread
     vt = VideoThread(pic_q, objectifier)
     vt.start()
