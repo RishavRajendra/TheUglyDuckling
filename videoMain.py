@@ -187,6 +187,7 @@ def main():
                 
     #print(grid.obstacles)
     #print(grid.targets)k
+
     #movement.goal = (4,7)
     #movement.find_path()
     #print(movement.facing)
