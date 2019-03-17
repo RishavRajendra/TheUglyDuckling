@@ -26,7 +26,7 @@ warnings.filterwarnings('ignore')
 def get_data(processed_frame, classes, boxes, scores):
     result = []
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.5:
+        if scores[0][i] > 0.35:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300
@@ -53,13 +53,6 @@ def get_data(processed_frame, classes, boxes, scores):
 def corrected_angle(angle, dist):
     angle = 180 - angle
     a = math.sqrt(math.pow(dist,2) + math.pow(CENTER_DISTANCE, 2) - 2*dist*CENTER_DISTANCE*math.cos(math.radians(angle)))
-    angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
-    return math.ceil(180-angle-math.degrees(angle_c))
-
-def corrected_angle(angle, dist):
-    center_dist = 6.5
-    angle = 180 - angle
-    a = math.sqrt(math.pow(dist,2) + math.pow(center_dist, 2) - 2*dist*center_dist*math.cos(math.radians(angle)))
     angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
     return math.ceil(180-angle-math.degrees(angle_c))
 
@@ -96,6 +89,42 @@ def approach(command_q, pic_q, commands, first_call=True):
             commands.execute()
             time.sleep(2)
             approach(command_q, pic_q, commands, False)
+    
+def approach(command_q, pic_q, commands, first_call=True):
+    adj_degrees = 10 if first_call else 20
+    adj_dir = rotr if first_call else rotl
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_data(processed_frame, classes, boxes, scores)
+    print(object_stats)
+    if not object_stats:
+        command_q.put(['turn',(adj_dir, adj_degrees, False)])
+        commands.execute()
+        time.sleep(2)
+        approach(command_q, pic_q, commands, False)
+    else:
+        target_found = False
+        for stats in object_stats:
+            angle = stats[1]
+            dist = stats[2]
+            obj_type = stats[0]
+            #print(obj_type)
+            #print(angle)
+            #print(dist) 
+            if(obj_type > 1 and obj_type < 8):
+                turn_dir = rotl if angle < 0 else rotr
+                angle = corrected_angle(abs(angle), dist) 
+                command_q.put(['turn', (turn_dir, angle, False)])
+                command_q.put(['move',(fwd, dist )])
+                commands.execute()
+                target_found = True
+                break
+        if not target_found:
+            command_q.put(['turn',(adj_dir, adj_degrees, False)])
+            commands.execute()
+            time.sleep(2)
+            approach(command_q, pic_q, commands, False)
+            
+    
     
 
 def main():

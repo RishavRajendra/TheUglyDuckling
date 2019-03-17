@@ -16,7 +16,7 @@ class Grid:
 		return 0 <= x < self.width and 0 <= y < self.height
 
 	def passable(self, id):
-		return id not in self.obstacles or self.targets
+		return id not in self.obstacles
 
 	def neighbors(self, id):
 		(x, y) = id
