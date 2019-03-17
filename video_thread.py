@@ -22,6 +22,8 @@ class VideoThread(threading.Thread):
 			for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 				frame = np.copy(frame1.array)
 				result = self.model.predict(frame)
+				if self.queue.full():
+					self.queue.get()
 				self.queue.put(result)
 				rawCapture.truncate(0)
 			if cv2.waitKey(1) == ord('q'):

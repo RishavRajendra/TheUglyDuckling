@@ -29,7 +29,7 @@ class Command():
                       'turn': self.turn,
                       'accelerate': self.accelerate,
                       'gridMove': self.gridMove,
-                      'pickup': self.pickup
+                      'pickup': self.pickup,
                       'drop': self.drop}
         self.queue = queue
         self.serial = serial
@@ -55,10 +55,7 @@ class Command():
     # only use rotl or rotr for direction.
     # (args) format: (direction, degrees, target turn bool)
     def turn(self, args):
-        byte = b'\x00'
-        if args[2]:
-            byte = b'\x01'
-        byteArr = b'\x01' + args[0]+bytes([args[1]])+byte
+        byteArr = b'\x01' + args[0]+bytes([args[1]])+b'\x00'
         self.serial.write(byteArr) 
 
     # Acceleration. fwd only

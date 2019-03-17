@@ -26,3 +26,6 @@ commands.execute()
 time.sleep(2)
 q.put(['pickup',(0)])
 commands.execute()
+
+
+
