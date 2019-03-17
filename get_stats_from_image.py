@@ -23,3 +23,30 @@ def get_distance(object_type, height_of_object_pixels):
         return int(((OBSTACLE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
     if object_type == 1:
         return int(((TARGET_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
+
+def get_data(processed_frame, classes, boxes, scores):
+    result = []
+    for i, b in enumerate(boxes[0]):
+        if scores[0][i] > 0.5:
+            inches = 0
+            #extract pixel coordinates of detected objects
+            ymin = boxes[0][i][0]*300
+            xmin = boxes[0][i][1]*300
+            ymax = boxes[0][i][2]*300
+            xmax = boxes[0][i][3]*300
+
+            # Calculate mid_pount of the detected object
+            mid_x = (xmax + xmin) / 2
+            mid_y = (ymax + ymin) / 2
+
+            height_of_object_pixels = ymax - ymin
+
+            if classes[0][i] == 8:
+                inches = get_distance(0, height_of_object_pixels)
+            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
+                inches = get_distance(1, height_of_object_pixels)
+                
+            angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
+            #print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
+            result.append([classes[0][i], angle, inches])
+    return result

@@ -26,3 +26,6 @@ ERROR_VAL = 3.3
 # Height of object in inches
 OBSTACLE_HEIGHT = 35
 TARGET_HEIGHT = 15
+
+# Distance camera draws to from robot in inches
+CAMERA_OFFSET = 2.5

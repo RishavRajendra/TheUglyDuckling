@@ -29,7 +29,7 @@ class Command():
                       'turn': self.turn,
                       'accelerate': self.accelerate,
                       'gridMove': self.gridMove,
-                      'pickup': self.pickup
+                      'pickup': self.pickup,
                       'drop': self.drop}
         self.queue = queue
         self.serial = serial

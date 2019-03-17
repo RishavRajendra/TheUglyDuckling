@@ -8,12 +8,12 @@ import cv2
 import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, rotr, rotl
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE,CAMERA_OFFSET, rotr, rotl, fwd
 from get_stats_from_image import get_angle, get_distance
 import nav.gridMovement
 import nav.grid
 from nav.command import Command
-import queue, threading, serial, time
+import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
@@ -26,7 +26,7 @@ warnings.filterwarnings('ignore')
 def get_data(processed_frame, classes, boxes, scores):
     result = []
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.5:
+        if scores[0][i] > 0.35:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300
@@ -49,6 +49,50 @@ def get_data(processed_frame, classes, boxes, scores):
             #print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
             result.append([classes[0][i], angle, inches])
     return result
+
+def corrected_angle(angle, dist):
+    center_dist = 6.5
+    angle = 180 - angle
+    a = math.sqrt(math.pow(dist,2) + math.pow(center_dist, 2) - 2*dist*center_dist*math.cos(math.radians(angle)))
+    angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
+    return math.ceil(180-angle-math.degrees(angle_c))
+    
+def approach(command_q, pic_q, commands, first_call=True):
+    adj_degrees = 10 if first_call else 20
+    adj_dir = rotr if first_call else rotl
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_data(processed_frame, classes, boxes, scores)
+    print(object_stats)
+    if not object_stats:
+        command_q.put(['turn',(adj_dir, adj_degrees, False)])
+        commands.execute()
+        time.sleep(2)
+        approach(command_q, pic_q, commands, False)
+    else:
+        target_found = False
+        for stats in object_stats:
+            angle = stats[1]
+            dist = stats[2]
+            obj_type = stats[0]
+            #print(obj_type)
+            #print(angle)
+            #print(dist) 
+            if(obj_type > 1 and obj_type < 8):
+                turn_dir = rotl if angle < 0 else rotr
+                angle = corrected_angle(abs(angle), dist) 
+                command_q.put(['turn', (turn_dir, angle, False)])
+                command_q.put(['move',(fwd, dist )])
+                commands.execute()
+                target_found = True
+                break
+        if not target_found:
+            command_q.put(['turn',(adj_dir, adj_degrees, False)])
+            commands.execute()
+            time.sleep(2)
+            approach(command_q, pic_q, commands, False)
+            
+    
+    
 
 def main():
     # Initialize frame rate calculation
@@ -97,6 +141,7 @@ def main():
         #t2 = cv2.getTickCount()
         #time1 = (t2-t1)/freq
         #frame_rate_calc=1/time1
+        #time.sleep(8)
 
         
         #if cv2.waitKey(1) == ord('q'):
@@ -104,25 +149,57 @@ def main():
     
         #rawCapture.truncate(0)
     
-    for _ in range(8):
-        processed_frame, classes, boxes, scores = pic_q.get()
-            
-        object_stats = get_data(processed_frame, classes, boxes, scores)
-        for stat in object_stats:
-            if stat[0] > 1 and stat[0] < 9:
-                movement.map(stat)
-        command_q.put(['turn', (rotl, 45, False)])
-        commands.execute()
-        movement.facing = movement.facing - 45
-        movement.trim_facing()
-        time.sleep(2)
+   # for _ in range(8):
+   #     processed_frame, classes, boxes, scores = pic_q.get()
+   #         
+   #     object_stats = get_data(processed_frame, classes, boxes, scores)
+   #     for stat in object_stats:
+   #         if stat[0] > 1 and stat[0] < 9:
+   #             movement.map(stat)
+   #     command_q.put(['turn', (rotl, 45, False)])
+   #     commands.execute()
+   #     movement.facing = movement.facing - 45
+   #     movement.trim_facing()
+   #     time.sleep(2)
+   
+    approach(command_q, pic_q, commands)
+   
+    
+        
+        
+    
+    
+    #while(dist > 9):
+    #    command_q.put(['move',(fwd, math.floor(dist/2))])
+    #    commands.execute()
+    #    time.sleep(2) 
+    #    processed_frame, classes, boxes, scores = pic_q.get()
+    #    object_stats = get_data(processed_frame, classes, boxes, scores)
+    #    angle = object_stats[0][1]
+    #    dist = object_stats[0][2]
+    #    turn_dir = rotl if angle < 0 else rotr
+    #    angle = corrected_angle(abs(angle), dist) 
+    #    command_q.put(['turn', (turn_dir, angle, False)])
+    #    commands.execute()
+	
+    #command_q.put(['move',(fwd, math.floor(dist/2))])
+    #commands.execute() 
                 
-    print(grid.obstacles)
-    print(grid.targets)
-    movement.find_path()
-    print(movement.facing)
-    print(movement.path)
+    #print(grid.obstacles)
+    #print(grid.targets)k
+    #movement.goal = (4,7)
+    #movement.find_path()
+    #print(movement.facing)
+    #print(movement.path)
     #movement.follow_path()
+    #commands.execute()
+    
+    # Pickup routine beta
+    #angle, distance = pickUpBlock(*pic_q.get())
+    #turn_dir = rotl if angle < 0 else rotr
+    #command_q.put(['turn', (turn_dir, angle), True])
+    #command_q.put(['move', (fwd, distance)])
+    #command_q.put(['pickup', (0)])
     #commands.execute()
     vt.join()
     #camera.close()
