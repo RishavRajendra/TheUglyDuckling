@@ -90,41 +90,6 @@ def approach(command_q, pic_q, commands, first_call=True):
             time.sleep(2)
             approach(command_q, pic_q, commands, False)
     
-def approach(command_q, pic_q, commands, first_call=True):
-    adj_degrees = 10 if first_call else 20
-    adj_dir = rotr if first_call else rotl
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
-    print(object_stats)
-    if not object_stats:
-        command_q.put(['turn',(adj_dir, adj_degrees, False)])
-        commands.execute()
-        time.sleep(2)
-        approach(command_q, pic_q, commands, False)
-    else:
-        target_found = False
-        for stats in object_stats:
-            angle = stats[1]
-            dist = stats[2]
-            obj_type = stats[0]
-            #print(obj_type)
-            #print(angle)
-            #print(dist) 
-            if(obj_type > 1 and obj_type < 8):
-                turn_dir = rotl if angle < 0 else rotr
-                angle = corrected_angle(abs(angle), dist) 
-                command_q.put(['turn', (turn_dir, angle, False)])
-                command_q.put(['move',(fwd, dist )])
-                commands.execute()
-                target_found = True
-                break
-        if not target_found:
-            command_q.put(['turn',(adj_dir, adj_degrees, False)])
-            commands.execute()
-            time.sleep(2)
-            approach(command_q, pic_q, commands, False)
-            
-    
     
 
 def main():
