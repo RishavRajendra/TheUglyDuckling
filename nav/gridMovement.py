@@ -122,8 +122,8 @@ class GridMovement:
 			self.facing = self.facing - 360
 
 	# Use facing to translate proper movement
-	def translate_dir(mov):
-		angle = self.facing - self.movement[mov]
+	def translate_dir(self,mov):
+		angle = self.facing - self.movement[mov][2]
 		is_diagonal = angle is not 0 and angle % 90 is not 0
 		angle = math.radians(angle)
 		x = math.cos(angle)
@@ -136,7 +136,7 @@ class GridMovement:
 		y = math.ceil(y) if y < 0 else math.floor(y)
 		return (x,y)
 
-	def map(dist, angle):
+	def map(self,dist, angle):
 		offset = 6
 		diag_offset = math.sqrt(288) / 2
 		angle_rads = math.radians(angle* -1 + self.facing)
@@ -164,7 +164,7 @@ class GridMovement:
 	# Communicates movement calls to Arduino
 	# MOVEMENT FUNCTIONS #
 
-	def turn(degrees):
+	def turn(self,degrees):
 		turn_dir = self.rotr
 		if(degrees < 0):
 			turn_dir = self.rotl
@@ -175,10 +175,10 @@ class GridMovement:
 		self.facing = self.facing + degrees
 		self.trim_facing()
 
-	def move(dir, dist):
+	def move(self,dir, dist):
 		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
     self.serial.write(byteArr)
 
-  def accelerate(dist, is_diagonal=False):
+  def accelerate(self,dist, is_diagonal=False):
   	byte = b'\x00' if is_diagonal else b'\x01'
   	byteArr = b'\x02' + self.fwd + bytes([dist]) + byte

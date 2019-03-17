@@ -111,13 +111,13 @@ def main():
     commands = Command(command_q, ser)
     # Inizialize grid anf gridmovement
     grid = Grid(8,8)
-    movement = GridMovement(grid, command_q, commands)
+    movement = GridMovement(grid, ser)
     # Initialize VideoThread
     vt = VideoThread(pic_q, objectifier)
     vt.start()
 
     #Testing approach
-    approach(command_q, pic_q, commands) 
+    # approach(command_q, pic_q, commands) 
                 
     vt.join()
     #camera.close()
