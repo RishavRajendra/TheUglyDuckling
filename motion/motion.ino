@@ -117,7 +117,7 @@ void reset_servo(){
 }
 
 void cam_up(){
-  int speed = 2000;
+  int speed = 2500;
   int steps = 13;
   int pin = 6;
   int highDelay = speed;
@@ -125,7 +125,7 @@ void cam_up(){
   pinMode(pin, OUTPUT);
   for (int cnt=0; cnt < steps; cnt++){
     digitalWrite(pin, LOW);
-    delayMicroseconds(lowDelay);
+    delayMicroseconds(lowDelay);s
     digitalWrite(pin, HIGH);
     delayMicroseconds(highDelay);
   }

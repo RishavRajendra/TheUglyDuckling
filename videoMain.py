@@ -8,8 +8,8 @@ import cv2
 import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE, rotr, rotl, fwd
-from get_stats_from_image import get_angle, get_distance
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE, rotr, rotl, fwd, rev
+from get_stats_from_image import get_angle, get_distance, get_data, get_pickUp_data
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
 from nav.command import Command
@@ -23,33 +23,6 @@ from image_processing import Model
 import warnings
 warnings.filterwarnings('ignore')
 
-def get_data(processed_frame, classes, boxes, scores):
-    result = []
-    for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.35:
-            inches = 0
-            #extract pixel coordinates of detected objects
-            ymin = boxes[0][i][0]*300
-            xmin = boxes[0][i][1]*300
-            ymax = boxes[0][i][2]*300
-            xmax = boxes[0][i][3]*300
-
-            # Calculate mid_pount of the detected object
-            mid_x = (xmax + xmin) / 2
-            mid_y = (ymax + ymin) / 2
-
-            height_of_object_pixels = ymax - ymin
-
-            if classes[0][i] == 8:
-                inches = get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
-                inches = get_distance(1, height_of_object_pixels)
-                
-            angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
-            #print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
-            result.append([classes[0][i], angle, inches])
-    return result
-
 def corrected_angle(angle, dist):
     sign = -1 if angle < 0 else 1
     angle = 180 - abs(angle)
@@ -57,11 +30,46 @@ def corrected_angle(angle, dist):
     angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
     return math.ceil(180-angle-math.degrees(angle_c)) * sign
 
+# TODO: Check if the block is actually picked up
+def check_pick_up():
+    pass
+    
+# TODO: Refine pick_up. Take care of edge cases.
+def pick_up(movement, pic_q):
+    movement.cam_down()
+    time.sleep(2)
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_pickUp_data(processed_frame, classes, boxes, scores)
+    print("CAM DOWN: {}".format(object_stats))
+    time.sleep(5)
+    if not object_stats:
+        print("CAM DOWN: NO OBJECT FOUND")
+        movement.cam_up()
+        movement.move(rev, 5)
+        time.sleep(5)
+        approach(movement, pic_q, True)
+    else:
+        print("CAM DOWN: Something located")
+        for stats in object_stats:
+            if(stats[0] > 1 and stats[0] < 8):
+                print("MOVING TOWARDS TARGET")
+                angle = corrected_angle(stats[1], stats[2])
+                movement.turn(angle)
+                
+                # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
+                movement.move(fwd, stats[2])
+            time.sleep(5)
+            # Trying to figure out when to pick up. Will only try to pick up when midpoint > (100, 250) and midpoint(225, 265)
+            # (100, 250) and (225, 265) are coordinates on the screen
+            if stats[3][0] > 100 and stats[3][0] < 225 and stats[3][1] > 250 and stats[3][1] < 265:
+                movement.pickup()
+
+# TODO: Refine approach. Take care of edge cases.
 def approach(movement, pic_q, first_call=True):
     adj_degrees = 10 if first_call else -20
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
-    print(object_stats)
+    print("CAM UP: {}".format(object_stats))
     if not object_stats:
         movement.turn(adj_degrees)
         time.sleep(2)
@@ -69,25 +77,16 @@ def approach(movement, pic_q, first_call=True):
     else:
         target_found = False
         for stats in object_stats:
-            angle = stats[1]
-            dist = stats[2]
-            obj_type = stats[0]
-            #print(obj_type)
-            #print(angle)
-            #print(dist) 
-            if(obj_type > 1 and obj_type < 8):
-                turn_dir = rotl if angle < 0 else rotr
-                angle = corrected_angle(angle, dist) 
+            if(stats[0] > 1 and stats[0] < 8):
+                angle = corrected_angle(stats[1], stats[2]) 
                 movement.turn(angle)
-                movement.move(fwd, dist)
+                movement.move(fwd, stats[2])
                 target_found = True
-                break
+                pick_up(movement, pic_q)
         if not target_found:
             movement.turn(adj_degrees)
             time.sleep(2)
             approach(movement, pic_q, False)
-    
-    
 
 def main():
     # Initialize frame rate calculation
@@ -113,7 +112,7 @@ def main():
     vt = VideoThread(pic_q, objectifier)
     vt.start()
 
-    #Testing approach
+    # TODO: Implement approach with autonomous movement.
     approach(movement, pic_q) 
                 
     vt.join()

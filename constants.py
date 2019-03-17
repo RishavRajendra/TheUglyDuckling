@@ -14,6 +14,10 @@ CAMERA_FRAMERATE = 10
 CENTER_LINEx1y1 = (150, 0)
 CENTER_LINEx2y2 = (150, 300)
 
+# The calculated sweet spot the grabber can pickup successfully
+PICKUP_SWEET_SPOTx1y1 = (164, 0)
+PICKUP_SWEET_SPOTx2y2 = (164, 259)
+
 # Focal length of a rasperry pi v2 camera
 FOCAL_LENGTH = 3.04
 
@@ -23,7 +27,7 @@ PIXEL_PER_MM = 102.3
 # Magic number to compensate for labelling.
 ERROR_VAL = 3.3
 
-# Height of object in inches
+# Height of object
 OBSTACLE_HEIGHT = 35
 TARGET_HEIGHT = 15
 
