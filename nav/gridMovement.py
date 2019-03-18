@@ -145,20 +145,23 @@ class GridMovement:
 		a_length = math.cos(angle_rads) * dist
 
 		if self.facing is EAST or self.facing is WEST:
-			x = math.ceil(a_length/12)
+			x = a_length/12
 			o_length is o_length + offset if o_length < 0 else o_length - offset
-			y = math.ceil(o_length/12)
+			y = 0 if -offset<0<offset else  o_length/12
 
 		elif self.facing is NORTH or self.facing is SOUTH:
 			a_length is a_length + offset if a_length < 0 else a_length - offset
-			x = math.ceil(a_length/12)
-			y = math.ceil(o_length/12)
+			x = 0 if -offset<0<offset else a_length/12
+			y = o_length/12
 
 		else:
 			a_length is a_length + diag_offset if a_length < 0 else a_length - diag_offset
 			o_length is o_length + diag_offset if o_length < 0 else o_length - diag_offset
-			x = math.ceil(a_length/12)
-			y = math.ceil(o_length/12)
+			x = 0 if -diag_offset<0<diag_offset else a_length/sqrt(288)
+			y = 0 if -diag_offset<0<diag_offset else o_length/sqrt(288)
+
+		x = math.ceil(x) if x > 0 else math.floor(x)
+		y = math.ceil(y) if y > 0 else math.floor(y)
 		return (current[0] + x, current[1] + y)
 
 	# Communicates movement calls to Arduino

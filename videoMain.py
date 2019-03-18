@@ -6,6 +6,7 @@ __status__ = "Development"
 
 import cv2
 import numpy as np
+import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE, rotr, rotl, fwd, rev
@@ -22,6 +23,17 @@ from image_processing import Model
 
 import warnings
 warnings.filterwarnings('ignore')
+
+def wait_for_button():
+    # Inizialize button
+    GPIO.setmode(GPIO.BOARD)
+    buttonPin = 8
+    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    print('Ready')
+    #Prevent further code execution until button is pressed
+    while GPIO.input(buttonPin) is not 0:
+        pass
+    print('Executing')
 
 def corrected_angle(angle, dist):
     sign = -1 if angle < 0 else 1
@@ -65,6 +77,9 @@ def pick_up(movement, pic_q):
                 movement.pickup()
 
 # TODO: Refine approach. Take care of edge cases.
+# EDGE CASE 1: obstacle is in way of target
+# Potential solution: go to another connected tile
+# EDGE CASE 2: target not detected after two additional scans.
 def approach(movement, pic_q, first_call=True):
     adj_degrees = 10 if first_call else -20
     processed_frame, classes, boxes, scores = pic_q.get()
@@ -73,7 +88,8 @@ def approach(movement, pic_q, first_call=True):
     if not object_stats:
         movement.turn(adj_degrees)
         time.sleep(2)
-        approach(movement, pic_q, False)
+        if first_call:
+            approach(movement, pic_q, False)
     else:
         target_found = False
         for stats in object_stats:
@@ -86,7 +102,8 @@ def approach(movement, pic_q, first_call=True):
         if not target_found:
             movement.turn(adj_degrees)
             time.sleep(2)
-            approach(movement, pic_q, False)
+            if first_call:
+                approach(movement, pic_q, False)
 
 def main():
     # Initialize frame rate calculation
@@ -111,6 +128,8 @@ def main():
     # Initialize VideoThread
     vt = VideoThread(pic_q, objectifier)
     vt.start()
+
+    wait_for_button()
 
     # TODO: Implement approach with autonomous movement.
     approach(movement, pic_q) 
