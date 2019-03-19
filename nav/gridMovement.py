@@ -106,38 +106,38 @@ class GridMovement:
 		# face goal after following path
 		self.face(self.goal)
 
-	def follow_next_step():
-	dist = 12
-	checking_dup = True
-	result = None
-	is_diagonal = False
-	mov = None
-	while checking_dup and self.path:
-		mov = self.path.pop(0)
-		result = (mov[0] - self.current[0], mov[1] - self.current[1])
-		if self.path:
-			nextMov = self.path[0]
-			nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
-			if nextResult == result:
-				dist = dist + 12
-				self.current = mov
-			else:
-				checking_dup = False
+	def follow_next_step(self):
+		dist = 12
+		checking_dup = True
+		result = None
+		is_diagonal = False
+		mov = None
+		while checking_dup and self.path:
+			mov = self.path.pop(0)
+			result = (mov[0] - self.current[0], mov[1] - self.current[1])
+			if self.path:
+				nextMov = self.path[0]
+				nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
+				if nextResult == result:
+					dist = dist + 12
+					self.current = mov
+				else:
+					checking_dup = False
 
-	if dist > 12:
-		self.face(mov)
-		self.accelerate(dist, is_diagonal)
-		if is_diagonal and self.path:
-			self.face(self.path[0])
-	elif is_diagonal:
-		self.face(mov)
-		result = self.translate_dir(result)
-		self.move(self.movement[result][0], dist)
-		if self.path:
-			self.face(self.path[0])
-	else:
-		result = self.translate_dir(result)
-		self.move(self.movement[result][0], dist)
+		if dist > 12:
+			self.face(mov)
+			self.accelerate(dist, is_diagonal)
+			if is_diagonal and self.path:
+				self.face(self.path[0])
+		elif is_diagonal:
+			self.face(mov)
+			result = self.translate_dir(result)
+			self.move(self.movement[result][0], dist)
+			if self.path:
+				self.face(self.path[0])
+		else:
+			result = self.translate_dir(result)
+			self.move(self.movement[result][0], dist)
 
 	# Face a tile connected to current tile
 	def face(self, obj):
@@ -169,7 +169,7 @@ class GridMovement:
 		y = math.ceil(y) if y < 0 else math.floor(y)
 		return (x,y)
 
-	def map(obj, angle, dist):
+	def map(self,obj, angle, dist):
 		offset = 6
 		diag_offset = math.sqrt(288) / 2
 		angle_rads = math.radians(angle* -1 + self.facing)

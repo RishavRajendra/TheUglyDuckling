@@ -18,7 +18,7 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -70,7 +70,7 @@ def pick_up(movement, pic_q):
                 movement.turn(angle)
                 
                 # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
-                movement.move(fwd, math.floor(stats[2]*.7)
+                movement.move(fwd, math.floor(stats[2]*.7))
             time.sleep(5)
             movement.pickup()
 
