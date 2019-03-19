@@ -113,6 +113,15 @@ def map(movement, pic_q):
         print(obj_type, angle, dist)
         movement.map(obj_type, dist, angle)
 
+def follow_path(movement, pic_q)
+    movement.find_path()
+    while movement.path:
+        movement.follow_next_step()
+        map()
+        for obs in movement.obstacles:
+            if obs in movement.path:
+                movement.path.clear()
+
 def main():
     # Initialize frame rate calculation
     frame_rate_calc = 1
