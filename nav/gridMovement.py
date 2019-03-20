@@ -43,6 +43,9 @@ class GridMovement:
 			(1,1): [self.fwd, b'\x00', -45], (-1, 1): [self.fwd, b'\x00', 45],
 			(1,-1): [self.fwd, b'\x00', -135], (-1,-1): [self.fwd, b'\x00', 135]
 			}
+		
+	def get_obstacles(self):
+		return self.grid.get_obstacles()
 
 	# Not yet implemented
 	# If we haven't aquired a block yet, set closest block as goal.
@@ -174,19 +177,19 @@ class GridMovement:
 	def map(self,obj, angle, dist):
 		offset = 6
 		diag_offset = math.sqrt(288) / 2
-		angle_rads = math.radians(angle* -1 + self.facing)
+		angle_rads = math.radians((angle* -1) + self.facing)
 
 		o_length = math.sin(angle_rads) * dist
 		a_length = math.cos(angle_rads) * dist
 
-		if self.facing is EAST or self.facing is WEST:
+		if self.facing == EAST or self.facing == WEST:
 			x = a_length/12
 			if -offset<o_length<offset:
 				y= 0
 			else:
 				y = o_length is (o_length + offset)/12 if o_length < 0 else (o_length - offset)/12
 
-		elif self.facing is NORTH or self.facing is SOUTH:
+		elif self.facing == NORTH or self.facing == SOUTH:
 			if -offset<a_length<offset:
 				x = 0
 			else:

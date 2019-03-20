@@ -36,8 +36,8 @@ def wait_for_button():
     print('Executing')
 
 def corrected_angle(angle, dist, cam_up=True):
-    cs = CENTER_DISTANCE_UP if cam_up else CENTER_DISTANCE_DOWN
-    sign = -1 if angle < 0 else 1
+    cd = CENTER_DISTANCE_UP if cam_up else CENTER_DISTANCE_DOWN
+    sign = 1 if angle < 0 else -1
     angle = 180 - abs(angle)
     a = math.sqrt(math.pow(dist,2) + math.pow(cd, 2) - 2*dist*cd*math.cos(math.radians(angle)))
     angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
@@ -79,7 +79,8 @@ def pick_up(movement, pic_q):
 # EDGE CASE 1: obstacle is in way of target
 # Potential solution: go to another connected tile
 # EDGE CASE 2: target not detected after two additional scans.
-def approach(movement, pic_q, first_call=True):
+def approach(movement, pic_q, first_call=True, cam_up=True):
+    movement.cam_up() if cam_up else movement.cam_down()
     adj_degrees = 10 if first_call else -20
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
@@ -111,14 +112,15 @@ def map(movement, pic_q):
         angle = stat[1]
         dist = stat[2]
         print(obj_type, angle, dist)
-        movement.map(obj_type, dist, angle)
+        movement.map(obj_type, angle, dist)
 
-def follow_path(movement, pic_q)
+def follow_path(movement, pic_q):
     movement.find_path()
     while movement.path:
+        print(movement.path)
         movement.follow_next_step()
-        map()
-        for obs in movement.obstacles:
+        map(movement, pic_q)
+        for obs in movement.get_obstacles():
             if obs in movement.path:
                 movement.path.clear()
 
@@ -149,15 +151,18 @@ def main():
     wait_for_button()
     time.sleep(2)
 
-    for _ in range(12):
-        map(movement, pic_q)
-        movement.turn(30)
-        time.sleep(2)
+    #for _ in range(12):
+     #   print(movement.facing)
+      #  map(movement, pic_q)
+       # movement.turn(30)
+        #time.sleep(2)
+    
+    #follow_path(movement, pic_q)
     
 
 
     # TODO: Implement approach with autonomous movement.
-    # approach(movement, pic_q) 
+    approach(movement, pic_q) 
                 
     vt.join()
     #camera.close()
