@@ -165,6 +165,8 @@ class GridMovement:
 			x = x/abs(x)
 			y = y/abs(y)
 
+		x = x*-1
+
 		x = math.ceil(x) if x < 0 else math.floor(x)
 		y = math.ceil(y) if y < 0 else math.floor(y)
 		return (x,y)
