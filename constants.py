@@ -33,5 +33,5 @@ TARGET_HEIGHT = 15
 
 # Distance from beginning of camera range to center of robot
 CENTER_DISTANCE_UP = 6.5
-CENTER_DISTANCE_DOWN = 5
+CENTER_DISTANCE_DOWN = 6
 

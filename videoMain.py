@@ -13,7 +13,6 @@ from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, C
 from get_stats_from_image import get_angle, get_distance, get_data
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
-from nav.command import Command
 import queue, threading, serial, time, math
 from video_thread import VideoThread
 
@@ -37,11 +36,16 @@ def wait_for_button():
 
 def corrected_angle(angle, dist, cam_up=True):
     cd = CENTER_DISTANCE_UP if cam_up else CENTER_DISTANCE_DOWN
-    sign = 1 if angle < 0 else -1
+    sign = -1 if angle < 0 else 1
     angle = 180 - abs(angle)
     a = math.sqrt(math.pow(dist,2) + math.pow(cd, 2) - 2*dist*cd*math.cos(math.radians(angle)))
-    angle_c = math.asin(math.sin(math.radians(angle))*dist/a)
-    return math.ceil(180-angle-math.degrees(angle_c)) * sign
+    angle_c = math.degrees(math.asin(math.sin(math.radians(angle))*dist/a))
+    angle_b  = 180 -angle - angle_c
+    print(angle_c, angle_b)
+    if angle_c < angle_b:
+        return math.floor(angle_c) * sign
+    
+    return math.floor(angle_b) * sign 
 
 # TODO: Check if the block is actually picked up
 def check_pick_up():
@@ -54,20 +58,20 @@ def pick_up(movement, pic_q):
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     print("CAM DOWN: {}".format(object_stats))
-    time.sleep(5)
+    time.sleep(2)
     if not object_stats:
         print("CAM DOWN: NO OBJECT FOUND")
         movement.cam_up()
         movement.move(rev, 5)
-        time.sleep(5)
+        time.sleep(2)
         approach(movement, pic_q, True)
     else:
         print("CAM DOWN: Something located")
         for stats in object_stats:
-            if(stats[0] > 1 and stats[0] < 8):
+            if(stats[0] > 0 and stats[0] < 7):
                 print("MOVING TOWARDS TARGET")
                 angle = corrected_angle(stats[1], stats[2])
-                movement.turn(angle)
+                movement.turn(angle*-1)
                 
                 # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
                 movement.move(fwd, math.floor(stats[2]*.7))
@@ -88,10 +92,10 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
     target_found = False
     if object_stats:
         for stats in object_stats:
-            if(stats[0] > 1 and stats[0] < 8):
+            if(stats[0] > 0 and stats[0] < 7):
                 angle = corrected_angle(stats[1], stats[2]) 
-                movement.turn(angle)
-                movement.move(fwd, stats[2])
+                movement.turn(angle*-1)
+                movement.move(fwd, stats[2] - 2)
                 target_found = True
                 time.sleep(2)
                 pick_up(movement, pic_q)
@@ -139,8 +143,6 @@ def main():
     # Initialize queues
     pic_q = queue.LifoQueue(5)
     command_q = queue.Queue()
-    #Inizialize commands
-    commands = Command(command_q, ser)
     # Inizialize grid anf gridmovement
     grid = Grid(8,8)
     movement = GridMovement(grid, ser)

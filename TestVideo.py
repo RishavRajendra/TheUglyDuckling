@@ -62,10 +62,10 @@ def main():
 
             height_of_object_pixels = ymax - ymin
 
-            if classes[0][i] == 8:
+            if classes[0][i] == 7:
                 if scores[0][i] > 0.3:
                     inches = get_stats_from_image.get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
+            elif classes[0][i] == 1 or classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6:
                 if scores[0][i] > 0.3:
                     inches = get_stats_from_image.get_distance(1, height_of_object_pixels)
 

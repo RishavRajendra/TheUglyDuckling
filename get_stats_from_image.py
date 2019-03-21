@@ -56,9 +56,9 @@ def get_data(processed_frame, classes, boxes, scores):
 
             height_of_object_pixels = ymax - ymin
 
-            if classes[0][i] == 8:
+            if classes[0][i] == 7:
                 inches = get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
+            elif classes[0][i] == 1 or classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6:
                 inches = get_distance(1, height_of_object_pixels)
                 
             angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)

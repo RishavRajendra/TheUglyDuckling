@@ -126,7 +126,7 @@ class GridMovement:
 					self.current = mov
 				else:
 					checking_dup = False
-
+		
 		if dist > 12:
 			self.face(mov)
 			self.accelerate(dist, is_diagonal)
@@ -141,6 +141,9 @@ class GridMovement:
 		else:
 			result = self.translate_dir(result)
 			self.move(self.movement[result][0], dist)
+		self.current = mov
+		if not self.path:
+			self.face(self.goal)
 
 	# Face a tile connected to current tile
 	def face(self, obj):
@@ -205,15 +208,17 @@ class GridMovement:
 		y = math.ceil(y) if y > 0 else math.floor(y)
 		result = (self.current[0] + x, self.current[1] + y)
 		print(result)
-		if obj == 8:
+		if obj == 7:
 			self.grid.add_obstacle(result)
-		elif obj > 1 and obj < 7:
-			self.grid.add_target(result)
+			
+	def map_target(self,target):
+		self.grid.add_target(target)
 	# Communicates movement calls to Arduino
 	# MOVEMENT FUNCTIONS #
 
 	def turn(self,degrees):
 		turn_dir = self.rotl
+		print("Turning", degrees)
 		if(degrees < 0):
 			turn_dir = self.rotr
 
@@ -224,12 +229,15 @@ class GridMovement:
 		self.trim_facing()
 
 	def move(self,dir, dist):
+		print("Moving ", dist, " inches")
 		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
 		self.serial.write(byteArr)
 
 	def accelerate(self,dist, is_diagonal=False):
+		print("Accelerating ", dist, " inches")
 		byte = b'\x00' if is_diagonal else b'\x01'
 		byteArr = b'\x02' + self.fwd + bytes([dist]) + byte
+		self.serial.write(byteArr)
 
 	def pickup(self): 
 		byteArr = b'\x03'  + b'\x00' + b'\x00' + b'\x00'
