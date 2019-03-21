@@ -1,7 +1,6 @@
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, serial, time, math
-from nav.command import Command
 import json
 
 def corrected_angle(angle, dist):
@@ -11,16 +10,13 @@ def corrected_angle(angle, dist):
     return math.ceil(180-angle-math.degrees(angle_c))
     
 def map_JSON(filename, movement):
-
-	with open(filename, encoding='utf-8') as data_file:
-		data = json.loads(data_file.read())
-
-	size = data['size']
-	x_arr = data['x coords']
-	y_arr = data['y coords']
-	for i in range(size):
-		movement.map_target((x_arr[i], y_arr[i]))
-        
+    with open(filename, encoding='utf-8') as data_file:
+      data = json.loads(data_file.read())
+    size = data['size']
+    x_arr = data['x coords']
+    y_arr = data['y coords']
+    for i in range(size):
+      movement.map_target((x_arr[i], y_arr[i]))
 angle = 0
 dist = 0
 
@@ -36,6 +32,19 @@ for target in grid.targets:
     movement.find_path()
     print("Targets is ", target)
     for move in movement.path:
-        print("Current is ",movement.current)
-        print("Next move is ",move)
-        movement.follow_next_step()
+      print("Facing ", movement.facing, " degrees")
+      print("Current is ",movement.current)
+      print("Next move is ",move)
+      movement.follow_next_step()
+    if movement.facing % 45 == 0 and movement.facing % 90 is not 0:
+      movement.turn(45)
+    movement.goal = (4,4)
+    movement.find_path()
+    print("Targets is ", movement.goal)
+    for move in movement.path:
+      print("Facing ", movement.facing, " degrees")
+      print("Current is ",movement.current)
+      print("Next move is ",move)
+      movement.follow_next_step()
+    if movement.facing % 45 == 0 and movement.facing % 90 is not 0:
+      movement.turn(45)
