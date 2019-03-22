@@ -35,3 +35,6 @@ class Grid:
 	def add_target(self, target):
 		if (target not in self.targets):
 			self.targets.append(target)
+	
+	def get_obstacles(self):
+		return self.obstacles

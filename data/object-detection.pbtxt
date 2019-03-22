@@ -1,54 +1,40 @@
 item {
  id: 1
- name: 'start'
-}
-
-item {
- id: 2
  name: 'blockA'
 }
-
 item {
- id: 3
+ id: 2
  name: 'blockB'
 }
-
 item {
- id: 4
+ id: 3
  name: 'blockC'
 }
-
 item {
- id: 5
+ id: 4
  name: 'blockD'
 }
-
 item {
- id: 6
+ id: 5
  name: 'blockE'
 }
-
 item {
- id: 7
+ id: 6
  name: 'blockF'
 }
-
 item {
- id: 8
+ id: 7
  name: 'obstacle'
 }
-
 item {
- id: 9
+ id: 8
  name: 'side'
 }
-
 item {
- id: 10
+ id: 9
  name: 'slope'
 }
-
 item {
- id: 11
+ id: 10
  name: 'corner'
 }

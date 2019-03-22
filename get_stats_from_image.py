@@ -6,7 +6,7 @@ __status__ = "Development"
 
 import cv2
 import math
-from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PICKUP_SWEET_SPOTx1y1, PICKUP_SWEET_SPOTx2y2, PIXEL_PER_MM, ERROR_VAL, FOCAL_LENGTH, OBSTACLE_HEIGHT, TARGET_HEIGHT, CAM_DOWN_TARGET_HEIGHT
+from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PICKUP_SWEET_SPOTx1y1, PICKUP_SWEET_SPOTx2y2, PIXEL_PER_MM, ERROR_VAL, FOCAL_LENGTH, OBSTACLE_HEIGHT, TARGET_HEIGHT
 
 # angle = arctan((m2-m1)/(1+(m1*m2)))
 def get_angle(image, xmin, ymin, xmax, ymax):
@@ -56,9 +56,9 @@ def get_data(processed_frame, classes, boxes, scores):
 
             height_of_object_pixels = ymax - ymin
 
-            if classes[0][i] == 8:
+            if classes[0][i] == 7:
                 inches = get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
+            elif classes[0][i] == 1 or classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6:
                 inches = get_distance(1, height_of_object_pixels)
                 
             angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
@@ -66,32 +66,3 @@ def get_data(processed_frame, classes, boxes, scores):
             result.append([classes[0][i], angle, inches])
     return result
 
-# Returns the angle from the pickUpSweet spot, not from the center of the screen.
-def get_pickUp_data(processed_frame, classes, boxes, scores):
-    result = []
-    for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.5:
-            inches = 0
-            #extract pixel coordinates of detected objects
-            ymin = boxes[0][i][0]*300
-            xmin = boxes[0][i][1]*300
-            ymax = boxes[0][i][2]*300
-            xmax = boxes[0][i][3]*300
-
-            # Calculate mid_pount of the detected object
-            mid_x = (xmax + xmin) / 2
-            mid_y = (ymax + ymin) / 2
-
-            height_of_object_pixels = ymax - ymin
-
-            if classes[0][i] == 8:
-                inches = get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
-                inches = get_distance(1, height_of_object_pixels)
-                
-            angle = pick_up_get_angle(processed_frame, xmin, ymin, xmax, ymax)
-            if inches > 5:
-                result.append([classes[0][i], angle, 1, (mid_x, mid_y)])
-            else:
-                result.append([classes[0][i], angle, inches, (mid_x, mid_y)])
-    return result

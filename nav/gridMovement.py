@@ -39,10 +39,13 @@ class GridMovement:
 		self.path = []
 		self.movement = {
 			(0,1): [self.fwd, self.allmotors, 0], (0, -1): [self.rev, self.allmotors, 180],
-			(1,0): [self.strr, self.allmotors, 90], (-1, 0): [self.strl, self.allmotors, -90],
-			(1,1): [self.fwd, b'\x00', 45], (-1, 1): [self.fwd, b'\x00', -45],
-			(1,-1): [self.fwd, b'\x00', 135], (-1,-1): [self.fwd, b'\x00', -135]
+			(1,0): [self.strr, self.allmotors, -90], (-1, 0): [self.strl, self.allmotors, 90],
+			(1,1): [self.fwd, b'\x00', -45], (-1, 1): [self.fwd, b'\x00', 45],
+			(1,-1): [self.fwd, b'\x00', -135], (-1,-1): [self.fwd, b'\x00', 135]
 			}
+		
+	def get_obstacles(self):
+		return self.grid.get_obstacles()
 
 	# Not yet implemented
 	# If we haven't aquired a block yet, set closest block as goal.
@@ -106,6 +109,42 @@ class GridMovement:
 		# face goal after following path
 		self.face(self.goal)
 
+	def follow_next_step(self):
+		dist = 12
+		checking_dup = True
+		result = None
+		is_diagonal = False
+		mov = None
+		while checking_dup and self.path:
+			mov = self.path.pop(0)
+			result = (mov[0] - self.current[0], mov[1] - self.current[1])
+			if self.path:
+				nextMov = self.path[0]
+				nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
+				if nextResult == result:
+					dist = dist + 12
+					self.current = mov
+				else:
+					checking_dup = False
+		
+		if dist > 12:
+			self.face(mov)
+			self.accelerate(dist, is_diagonal)
+			if is_diagonal and self.path:
+				self.face(self.path[0])
+		elif is_diagonal:
+			self.face(mov)
+			result = self.translate_dir(result)
+			self.move(self.movement[result][0], dist)
+			if self.path:
+				self.face(self.path[0])
+		else:
+			result = self.translate_dir(result)
+			self.move(self.movement[result][0], dist)
+		self.current = mov
+		if not self.path:
+			self.face(self.goal)
+
 	# Face a tile connected to current tile
 	def face(self, obj):
 		result = (obj[0] - self.current[0], obj[1] - self.current[1])
@@ -132,42 +171,56 @@ class GridMovement:
 			x = x/abs(x)
 			y = y/abs(y)
 
+		x = x*-1
+
 		x = math.ceil(x) if x < 0 else math.floor(x)
 		y = math.ceil(y) if y < 0 else math.floor(y)
 		return (x,y)
 
-	def map(self,dist, angle):
+	def map(self,obj, angle, dist):
 		offset = 6
 		diag_offset = math.sqrt(288) / 2
-		angle_rads = math.radians(angle* -1 + self.facing)
+		angle_rads = math.radians((angle* -1) + self.facing)
 
 		o_length = math.sin(angle_rads) * dist
 		a_length = math.cos(angle_rads) * dist
 
-		if self.facing is EAST or self.facing is WEST:
-			x = math.ceil(a_length/12)
-			o_length is o_length + offset if o_length < 0 else o_length - offset
-			y = math.ceil(o_length/12)
+		if self.facing == EAST or self.facing == WEST:
+			x = a_length/12
+			if -offset<o_length<offset:
+				y= 0
+			else:
+				y = o_length is (o_length + offset)/12 if o_length < 0 else (o_length - offset)/12
 
-		elif self.facing is NORTH or self.facing is SOUTH:
-			a_length is a_length + offset if a_length < 0 else a_length - offset
-			x = math.ceil(a_length/12)
-			y = math.ceil(o_length/12)
+		elif self.facing == NORTH or self.facing == SOUTH:
+			if -offset<a_length<offset:
+				x = 0
+			else:
+				x = a_length is (a_length + offset)/12 if a_length < 0 else (a_length - offset)/12
+			y = o_length/12
 
 		else:
-			a_length is a_length + diag_offset if a_length < 0 else a_length - diag_offset
-			o_length is o_length + diag_offset if o_length < 0 else o_length - diag_offset
-			x = math.ceil(a_length/12)
-			y = math.ceil(o_length/12)
-		return (current[0] + x, current[1] + y)
+			x = (a_length + diag_offset)/math.sqrt(288) if a_length < 0 else (a_length - diag_offset)/math.sqrt(288)
+			y = (o_length + diag_offset)/math.sqrt(288) if o_length < 0 else (o_length - diag_offset)/math.sqrt(288)
+			
 
+		x = math.ceil(x) if x > 0 else math.floor(x)
+		y = math.ceil(y) if y > 0 else math.floor(y)
+		result = (self.current[0] + x, self.current[1] + y)
+		print(result)
+		if obj == 7:
+			self.grid.add_obstacle(result)
+			
+	def map_target(self,target):
+		self.grid.add_target(target)
 	# Communicates movement calls to Arduino
 	# MOVEMENT FUNCTIONS #
 
 	def turn(self,degrees):
-		turn_dir = self.rotr
+		turn_dir = self.rotl
+		print("Turning", degrees)
 		if(degrees < 0):
-			turn_dir = self.rotl
+			turn_dir = self.rotr
 
 		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
 		self.serial.write(byteArr)
@@ -176,12 +229,15 @@ class GridMovement:
 		self.trim_facing()
 
 	def move(self,dir, dist):
+		print("Moving ", dist, " inches")
 		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
 		self.serial.write(byteArr)
 
 	def accelerate(self,dist, is_diagonal=False):
+		print("Accelerating ", dist, " inches")
 		byte = b'\x00' if is_diagonal else b'\x01'
 		byteArr = b'\x02' + self.fwd + bytes([dist]) + byte
+		self.serial.write(byteArr)
 
 	def pickup(self): 
 		byteArr = b'\x03'  + b'\x00' + b'\x00' + b'\x00'
