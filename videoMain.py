@@ -57,14 +57,16 @@ def pick_up(movement, pic_q):
     time.sleep(2)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
+    dist = 0
+    angle = 0
     print("CAM DOWN: {}".format(object_stats))
     time.sleep(2)
     if not object_stats:
         print("CAM DOWN: NO OBJECT FOUND")
-        movement.cam_up()
-        movement.move(rev, 5)
-        time.sleep(2)
-        approach(movement, pic_q, True)
+        #movement.cam_up()
+        #movement.move(rev, 5)
+        #time.sleep(2)
+        approach(movement, pic_q, True, cam_up=False)
     else:
         print("CAM DOWN: Something located")
         for stats in object_stats:
@@ -72,11 +74,15 @@ def pick_up(movement, pic_q):
                 print("MOVING TOWARDS TARGET")
                 angle = corrected_angle(stats[1], stats[2])
                 movement.turn(angle*-1)
-                
+                dist = math.ceil(stats[2]*.7)
                 # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
-                movement.move(fwd, math.floor(stats[2]*.7))
-            time.sleep(5)
+                movement.move(fwd, dist)
+            time.sleep(2)
             movement.pickup()
+            time.sleep(2)
+            movement.move(rev, dist)
+            time.sleep(2)
+            movement.turn(angle)
 
 
 # TODO: Refine approach. Take care of edge cases.
@@ -86,6 +92,9 @@ def pick_up(movement, pic_q):
 def approach(movement, pic_q, first_call=True, cam_up=True):
     movement.cam_up() if cam_up else movement.cam_down()
     adj_degrees = 10 if first_call else -20
+    angle = 0
+    dist = 0
+    time.sleep(2)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     print("CAM UP: {}".format(object_stats))
@@ -95,7 +104,8 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
             if(stats[0] > 0 and stats[0] < 7):
                 angle = corrected_angle(stats[1], stats[2]) 
                 movement.turn(angle*-1)
-                movement.move(fwd, stats[2] - 2)
+                dist = stats[2] - 1
+                movement.move(fwd, dist)
                 target_found = True
                 time.sleep(2)
                 pick_up(movement, pic_q)
@@ -107,6 +117,10 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
         if not first_call and cam_up:
             movement.turn(10)
             approach(movement, pic_q, True, False)
+    else:
+        movement.move(rev, dist)
+        time.sleep(2)
+        movement.turn(angle)
 
 def map(movement, pic_q):
     processed_frame, classes, boxes, scores = pic_q.get()
@@ -123,6 +137,7 @@ def follow_path(movement, pic_q):
     while movement.path:
         print(movement.path)
         movement.follow_next_step()
+        time.sleep(2)
         map(movement, pic_q)
         for obs in movement.get_obstacles():
             if obs in movement.path:
@@ -159,12 +174,19 @@ def main():
        # movement.turn(30)
         #time.sleep(2)
     
-    #follow_path(movement, pic_q)
+    movement.goal = (4,1)
+    follow_path(movement, pic_q)
+    time.sleep(2)
     
 
 
     # TODO: Implement approach with autonomous movement.
     approach(movement, pic_q) 
+    time.sleep(2)
+    movement.goal = (4,4)
+    follow_path(movement,pic_q)
+    time.sleep(2)
+    movement.drop()
                 
     vt.join()
     #camera.close()
