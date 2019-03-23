@@ -11,7 +11,10 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  cam_up();
+  send_sensor_data();
+//  acceleration(fwd, 24, 350, 8, motion);
+//  turn(rotr, 35/1.22, 400);
+//  mov(fwd, 10, 400);
 }
 
 void loop() {
@@ -61,6 +64,9 @@ void runCommand(){
     else if (flag == 7){
       cam_down();
     }
+    else if(flag == 8){
+      send_sensor_data();
+    }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
   }
@@ -73,14 +79,14 @@ void pickup(){
   pinMode(3, OUTPUT);
   int i = 1850;
 
-  digitalWrite(2, HIGH);
+  digitalWrite(3, HIGH);
   delayMicroseconds(i);
-  digitalWrite(2, LOW);
+  digitalWrite(3, LOW);
   delay(10);
 
-  digitalWrite(3, HIGH);
+  digitalWrite(2, HIGH);
   delayMicroseconds(3000 - i);
-  digitalWrite(3, LOW);
+  digitalWrite(2, LOW);
   delay(10);
 }
 
@@ -89,14 +95,14 @@ void drop(){
   pinMode(3, OUTPUT);
   int i = 2500;
 
-  digitalWrite(2, HIGH);
+  digitalWrite(3, HIGH);
   delayMicroseconds(i);
-  digitalWrite(2, LOW);
+  digitalWrite(3, LOW);
   delay(10);
 
-  digitalWrite(3, HIGH);
+  digitalWrite(2, HIGH);
   delayMicroseconds(3000 - i);
-  digitalWrite(3, LOW);
+  digitalWrite(2, LOW);
   delay(10);
 }
 
@@ -105,45 +111,23 @@ void reset_servo(){
   pinMode(3, OUTPUT);
   int i = 500;
 
-  digitalWrite(2, HIGH);
+  digitalWrite(3, HIGH);
   delayMicroseconds(i);
-  digitalWrite(2, LOW);
+  digitalWrite(3, LOW);
   delay(10);
 
-  digitalWrite(3, HIGH);
+  digitalWrite(2, HIGH);
   delayMicroseconds(2999 - i);
-  digitalWrite(3, LOW);
+  digitalWrite(2, LOW);
   delay(10);
 }
 
 void cam_up(){
-  int speed = 2500;
-  int steps = 13;
-  int pin = 6;
-  int highDelay = speed;
-  int lowDelay = 20000 - steps;
-  pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
-    digitalWrite(pin, LOW);
-    delayMicroseconds(lowDelay);s
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(highDelay);
-  }
+  
 }
 
 void cam_down(){
-  int speed = 250;
-  int steps = 13;
-  int pin = 6;
-  int highDelay = speed;
-  int lowDelay = 20000 - steps;
-  pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
-    digitalWrite(pin, LOW);
-    delayMicroseconds(lowDelay);
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(highDelay);
-  }
+  
 }
 
 ////Move servos to default position
@@ -164,6 +148,24 @@ void cam_down(){
 //  delay(15);
 //  Servo1.write(0);
 //}
+
+/* Sensor Code */
+
+void send_sensor_data(){
+  float val = 0.0;
+  for (int i = 0; i < 5; i++){
+    val = analogRead(sensorpin);
+    val = calscale * pow(val, calpower);
+  }
+  float sum = 0;
+  for (int i = 0; i<5; i++){
+    val = analogRead(sensorpin);
+    val = calscale * pow(val, calpower);
+    sum += val;
+  }
+  int avg = sum/5; 
+  Serial.write(avg);
+}
 
 /*Motor Code*/
 

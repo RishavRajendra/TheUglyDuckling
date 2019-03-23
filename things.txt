@@ -1,0 +1,11 @@
+Filesystem      Size  Used Avail Use% Mounted on
+udev            1.9G     0  1.9G   0% /dev
+tmpfs           383M  1.9M  382M   1% /run
+/dev/sda2       289G   37G  238G  14% /
+tmpfs           1.9G  112M  1.8G   6% /dev/shm
+tmpfs           5.0M  4.0K  5.0M   1% /run/lock
+tmpfs           1.9G     0  1.9G   0% /sys/fs/cgroup
+/dev/sda1       511M  4.7M  507M   1% /boot/efi
+tmpfs           383M   20K  383M   1% /run/user/123
+tmpfs           383M   56K  383M   1% /run/user/1000
+/dev/sdb1       7.5G   12K  7.5G   1% /media/benji/32C5-4C3A

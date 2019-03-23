@@ -77,11 +77,8 @@ def pick_up(movement, pic_q):
                 dist = math.ceil(stats[2]*.7)
                 # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
                 movement.move(fwd, dist)
-            time.sleep(2)
             movement.pickup()
-            time.sleep(2)
             movement.move(rev, dist)
-            time.sleep(2)
             movement.turn(angle)
 
 
@@ -117,9 +114,9 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
         if not first_call and cam_up:
             movement.turn(10)
             approach(movement, pic_q, True, False)
+        movement.turn(adj_degrees*-1)
     else:
         movement.move(rev, dist)
-        time.sleep(2)
         movement.turn(angle)
 
 def map(movement, pic_q):
@@ -137,11 +134,18 @@ def follow_path(movement, pic_q):
     while movement.path:
         print(movement.path)
         movement.follow_next_step()
-        time.sleep(2)
         map(movement, pic_q)
         for obs in movement.get_obstacles():
             if obs in movement.path:
                 movement.path.clear()
+
+def get_sensor_data(serial):
+    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
+    serial.write(byteArr)
+    time.sleep(1)
+    return int.from_bytes(serial.read(1),'little')
+    
+
 
 def main():
     # Initialize frame rate calculation
