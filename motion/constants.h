@@ -32,14 +32,9 @@ float straight = 0.980;
 float arc180 = .3;
 float start_dis = .25;
 float threshold = 300;
+float turning_offset = 2.75;
 float tile_dist = 12;
 
-// Declare the Servo pin
-int servoPin1 = 9;
-int servoPin2 = 10;
-
-//Declare positions for servos
-int up1 = 0;
-int up2 = 180;
-int down1 = 70;
-int down2 = 110;
+int sensorpin = A1;
+float calscale = 59994.0;
+float calpower = -1.494;

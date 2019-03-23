@@ -27,24 +27,11 @@ grid = Grid(8,8)
 movement = GridMovement(grid, ser)
 map_JSON('mar1.json', movement)
 
-for target in grid.targets:
-    movement.goal = target
-    movement.find_path()
-    print("Targets is ", target)
-    for move in movement.path:
-      print("Facing ", movement.facing, " degrees")
-      print("Current is ",movement.current)
-      print("Next move is ",move)
-      movement.follow_next_step()
-    if movement.facing % 45 == 0 and movement.facing % 90 is not 0:
-      movement.turn(45)
-    movement.goal = (4,4)
-    movement.find_path()
-    print("Targets is ", movement.goal)
-    for move in movement.path:
-      print("Facing ", movement.facing, " degrees")
-      print("Current is ",movement.current)
-      print("Next move is ",move)
-      movement.follow_next_step()
-    if movement.facing % 45 == 0 and movement.facing % 90 is not 0:
-      movement.turn(45)
+def get_sensor_data(serial):
+    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
+    serial.write(byteArr)
+    time.sleep(1)
+    dist = int.from_bytes(serial.read(1),'little')
+    print(dist)
+
+get_sensor_data(ser)

@@ -213,6 +213,7 @@ class GridMovement:
 			
 	def map_target(self,target):
 		self.grid.add_target(target)
+
 	# Communicates movement calls to Arduino
 	# MOVEMENT FUNCTIONS #
 
@@ -261,14 +262,17 @@ class GridMovement:
 	def pickup(self): 
 		byteArr = b'\x03'  + b'\x00' + b'\x00' + b'\x00'
 		self.serial.write(byteArr)
+		time.sleep(1)
 
 	def drop(self): 
 		byteArr = b'\x04'  + b'\x00' + b'\x00' + b'\x00'
 		self.serial.write(byteArr)
+		time.sleep(1)
 
 	def reset_servo(self): 
 		byteArr = b'\x05'  + b'\x00' + b'\x00' + b'\x00'
 		self.serial.write(byteArr)
+		time.sleep(1)
 
 	def cam_up(self): 
 		byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
