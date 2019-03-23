@@ -11,10 +11,6 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  send_sensor_data();
-//  acceleration(fwd, 24, 350, 8, motion);
-//  turn(rotr, 35/1.22, 400);
-//  mov(fwd, 10, 400);
 }
 
 void loop() {
@@ -123,11 +119,33 @@ void reset_servo(){
 }
 
 void cam_up(){
-  
+  int speed = 2500;
+  int steps = 13;
+  int pin = 6;
+  int highDelay = speed;
+  int lowDelay = 20000 - steps;
+  pinMode(pin, OUTPUT);
+  for (int cnt=0; cnt < steps; cnt++){
+    digitalWrite(pin, LOW);
+    delayMicroseconds(lowDelay);
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(highDelay);
+  }
 }
 
 void cam_down(){
-  
+  int speed = 250;
+  int steps = 13;
+  int pin = 6;
+  int highDelay = speed;
+  int lowDelay = 20000 - steps;
+  pinMode(pin, OUTPUT);
+  for (int cnt=0; cnt < steps; cnt++){
+    digitalWrite(pin, LOW);
+    delayMicroseconds(lowDelay);
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(highDelay);
+  }
 }
 
 ////Move servos to default position
