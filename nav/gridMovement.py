@@ -180,7 +180,7 @@ class GridMovement:
 	def map(self,obj, angle, dist):
 		offset = 6
 		diag_offset = math.sqrt(288) / 2
-		angle_rads = math.radians((angle* -1) + self.facing)
+		angle_rads = math.radians((angle* -1) + math.radians(self.facing))
 
 		o_length = math.sin(angle_rads) * dist
 		a_length = math.cos(angle_rads) * dist
@@ -217,6 +217,7 @@ class GridMovement:
 	# MOVEMENT FUNCTIONS #
 
 	def turn(self,degrees):
+		slp_t = 0
 		turn_dir = self.rotl
 		print("Turning", degrees)
 		if(degrees < 0):
@@ -227,17 +228,35 @@ class GridMovement:
 		# Update current orientation 
 		self.facing = self.facing + degrees
 		self.trim_facing()
+		if abs(degrees) <= 45:
+			slp_t = 2
+		elif abs(degrees) <= 90:
+			slp_t = 3
+		elif abs(degrees) <= 135:
+			slp_t = 4
+		else:
+			slp_t = 5
+		time.sleep(slp_t)
 
 	def move(self,dir, dist):
 		print("Moving ", dist, " inches")
 		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
 		self.serial.write(byteArr)
+		time.sleep(3)
 
 	def accelerate(self,dist, is_diagonal=False):
 		print("Accelerating ", dist, " inches")
 		byte = b'\x00' if is_diagonal else b'\x01'
 		byteArr = b'\x02' + self.fwd + bytes([dist]) + byte
 		self.serial.write(byteArr)
+		
+		if dist <= 24:
+			slp_t = 3
+		elif dist <= 48:
+			slp_t = 4
+		else:
+			slp_t = 5
+		time.sleep(slp_t)
 
 	def pickup(self): 
 		byteArr = b'\x03'  + b'\x00' + b'\x00' + b'\x00'
@@ -254,7 +273,11 @@ class GridMovement:
 	def cam_up(self): 
 		byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
 		self.serial.write(byteArr)
+		# Give video thread time to collect new image
+		time.sleep(2)
 
 	def cam_down(self): 
 		byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
 		self.serial.write(byteArr)
+		# Give video thread time to collect new image
+		time.sleep(2)
