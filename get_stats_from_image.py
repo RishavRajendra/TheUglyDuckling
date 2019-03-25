@@ -5,7 +5,7 @@ __license__ = "MIT"
 __status__ = "Development"
 
 import cv2
-import math
+import math, time
 from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PIXEL_PER_MM, ERROR_VAL, FOCAL_LENGTH, OBSTACLE_HEIGHT, TARGET_HEIGHT, MOTHERSHIP_SIDE_HEIGHT, MOTHERSHIP_SLOPE_HEIGHT
 
 # angle = arctan((m2-m1)/(1+(m1*m2)))
@@ -25,10 +25,20 @@ def pick_up_get_angle(image, xmin, ymin, xmax, ymax):
     div = (m2-m1) / (1+(m1*m2))
     return int(math.degrees(math.atan(div)))
 
-# object_type = 0 (obstacle)
-# object type = 1 (target)
-# object type = 2 (side)
-# object type = 3 (slope)
+# Returns angle from the mothership side
+def mothership_angle(boxes_midpoint):
+    m1 = ((boxes_midpoint[0][1] - boxes_midpoint[1][1])/(boxes_midpoint[0][0] - boxes_midpoint[1][0]))
+    # m2 is a straight horizontal line. y2 - y1 is zero
+    m2 = 0
+    div = (m2-m1) / (1+(m1*m2))
+    return -1*int(math.degrees(math.atan(div)))
+
+"""
+object_type = 0 (obstacle)
+object type = 1 (target)
+object type = 2 (side)
+object type = 3 (slope)
+"""
 def get_distance(object_type, height_of_object_pixels):
     if object_type == 0:
         return int(((OBSTACLE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
@@ -39,16 +49,31 @@ def get_distance(object_type, height_of_object_pixels):
     if object_type == 3:
         return int(((MOTHERSHIP_SLOPE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
         
-# object_type = 0 (obstacle)
-# object type = 1 (target)
 def cam_down_distance(height_of_object_pixels):
     return int(((CAM_DOWN_TARGET_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
+
+"""
+Returns the average distance of the object infront of the mothership
+Mid-range IR sensor connected to the Arduino Mega 2560
+Raspberry pi gets data using serial
+"""
+def get_sensor_data(serial):
+    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
+    serial.write(byteArr)
+    time.sleep(1)
+    dist = int.from_bytes(serial.read(1),'little')
+    if dist > 4 and dist <= 15:
+        return dist - 3
+    if dist > 15:
+        return dist - 4
+    else:
+        return 0
 
 # Returns [object_name, angle, inches]
 def get_data(processed_frame, classes, boxes, scores):
     result = []
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.5:
+        if scores[0][i] > 0.4:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300
@@ -59,16 +84,46 @@ def get_data(processed_frame, classes, boxes, scores):
             # Calculate mid_pount of the detected object
             mid_x = (xmax + xmin) / 2
             mid_y = (ymax + ymin) / 2
-
+            
+            # Calculate height of the object located for distance measurements
             height_of_object_pixels = ymax - ymin
-
-            if classes[0][i] == 7:
-                inches = get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 1 or classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6:
+            
+            """
+            classes 1 to 6 are the six target blocks
+            class 7 is the obstacle with the ping-pong ball on top
+            class 8 is the side of the mothership
+            class 9 is the slope of the mothership
+            """
+            if classes[0][i] > 0 and classes[0][i] < 7:
                 inches = get_distance(1, height_of_object_pixels)
-                
+            elif classes[0][i] == 7:
+                inches = get_distance(0, height_of_object_pixels)
+            elif classes[0][i] == 8:
+                inches = get_distance(2, height_of_object_pixels)
+            elif classes[0][i] == 9:
+                inches = get_distance(3, height_of_object_pixels)
             angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
-            #print('{} detected at {}{} {} inches away. Midpoint:({},{}). Height: {}'.format(classes[0][i],angle,chr(176),inches, int(mid_x), int(mid_y), int(height_of_object_pixels)))
-            result.append([classes[0][i], angle, inches])
+            print('{} detected at {}{} {} inches away. Midpoint:({},{}). Height: {}'.format(classes[0][i],angle,chr(176),inches, int(mid_x), int(mid_y), int(height_of_object_pixels)))
+            result.append([int(classes[0][i]), angle, inches])
     return result
+    
+def get_midpoint(processed_frame, classes, boxes, scores):
+    result = []
+    for i, b in enumerate(boxes[0]):
+        if scores[0][i] > 0.4:
+            inches = 0
+            #extract pixel coordinates of detected objects
+            ymin = boxes[0][i][0]*300
+            xmin = boxes[0][i][1]*300
+            ymax = boxes[0][i][2]*300
+            xmax = boxes[0][i][3]*300
 
+            # Calculate mid_pount of the detected object
+            mid_x = (xmax + xmin) / 2
+            mid_y = (ymax + ymin) / 2
+            
+            # Calculate height of the object located for distance measurements
+            height_of_object_pixels = ymax - ymin
+            
+            result.append([int(classes[0][i]), (int(mid_x), int(mid_y))])
+    return result

@@ -11,6 +11,7 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
+  cam_up();
 }
 
 void loop() {
@@ -147,25 +148,6 @@ void cam_down(){
     delayMicroseconds(highDelay);
   }
 }
-
-////Move servos to default position
-//void resetArms(){
-//  Servo1.write(up1);
-//  Servo2.write(up2);
-//}
-//
-////Moves into position to pick up object
-//void armsDown(){
-//  Servo1.write(down1);
-//  Servo2.write(down2);
-//}
-//
-////Pick up and hold objects
-//void pickup(){
-//  Servo2.write(180);
-//  delay(15);
-//  Servo1.write(0);
-//}
 
 /* Sensor Code */
 
