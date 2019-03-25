@@ -28,5 +28,7 @@ grid = Grid(8,8)
 movement = GridMovement(grid, ser)
 map_JSON('mar1.json', movement)
 
+
 movement.facing = 45
 movement.grid_turn(135)
+

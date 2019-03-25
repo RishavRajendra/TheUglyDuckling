@@ -11,7 +11,10 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  cam_up();
+  send_sensor_data();
+//  acceleration(fwd, 24, 350, 8, motion);
+//  turn(rotr, 35/1.22, 400);
+//  mov(fwd, 10, 400);
 }
 
 void loop() {
@@ -140,18 +143,25 @@ void cam_up(){
 }
 
 void cam_down(){
-  int speed = 250;
-  int steps = 13;
-  int pin = 6;
-  int highDelay = speed;
-  int lowDelay = 20000 - steps;
-  pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
-    digitalWrite(pin, LOW);
-    delayMicroseconds(lowDelay);
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(highDelay);
+  
+}
+
+/* Sensor Code */
+
+void send_sensor_data(){
+  float val = 0.0;
+  for (int i = 0; i < 5; i++){
+    val = analogRead(sensorpin);
+    val = calscale * pow(val, calpower);
   }
+  float sum = 0;
+  for (int i = 0; i<5; i++){
+    val = analogRead(sensorpin);
+    val = calscale * pow(val, calpower);
+    sum += val;
+  }
+  int avg = sum/5; 
+  Serial.write(avg);
 }
 
 /* Sensor Code */

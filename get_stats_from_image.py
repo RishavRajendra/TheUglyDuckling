@@ -6,7 +6,7 @@ __status__ = "Development"
 
 import cv2
 import math
-from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PICKUP_SWEET_SPOTx1y1, PICKUP_SWEET_SPOTx2y2, PIXEL_PER_MM, ERROR_VAL, FOCAL_LENGTH, OBSTACLE_HEIGHT, TARGET_HEIGHT
+from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PIXEL_PER_MM, ERROR_VAL, FOCAL_LENGTH, OBSTACLE_HEIGHT, TARGET_HEIGHT, MOTHERSHIP_SIDE_HEIGHT, MOTHERSHIP_SLOPE_HEIGHT
 
 # angle = arctan((m2-m1)/(1+(m1*m2)))
 def get_angle(image, xmin, ymin, xmax, ymax):
@@ -27,11 +27,17 @@ def pick_up_get_angle(image, xmin, ymin, xmax, ymax):
 
 # object_type = 0 (obstacle)
 # object type = 1 (target)
+# object type = 2 (side)
+# object type = 3 (slope)
 def get_distance(object_type, height_of_object_pixels):
     if object_type == 0:
         return int(((OBSTACLE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
     if object_type == 1:
         return int(((TARGET_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
+    if object_type == 2:
+        return int(((MOTHERSHIP_SIDE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
+    if object_type == 3:
+        return int(((MOTHERSHIP_SLOPE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
         
 # object_type = 0 (obstacle)
 # object type = 1 (target)
