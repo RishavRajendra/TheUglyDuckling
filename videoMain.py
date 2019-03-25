@@ -167,6 +167,8 @@ def main():
 
     wait_for_button()
     time.sleep(2)
+    
+    movement.move(fwd, 17)
 
     #for _ in range(12):
      #   print(movement.facing)
@@ -174,19 +176,18 @@ def main():
        # movement.turn(30)
         #time.sleep(2)
     
-    movement.goal = (4,1)
-    follow_path(movement, pic_q)
-    time.sleep(2)
-    
+    #movement.goal = (4,1)
+    #follow_path(movement, pic_q)
+      
 
 
     # TODO: Implement approach with autonomous movement.
-    approach(movement, pic_q) 
-    time.sleep(2)
-    movement.goal = (4,4)
-    follow_path(movement,pic_q)
-    time.sleep(2)
-    movement.drop()
+    #approach(movement, pic_q) 
+    #time.sleep(2)
+    #movement.goal = (4,4)
+    #follow_path(movement,pic_q)
+    #time.sleep(2)
+    #movement.drop()
                 
     vt.join()
     #camera.close()

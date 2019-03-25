@@ -2,6 +2,7 @@ from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, serial, time, math
 import json
+from constants import strr,strl, fwd
 
 def corrected_angle(angle, dist):
     angle = 180 - angle
@@ -27,24 +28,5 @@ grid = Grid(8,8)
 movement = GridMovement(grid, ser)
 map_JSON('mar1.json', movement)
 
-for target in grid.targets:
-    movement.goal = target
-    movement.find_path()
-    print("Targets is ", target)
-    for move in movement.path:
-      print("Facing ", movement.facing, " degrees")
-      print("Current is ",movement.current)
-      print("Next move is ",move)
-      movement.follow_next_step()
-    if movement.facing % 45 == 0 and movement.facing % 90 is not 0:
-      movement.turn(45)
-    movement.goal = (4,4)
-    movement.find_path()
-    print("Targets is ", movement.goal)
-    for move in movement.path:
-      print("Facing ", movement.facing, " degrees")
-      print("Current is ",movement.current)
-      print("Next move is ",move)
-      movement.follow_next_step()
-    if movement.facing % 45 == 0 and movement.facing % 90 is not 0:
-      movement.turn(45)
+movement.facing = 45
+movement.grid_turn(135)

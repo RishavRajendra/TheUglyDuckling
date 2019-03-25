@@ -34,7 +34,3 @@ item {
  id: 9
  name: 'slope'
 }
-item {
- id: 10
- name: 'corner'
-}

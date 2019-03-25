@@ -237,12 +237,41 @@ class GridMovement:
 		else:
 			slp_t = 5
 		time.sleep(slp_t)
+	
+	def grid_turn(self, degrees):
+		strafe = self.strr if degrees > 0 else self.strl
+		sign = 1 if degrees > 0 else -1
+		facing_is_diag = False if self.facing % 90 == 0 or self.facing == 0 else True
+		turn_is_diag = False if degrees % 90 == 0 or degrees == 0 else True 
+		
+		if not facing_is_diag and degrees > 0:
+				temp = 90*sign if abs(degrees) > 45 else 45*sign 
+				self.move(strafe, 255)
+				self.turn(temp)
+				if not degrees == 45:
+					self.move(strafe, 255)
+				self.grid_turn(degrees - temp)
+		elif degrees > 0:
+				temp = 45 * sign
+				self.turn(temp)
+				self.move(strafe, 255)
+				self.grid_turn(degrees - temp)
+				
 
 	def move(self,dir, dist):
+		slp_t = 0
+		if dist < 5:
+			slp_t = 1
+		elif dist < 10:
+			slp_t = 2
+		elif dist == 255:
+			slp_t = 2
+		else:
+			slp_t = 3
 		print("Moving ", dist, " inches")
 		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
 		self.serial.write(byteArr)
-		time.sleep(3)
+		time.sleep(slp_t)
 
 	def accelerate(self,dist, is_diagonal=False):
 		print("Accelerating ", dist, " inches")
