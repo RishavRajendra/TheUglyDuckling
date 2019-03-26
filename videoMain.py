@@ -10,7 +10,7 @@ import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev
-from get_stats_from_image import get_angle, get_distance, get_data
+from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, get_midpoint, mothership_angle
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, threading, serial, time, math
@@ -153,7 +153,67 @@ def get_sensor_data(serial):
     serial.write(byteArr)
     time.sleep(1)
     return int.from_bytes(serial.read(1),'little')
+
+""" 
+Approach mothership from close
+Assuming that the robot is atleast pointed towards the mothership
+Gets close the the mothership and calls mothership side angle
+"""
+def approach_mothership_side(movement, pic_q, serial):
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_data(processed_frame, classes, boxes, scores)
     
+    # Get current distance with IR sensor for validation
+    distance_from_sensor = get_sensor_data(serial)
+    print("Distance from sensor: {}".format(distance_from_sensor))
+    print(object_stats)
+    
+    if object_stats:
+        for stats in object_stats:
+            if stats[0] == 8:
+                movement.turn(corrected_angle(stats[1], stats[2]))
+                if abs(distance_from_sensor - stats[2]) <= 5:
+                    print("----------------Moving forward--------------")
+                    movement.move(fwd, int((distance_from_sensor+stats[2])/2))
+                    movement.cam_down()
+                    mothership_side_angle(movement, pic_q, serial)
+                else:
+                    print("-------------Validation Failed-----------------")
+                    # TODO: Handle edge cases
+                    approach_mothership_side(movement, pic_q, serial)
+    else:
+        # TODO: Handle edge cases
+        approach_mothership_side(movement, pic_q, serial)
+
+"""
+Turns the angle it believes the mothership is at from the front of the robot
+"""
+def mothership_side_angle(movement, pic_q, serial):
+    distance_from_sensor = get_sensor_data(serial)
+    # If sensor says the block is too far away, go forward 1 inch
+    if distance_from_sensor != 0:
+        movement.move(fwd, 1)
+        mothership_side_angle(movement, pic_q, serial)
+
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_midpoint(processed_frame, classes, boxes, scores)
+    
+    boxes_midpoint = []
+    # Get midpoints of letters inside the mothership
+    if object_stats:
+        for stats in object_stats:
+            if stats[0] > 0 and stats[0] < 7:
+                boxes_midpoint.append(stats[1])
+                    
+    print(boxes_midpoint)
+    if len(boxes_midpoint) >= 2:
+        angle = mothership_angle(boxes_midpoint)
+        # Turn to be somewhat parallel to the mothership
+        movement.turn(angle)
+        # TODO: strr or strl depending on the position to drop stuff
+    else:
+        # TODO: Have fun!
+        pass
 
 
 def main():
