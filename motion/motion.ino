@@ -143,7 +143,18 @@ void cam_up(){
 }
 
 void cam_down(){
-  
+  int speed = 250;
+  int steps = 13;
+  int pin = 6;
+  int highDelay = speed;
+  int lowDelay = 20000 - steps;
+  pinMode(pin, OUTPUT);
+  for (int cnt=0; cnt < steps; cnt++){
+    digitalWrite(pin, LOW);
+    delayMicroseconds(lowDelay);
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(highDelay);
+  }
 }
 
 /* Sensor Code */

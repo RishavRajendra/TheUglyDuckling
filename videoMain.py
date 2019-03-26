@@ -129,6 +129,13 @@ def map(movement, pic_q):
         print(obj_type, angle, dist)
         movement.map(obj_type, angle, dist)
 
+def begin_round(movement, pic_q):
+    for _ in range(12):
+        movement.turn(-30)
+        if movement.facing % 90 == 0 or movement.facing == 0:
+            movement.move(strl, 255)
+        map(movement, pic_q)
+
 def follow_path(movement, pic_q):
     movement.find_path()
     while movement.path:
