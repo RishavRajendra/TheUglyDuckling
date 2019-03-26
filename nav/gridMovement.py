@@ -150,7 +150,7 @@ class GridMovement:
 		result = (obj[0] - self.current[0], obj[1] - self.current[1])
 		result = self.translate_dir(result)
 		degrees = self.movement[result][2]
-		self.turn(degrees)
+		self.grid_turn(degrees)
 
 	# Should be called anytime facing is updated
 	# Keeps facing between 0 and 360 
@@ -178,28 +178,43 @@ class GridMovement:
 		return (x,y)
 
 	def map(self,obj, angle, dist):
+		if abs(angle) > 25:
+			return
 		offset = 6
-		diag_offset = math.sqrt(288) / 2
-		angle_rads = math.radians((angle* -1) + math.radians(self.facing))
+		cam_offset = 4
+		diag_offset = 8#math.sqrt(288) / 2
+		angle_rads = math.radians((angle* -1) + self.facing)
 
 		o_length = math.sin(angle_rads) * dist
 		a_length = math.cos(angle_rads) * dist
 
 		if self.facing == EAST or self.facing == WEST:
-			x = a_length/12
+			if -cam_offset<a_length<cam_offset:
+				x = 0
+			else:
+				x =  (a_length+cam_offset)/12 if a_length < 0 else (a_length - offset)/12
 			if -offset<o_length<offset:
 				y= 0
 			else:
-				y = o_length is (o_length + offset)/12 if o_length < 0 else (o_length - offset)/12
+				y = (o_length + offset)/12 if o_length < 0 else (o_length - offset)/12
+			if x == 0 and y == 0:
+				x = 1 if self.facing == EAST else -1 
 
 		elif self.facing == NORTH or self.facing == SOUTH:
 			if -offset<a_length<offset:
 				x = 0
 			else:
-				x = a_length is (a_length + offset)/12 if a_length < 0 else (a_length - offset)/12
-			y = o_length/12
+				x = (a_length + offset)/12 if a_length < 0 else (a_length - offset)/12
+			if -cam_offset<o_length<cam_offset:
+				y = 0
+			else:
+				y = (o_length+cam_offset)/12 if o_length < 0 else (o_length - offset)/12
+			if x == 0 and y == 0:
+				y = 1 if self.facing == NORTH else -1
 
 		else:
+			if dist > 39:
+				return
 			x = (a_length + diag_offset)/math.sqrt(288) if a_length < 0 else (a_length - diag_offset)/math.sqrt(288)
 			y = (o_length + diag_offset)/math.sqrt(288) if o_length < 0 else (o_length - diag_offset)/math.sqrt(288)
 			
@@ -218,17 +233,18 @@ class GridMovement:
 	# MOVEMENT FUNCTIONS #
 
 	def turn(self,degrees):
-		slp_t = 0
-		turn_dir = self.rotr
-		print("Turning", degrees)
-		if(degrees < 0):
-			turn_dir = self.rotl
-
-		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
-		self.serial.write(byteArr)
 		# Update current orientation 
 		self.facing = self.facing + degrees
 		self.trim_facing()
+		slp_t = 0
+		turn_dir = self.rotl
+		print("Turning", degrees)
+		if(degrees < 0):
+			turn_dir = self.rotr
+
+		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
+		self.serial.write(byteArr)
+		
 		if abs(degrees) <= 45:
 			slp_t = 2
 		elif abs(degrees) <= 90:

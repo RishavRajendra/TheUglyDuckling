@@ -9,7 +9,7 @@ import numpy as np
 import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev, strl, strr
 from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, get_midpoint, mothership_angle
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
@@ -104,11 +104,9 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
                 dist = stats[2] - 1
                 movement.move(fwd, dist)
                 target_found = True
-                time.sleep(2)
                 pick_up(movement, pic_q)
     if not target_found:
         movement.turn(adj_degrees)
-        time.sleep(2)
         if first_call:
             approach(movement, pic_q, False, cam_up)
         if not first_call and cam_up:
@@ -120,6 +118,7 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
         movement.turn(angle)
 
 def map(movement, pic_q):
+    print(movement.facing)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     for stat in object_stats:
@@ -136,6 +135,7 @@ def begin_round(movement, pic_q):
         movement.turn(-30)
         if movement.facing % 90 == 0 or movement.facing == 0:
             movement.move(strl, 255)
+        time.sleep(2)
         map(movement, pic_q)
 
 def follow_path(movement, pic_q):
@@ -241,26 +241,24 @@ def main():
     wait_for_button()
     time.sleep(2)
     
-    movement.move(fwd, 17)
 
-    #for _ in range(12):
-     #   print(movement.facing)
-      #  map(movement, pic_q)
-       # movement.turn(30)
-        #time.sleep(2)
-    
-    #movement.goal = (4,1)
-    #follow_path(movement, pic_q)
-      
-
-
-    # TODO: Implement approach with autonomous movement.
-    #approach(movement, pic_q) 
-    #time.sleep(2)
-    #movement.goal = (4,4)
-    #follow_path(movement,pic_q)
-    #time.sleep(2)
-    #movement.drop()
+    drop_point = (7,0)
+    begin_round(movement, pic_q)
+    print(movement.get_obstacles())
+    targs = [(4,1),(1,4)]
+    #for item in targs:
+     #   movement.goal = item
+      #  follow_path(movement, pic_q)
+       # approach(movement, pic_q)
+        #if not movement.facing % 90 == 0 or not movement.facing == 0:
+         #   movement.turn(movement.facing-90)
+        #movement.goal = drop_point
+        #follow_path(movement, pic_q)
+        #movement.move(fwd, 6)
+        #movement.drop()
+        #movement.move(rev, 6)
+        #if not movement.facing % 90 == 0 or not movement.facing == 0:
+         #   movement.turn(movement.facing-90)
                 
     vt.join()
     #camera.close()

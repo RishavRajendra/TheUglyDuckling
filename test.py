@@ -29,6 +29,6 @@ movement = GridMovement(grid, ser)
 map_JSON('mar1.json', movement)
 
 
-movement.facing = 45
-movement.grid_turn(135)
+movement.facing = 210
+movement.map(7, -16, 70)
 
