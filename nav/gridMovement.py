@@ -219,10 +219,10 @@ class GridMovement:
 
 	def turn(self,degrees):
 		slp_t = 0
-		turn_dir = self.rotl
+		turn_dir = self.rotr
 		print("Turning", degrees)
 		if(degrees < 0):
-			turn_dir = self.rotr
+			turn_dir = self.rotl
 
 		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
 		self.serial.write(byteArr)

@@ -11,10 +11,7 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  send_sensor_data();
-//  acceleration(fwd, 24, 350, 8, motion);
-//  turn(rotr, 35/1.22, 400);
-//  mov(fwd, 10, 400);
+  cam_up();
 }
 
 void loop() {
