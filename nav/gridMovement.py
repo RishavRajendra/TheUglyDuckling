@@ -109,41 +109,73 @@ class GridMovement:
 		# face goal after following path
 		self.face(self.goal)
 
+	# def follow_next_step(self):
+	# 	dist = 12
+	# 	checking_dup = True
+	# 	result = None
+	# 	is_diagonal = False
+	# 	mov = None
+	# 	while checking_dup and self.path:
+	# 		mov = self.path.pop(0)
+	# 		result = (mov[0] - self.current[0], mov[1] - self.current[1])
+	# 		if self.path:
+	# 			nextMov = self.path[0]
+	# 			nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
+	# 			if nextResult == result:
+	# 				dist = dist + 12
+	# 				self.current = mov
+	# 			else:
+	# 				checking_dup = False
+		
+	# 	if dist > 12:
+	# 		self.face(mov)
+	# 		self.accelerate(dist, is_diagonal)
+	# 		if is_diagonal and self.path:
+	# 			self.face(self.path[0])
+	# 	elif is_diagonal:
+	# 		self.face(mov)
+	# 		result = self.translate_dir(result)
+	# 		self.move(self.movement[result][0], dist)
+	# 		if self.path:
+	# 			self.face(self.path[0])
+	# 	else:
+	# 		result = self.translate_dir(result)
+	# 		self.move(self.movement[result][0], dist)
+	# 	self.current = mov
+	# 	if not self.path:
+	# 		self.face(self.goal)
+
+	def facing_next_step(self):
+		mov = self.path[0]
+		result = (mov[0] - current[0], mov[1] - current[1])
+		return self.translate_dir(result) == (0,1)
+
 	def follow_next_step(self):
 		dist = 12
-		checking_dup = True
-		result = None
-		is_diagonal = False
-		mov = None
-		while checking_dup and self.path:
-			mov = self.path.pop(0)
-			result = (mov[0] - self.current[0], mov[1] - self.current[1])
-			if self.path:
-				nextMov = self.path[0]
-				nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
-				if nextResult == result:
-					dist = dist + 12
-					self.current = mov
-				else:
-					checking_dup = False
 		
-		if dist > 12:
+		
+		if not facing_next_step:
 			self.face(mov)
-			self.accelerate(dist, is_diagonal)
-			if is_diagonal and self.path:
-				self.face(self.path[0])
-		elif is_diagonal:
-			self.face(mov)
-			result = self.translate_dir(result)
-			self.move(self.movement[result][0], dist)
-			if self.path:
-				self.face(self.path[0])
 		else:
-			result = self.translate_dir(result)
-			self.move(self.movement[result][0], dist)
-		self.current = mov
-		if not self.path:
-			self.face(self.goal)
+			checking_dup = True
+			while checking_dup and self.path:
+				mov = self.path.pop(0)
+				result = (mov[0] - self.current[0], mov[1] - self.current[1])
+				if self.path:
+					nextMov = self.path[0]
+					nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
+					if nextResult == result:
+						dist = dist + 12
+						self.current = mov
+					else:
+						checking_dup = False
+
+			if dist > 12:
+				self.accelerate(self.fwd, dist)
+			else:
+				self.move(self.fwd, dist)
+
+
 
 	# Face a tile connected to current tile
 	def face(self, obj):

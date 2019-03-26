@@ -129,12 +129,8 @@ def map(movement, pic_q):
         movement.map(obj_type, angle, dist)
 
 def begin_round(movement, pic_q):
-    for _ in range(12):
-        if movement.facing % 90 == 0 or movement.facing == 0:
-            movement.move(strl, 255)
-        movement.turn(-30)
-        if movement.facing % 90 == 0 or movement.facing == 0:
-            movement.move(strl, 255)
+    for _ in range(8):
+        movement.grid_turn(45)
         time.sleep(2)
         map(movement, pic_q)
 
@@ -147,6 +143,8 @@ def follow_path(movement, pic_q):
         for obs in movement.get_obstacles():
             if obs in movement.path:
                 movement.path.clear()
+                movement.find_path()
+    movement.face(movement.goal)
 
 def get_sensor_data(serial):
     byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
