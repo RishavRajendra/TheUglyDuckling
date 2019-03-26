@@ -131,6 +131,8 @@ def map(movement, pic_q):
 
 def begin_round(movement, pic_q):
     for _ in range(12):
+        if movement.facing % 90 == 0 or movement.facing == 0:
+            movement.move(strl, 255)
         movement.turn(-30)
         if movement.facing % 90 == 0 or movement.facing == 0:
             movement.move(strl, 255)
