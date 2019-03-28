@@ -244,10 +244,10 @@ def main():
     time.sleep(2)
     
 
-    drop_point = (7,0)
+    drop_point = (7,7)
     begin_round(movement, pic_q)
     print(movement.get_obstacles())
-    targs = [(4,1),(1,4)]
+    targs = [(1,6),(7,0)]
     
     # move to target, pick up
     # move to drop_point and drop block until no more targets

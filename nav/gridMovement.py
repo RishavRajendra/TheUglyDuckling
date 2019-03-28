@@ -148,14 +148,14 @@ class GridMovement:
 
 	def facing_next_step(self):
 		mov = self.path[0]
-		result = (mov[0] - current[0], mov[1] - current[1])
+		result = (mov[0] - self.current[0], mov[1] - self.current[1])
 		return self.translate_dir(result) == (0,1)
 
 	def follow_next_step(self):
 		dist = 12
 		
-		
-		if not facing_next_step:
+		mov = self.path[0]
+		if not self.facing_next_step():
 			self.face(mov)
 		else:
 			checking_dup = True
@@ -172,7 +172,7 @@ class GridMovement:
 						checking_dup = False
 
 			if dist > 12:
-				self.accelerate(self.fwd, dist)
+				self.accelerate(dist)
 			else:
 				self.move(self.fwd, dist)
 			self.current = mov
