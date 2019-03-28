@@ -174,6 +174,7 @@ class GridMovement:
 				self.accelerate(self.fwd, dist)
 			else:
 				self.move(self.fwd, dist)
+			self.current = mov
 
 
 
@@ -182,7 +183,7 @@ class GridMovement:
 		result = (obj[0] - self.current[0], obj[1] - self.current[1])
 		result = self.translate_dir(result)
 		degrees = self.movement[result][2]
-		self.grid_turn(degrees)
+		self.turn(degrees)
 
 	# Should be called anytime facing is updated
 	# Keeps facing between 0 and 360 
@@ -209,12 +210,13 @@ class GridMovement:
 		y = math.ceil(y) if y < 0 else math.floor(y)
 		return (x,y)
 
+
 	def map(self,obj, angle, dist):
 		if abs(angle) > 25:
 			return
 		offset = 6
-		cam_offset = 4
-		diag_offset = 8#math.sqrt(288) / 2
+		cam_offset = 2.5
+		diag_offset = 4#math.sqrt(288) / 2
 		angle_rads = math.radians((angle* -1) + self.facing)
 
 		o_length = math.sin(angle_rads) * dist
@@ -287,7 +289,7 @@ class GridMovement:
 			slp_t = 5
 		time.sleep(slp_t)
 	
-	def grid_turn(self, degrees):
+	def old_grid_turn(self, degrees):
 		strafe = self.strr if degrees > 0 else self.strl
 		sign = 1 if degrees > 0 else -1
 		facing_is_diag = False if self.facing % 90 == 0 or self.facing == 0 else True
@@ -305,6 +307,10 @@ class GridMovement:
 				self.turn(temp)
 				self.move(strafe, 255)
 				self.grid_turn(degrees - temp)
+
+	def grid_turn(self, degrees):
+		if abs(degrees) == 90:
+
 				
 
 	def move(self,dir, dist):

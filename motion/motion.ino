@@ -11,12 +11,16 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  cam_up();
+  send_sensor_data();
+//  acceleration(fwd, 24, 350, 8, motion);
+  turn(rotl, 90, 400, 0);
+  mov45(rev, 3, 400, motion45right);
+//  mov(fwd, 10, 400);
 }
 
 void loop() {
-  readPython();
-  runCommand();
+//  readPython();
+//  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
@@ -38,12 +42,7 @@ void runCommand(){
     byte data3 = queue.pop();
     
     if (flag == 0){
-      long del = 400;
-      if (data2 == 255){
-        data2 = turning_offset;
-        del = 700;
-      }
-     mov(data1, data2, del);
+     mov(data1, data2, 400);
     }
     else if (flag == 1){
       turn(data1, data2, 700, data3);
@@ -125,52 +124,31 @@ void reset_servo(){
 }
 
 void cam_up(){
-  int speed = 2500;
-  int steps = 13;
-  int pin = 6;
-  int highDelay = speed;
-  int lowDelay = 20000 - steps;
-  pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
-    digitalWrite(pin, LOW);
-    delayMicroseconds(lowDelay);
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(highDelay);
-  }
+  
 }
 
 void cam_down(){
-  int speed = 250;
-  int steps = 13;
-  int pin = 6;
-  int highDelay = speed;
-  int lowDelay = 20000 - steps;
-  pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
-    digitalWrite(pin, LOW);
-    delayMicroseconds(lowDelay);
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(highDelay);
-  }
+  
 }
 
-/* Sensor Code */
-
-void send_sensor_data(){
-  float val = 0.0;
-  for (int i = 0; i < 5; i++){
-    val = analogRead(sensorpin);
-    val = calscale * pow(val, calpower);
-  }
-  float sum = 0;
-  for (int i = 0; i<5; i++){
-    val = analogRead(sensorpin);
-    val = calscale * pow(val, calpower);
-    sum += val;
-  }
-  int avg = sum/5; 
-  Serial.write(avg);
-}
+////Move servos to default position
+//void resetArms(){
+//  Servo1.write(up1);
+//  Servo2.write(up2);
+//}
+//
+////Moves into position to pick up object
+//void armsDown(){
+//  Servo1.write(down1);
+//  Servo2.write(down2);
+//}
+//
+////Pick up and hold objects
+//void pickup(){
+//  Servo2.write(180);
+//  delay(15);
+//  Servo1.write(0);
+//}
 
 /* Sensor Code */
 
@@ -197,14 +175,6 @@ void mov(byte dir, float dist, long del) {
   PORTL = dir;
   float stepf = dist * steps_per_inch;
   long steps = stepf;
-  if (dir == strr || dir == strl){
-    if(dist == 12){
-      steps = steps * 1.06;
-    }
-    else {
-      steps = steps * 1.5;
-    }
-  }
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
     PORTL ^= motion;

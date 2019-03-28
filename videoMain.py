@@ -52,7 +52,7 @@ def check_pick_up():
 # TODO: Refine pick_up. Take care of edge cases.
 def pick_up(movement, pic_q):
     movement.cam_down()
-    time.sleep(2)
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     dist = 0
@@ -89,7 +89,7 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
     adj_degrees = 10 if first_call else -20
     angle = 0
     dist = 0
-    time.sleep(2)
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     print("CAM UP: {}".format(object_stats))
@@ -116,7 +116,9 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
         movement.turn(angle)
 
 def map(movement, pic_q):
+    movement.cam_up()
     print(movement.facing)
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     for stat in object_stats:
@@ -128,8 +130,7 @@ def map(movement, pic_q):
 
 def begin_round(movement, pic_q):
     for _ in range(8):
-        movement.grid_turn(45)
-        time.sleep(2)
+        movement.turn(45)
         map(movement, pic_q)
 
 def follow_path(movement, pic_q):
