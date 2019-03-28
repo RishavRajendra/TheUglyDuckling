@@ -17,7 +17,7 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -244,10 +244,22 @@ def main():
     time.sleep(2)
     
 
-    # drop_point = (7,0)
-    # begin_round(movement, pic_q)
-    # print(movement.get_obstacles())
-    # targs = [(4,1),(1,4)]
+    drop_point = (7,0)
+    begin_round(movement, pic_q)
+    print(movement.get_obstacles())
+    targs = [(4,1),(1,4)]
+    
+    # move to target, pick up
+    # move to drop_point and drop block until no more targets
+    for item in targs:
+        movement.goal = item
+        follow_path(movement, pic_q)
+        approach(movement, pic_q)
+        movement.goal = drop_point
+        follow_path(movement, pic_q)
+        movement.move(fwd, 6)
+        movement.drop()
+        movement.move(rev, 6)
     
                 
     vt.join()

@@ -31,6 +31,7 @@ class GridMovement:
 		self.left45 = b'\x14'
 		self.right45 = b'\x41'
 	
+		self.is_cam_up = True
 		self.grid = grid
 		self.serial = serial
 		self.current = HOME
@@ -279,7 +280,9 @@ class GridMovement:
 		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
 		self.serial.write(byteArr)
 		
-		if abs(degrees) <= 45:
+		if abs(degrees) <= 25:
+			slp_t = 1
+		elif abs(degrees) <= 45:
 			slp_t = 2
 		elif abs(degrees) <= 90:
 			slp_t = 3
@@ -307,10 +310,6 @@ class GridMovement:
 				self.turn(temp)
 				self.move(strafe, 255)
 				self.grid_turn(degrees - temp)
-
-	def grid_turn(self, degrees):
-		if abs(degrees) == 90:
-
 				
 
 	def move(self,dir, dist):
@@ -358,13 +357,15 @@ class GridMovement:
 		time.sleep(1)
 
 	def cam_up(self): 
-		byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
-		self.serial.write(byteArr)
-		# Give video thread time to collect new image
-		time.sleep(2)
+		if not self.is_cam_up:
+			byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
+			self.serial.write(byteArr)
+			self.is_cam_up = True
+			time.sleep(.2)
 
 	def cam_down(self): 
-		byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
-		self.serial.write(byteArr)
-		# Give video thread time to collect new image
-		time.sleep(2)
+		if self.is_cam_up:
+			byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
+			self.serial.write(byteArr)
+			self.is_cam_up = False
+			time.sleep(.2)
