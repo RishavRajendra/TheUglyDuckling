@@ -9,7 +9,7 @@ import numpy as np
 import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev, strl, strr
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev, buttonPin, ledPin
 from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, get_midpoint, mothership_angle
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
@@ -17,21 +17,19 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
 warnings.filterwarnings('ignore')
 
-def wait_for_button():
-    # Inizialize button
-    GPIO.setmode(GPIO.BOARD)
-    buttonPin = 8
-    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+def wait_for_button(buttonPin, ledPin):
     print('Ready')
+    GPIO.output(ledPin, GPIO.HIGH)
     #Prevent further code execution until button is pressed
     while GPIO.input(buttonPin) is not 0:
         pass
+    GPIO.output(ledPin, GPIO.LOW)
     print('Executing')
 
 def corrected_angle(angle, dist, cam_up=True):
@@ -235,28 +233,21 @@ def main():
     # Initialize VideoThread
     vt = VideoThread(pic_q, objectifier)
     vt.start()
+    
+    # Setup GPIO
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(ledPin, GPIO.OUT, initial=GPIO.LOW)
 
-    wait_for_button()
+    wait_for_button(buttonPin, ledPin)
     time.sleep(2)
     
 
-    drop_point = (7,0)
-    begin_round(movement, pic_q)
-    print(movement.get_obstacles())
-    targs = [(4,1),(1,4)]
-    #for item in targs:
-     #   movement.goal = item
-      #  follow_path(movement, pic_q)
-       # approach(movement, pic_q)
-        #if not movement.facing % 90 == 0 or not movement.facing == 0:
-         #   movement.turn(movement.facing-90)
-        #movement.goal = drop_point
-        #follow_path(movement, pic_q)
-        #movement.move(fwd, 6)
-        #movement.drop()
-        #movement.move(rev, 6)
-        #if not movement.facing % 90 == 0 or not movement.facing == 0:
-         #   movement.turn(movement.facing-90)
+    # drop_point = (7,0)
+    # begin_round(movement, pic_q)
+    # print(movement.get_obstacles())
+    # targs = [(4,1),(1,4)]
+    
                 
     vt.join()
     #camera.close()
