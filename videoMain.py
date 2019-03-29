@@ -50,7 +50,7 @@ def check_pick_up():
     pass
     
 # TODO: Refine pick_up. Take care of edge cases.
-def pick_up(movement, pic_q):
+def pick_up(movement, pic_q,approach_movement_list):
     movement.cam_down()
     time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
@@ -58,13 +58,12 @@ def pick_up(movement, pic_q):
     dist = 0
     angle = 0
     print("CAM DOWN: {}".format(object_stats))
-    time.sleep(2)
     if not object_stats:
         print("CAM DOWN: NO OBJECT FOUND")
         #movement.cam_up()
         #movement.move(rev, 5)
         #time.sleep(2)
-        approach(movement, pic_q, True, cam_up=False)
+        approach(movement, pic_q,approach_movement_list, True, cam_up=False)
     else:
         print("CAM DOWN: Something located")
         for stats in object_stats:
@@ -72,19 +71,20 @@ def pick_up(movement, pic_q):
                 print("MOVING TOWARDS TARGET")
                 angle = corrected_angle(stats[1], stats[2])
                 movement.turn(angle*-1)
+                approach_movement_list.put([angle])
                 dist = math.ceil(stats[2]*.7)
-                # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
+                # move only 70% of the calculated distance to stop at pickup spot and not the front of the robot
                 movement.move(fwd, dist)
-            movement.pickup()
-            movement.move(rev, dist)
-            movement.turn(angle)
+                approach_movement_list.put([rev, dist])
+                movement.pickup()
+            
 
 
 # TODO: Refine approach. Take care of edge cases.
 # EDGE CASE 1: obstacle is in way of target
 # Potential solution: go to another connected tile
 # EDGE CASE 2: target not detected after two additional scans.
-def approach(movement, pic_q, first_call=True, cam_up=True):
+def approach(movement, pic_q, approach_movement_list, first_call=True, cam_up=True):
     movement.cam_up() if cam_up else movement.cam_down()
     adj_degrees = 10 if first_call else -20
     angle = 0
@@ -99,21 +99,23 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
             if(stats[0] > 0 and stats[0] < 7):
                 angle = corrected_angle(stats[1], stats[2]) 
                 movement.turn(angle*-1)
+                approach_movement_list.put([angle])
                 dist = stats[2] - 1
                 movement.move(fwd, dist)
+                approach_movement_list.put([rev, dist])
                 target_found = True
-                pick_up(movement, pic_q)
+                pick_up(movement, pic_q,approach_movement_list)
     if not target_found:
         movement.turn(adj_degrees)
+        approach_movement_list.put([-adj_degrees])
         if first_call:
-            approach(movement, pic_q, False, cam_up)
+            approach(movement, pic_q,approach_movement_list, False, cam_up)
         if not first_call and cam_up:
             movement.turn(10)
-            approach(movement, pic_q, True, False)
+            approach_movement_list.put([-10])
+            approach(movement, pic_q,approach_movement_list, True, False)
         movement.turn(adj_degrees*-1)
-    else:
-        movement.move(rev, dist)
-        movement.turn(angle)
+        approach_movement_list.put([adj_degrees])
 
 def map(movement, pic_q):
     movement.cam_up()
@@ -239,27 +241,38 @@ def main():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(ledPin, GPIO.OUT, initial=GPIO.LOW)
+    
+    # Keep track of movements after approach is called
+    approach_movement_list = queue.LifoQueue()
 
     wait_for_button(buttonPin, ledPin)
     time.sleep(2)
     
-
-    drop_point = (7,7)
-    begin_round(movement, pic_q)
-    print(movement.get_obstacles())
-    targs = [(1,6),(7,0)]
+    
+   
+    drop_point = (4,7)
+    #begin_round(movement, pic_q)
+    #print(movement.get_obstacles())
+    targs = [(7,7),(6,5),(5,6),(2,3),(3,1),(5,1)]
     
     # move to target, pick up
     # move to drop_point and drop block until no more targets
     for item in targs:
         movement.goal = item
         follow_path(movement, pic_q)
-        approach(movement, pic_q)
+        approach(movement, pic_q, approach_movement_list)
+        while not approach_movement_list.empty():
+            move = approach_movement_list.get()
+            if len(move) == 1:
+                movement.turn(move[0])
+            else:
+                movement.move(move[0], move[1])
         movement.goal = drop_point
         follow_path(movement, pic_q)
         movement.move(fwd, 6)
         movement.drop()
         movement.move(rev, 6)
+        movement.reset_servo()
     
                 
     vt.join()

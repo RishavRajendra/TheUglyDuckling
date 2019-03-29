@@ -138,9 +138,9 @@ class GridMovement:
 						checking_dup = False
 
 			if dist > 12:
-				self.accelerate(dist, diag)
+				self.accelerate(dist)
 			else:
-				self.move(self.fwd, dist, diag)
+				self.move(self.fwd, dist)
 			self.current = mov
 
 
@@ -259,7 +259,7 @@ class GridMovement:
 		time.sleep(slp_t)
 				
 
-	def move(self,dir, dist, diag=False):
+	def move(self,dir, dist, is_diagonal=False):
 		slp_t = 0
 		if dist < 5:
 			slp_t = 1
