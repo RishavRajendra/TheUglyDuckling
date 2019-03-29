@@ -32,8 +32,9 @@ float straight = 0.980;
 float arc180 = .3;
 float start_dis = .25;
 float threshold = 300;
-float turning_offset = 2.375;
-float tile_dist = 12;
+//Change log
+// [0.0.1] Benji
+// removed turn_offset and tile_dist; not used anymore 
 
 int sensorpin = A1;
 float calscale = 59994.0;

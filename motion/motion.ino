@@ -11,7 +11,7 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  send_sensor_data();
+  cam_up();
 }
 
 void loop() {

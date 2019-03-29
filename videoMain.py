@@ -17,7 +17,7 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -50,6 +50,11 @@ def check_pick_up():
     pass
     
 # TODO: Refine pick_up. Take care of edge cases.
+
+# Change log
+# [0.0.1] Benji
+# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+# - for 1.5 seconds is the minimum delay that guarantees fresh video data
 def pick_up(movement, pic_q):
     movement.cam_down()
     time.sleep(1.5)
@@ -84,6 +89,11 @@ def pick_up(movement, pic_q):
 # EDGE CASE 1: obstacle is in way of target
 # Potential solution: go to another connected tile
 # EDGE CASE 2: target not detected after two additional scans.
+
+# Change log
+# [0.0.1] Benji
+# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+# - for 1.5 seconds is the minimum delay that guarantees fresh video data
 def approach(movement, pic_q, first_call=True, cam_up=True):
     movement.cam_up() if cam_up else movement.cam_down()
     adj_degrees = 10 if first_call else -20
@@ -115,6 +125,10 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
         movement.move(rev, dist)
         movement.turn(angle)
 
+# Change log
+# [0.0.1] Benji
+# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+# - for 1.5 seconds is the minimum delay that guarantees fresh video data
 def map(movement, pic_q):
     movement.cam_up()
     print(movement.facing)
