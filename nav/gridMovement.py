@@ -1,9 +1,8 @@
 # GridMovement class 
 # Handles all grid based navigation for the robot
 
-from .grid import Grid
 from . import grassfire as gf 
-import queue, time, math
+import time, math
 
 NORTH = 90
 SOUTH = 270
@@ -110,41 +109,6 @@ class GridMovement:
 		# face goal after following path
 		self.face(self.goal)
 
-	# def follow_next_step(self):
-	# 	dist = 12
-	# 	checking_dup = True
-	# 	result = None
-	# 	is_diagonal = False
-	# 	mov = None
-	# 	while checking_dup and self.path:
-	# 		mov = self.path.pop(0)
-	# 		result = (mov[0] - self.current[0], mov[1] - self.current[1])
-	# 		if self.path:
-	# 			nextMov = self.path[0]
-	# 			nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
-	# 			if nextResult == result:
-	# 				dist = dist + 12
-	# 				self.current = mov
-	# 			else:
-	# 				checking_dup = False
-		
-	# 	if dist > 12:
-	# 		self.face(mov)
-	# 		self.accelerate(dist, is_diagonal)
-	# 		if is_diagonal and self.path:
-	# 			self.face(self.path[0])
-	# 	elif is_diagonal:
-	# 		self.face(mov)
-	# 		result = self.translate_dir(result)
-	# 		self.move(self.movement[result][0], dist)
-	# 		if self.path:
-	# 			self.face(self.path[0])
-	# 	else:
-	# 		result = self.translate_dir(result)
-	# 		self.move(self.movement[result][0], dist)
-	# 	self.current = mov
-	# 	if not self.path:
-	# 		self.face(self.goal)
 
 	def facing_next_step(self):
 		mov = self.path[0]
@@ -153,6 +117,8 @@ class GridMovement:
 
 	def follow_next_step(self):
 		dist = 12
+
+		diag = False if self.facing % 90 == 0 or self.facing == 0 else True
 		
 		mov = self.path[0]
 		if not self.facing_next_step():
@@ -172,9 +138,9 @@ class GridMovement:
 						checking_dup = False
 
 			if dist > 12:
-				self.accelerate(dist)
+				self.accelerate(dist, diag)
 			else:
-				self.move(self.fwd, dist)
+				self.move(self.fwd, dist, diag)
 			self.current = mov
 
 
@@ -291,28 +257,9 @@ class GridMovement:
 		else:
 			slp_t = 5
 		time.sleep(slp_t)
-	
-	def old_grid_turn(self, degrees):
-		strafe = self.strr if degrees > 0 else self.strl
-		sign = 1 if degrees > 0 else -1
-		facing_is_diag = False if self.facing % 90 == 0 or self.facing == 0 else True
-		turn_is_diag = False if degrees % 90 == 0 or degrees == 0 else True 
-		
-		if not facing_is_diag and degrees > 0:
-				temp = 90*sign if abs(degrees) > 45 else 45*sign 
-				self.move(strafe, 255)
-				self.turn(temp)
-				if not degrees == 45:
-					self.move(strafe, 255)
-				self.grid_turn(degrees - temp)
-		elif degrees > 0:
-				temp = 45 * sign
-				self.turn(temp)
-				self.move(strafe, 255)
-				self.grid_turn(degrees - temp)
 				
 
-	def move(self,dir, dist):
+	def move(self,dir, dist, diag=False):
 		slp_t = 0
 		if dist < 5:
 			slp_t = 1
@@ -323,7 +270,8 @@ class GridMovement:
 		else:
 			slp_t = 3
 		print("Moving ", dist, " inches")
-		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
+		byte = b'\x00' if is_diagonal else b'\x01'
+		byteArr = b'\x00' + dir +bytes([dist])+byte
 		self.serial.write(byteArr)
 		time.sleep(slp_t)
 

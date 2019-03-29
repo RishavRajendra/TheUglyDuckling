@@ -1,6 +1,4 @@
 # Grassfire algorithim used for pathfinding.
-
-from .grid import Grid
 import collections, copy, time
 
 
@@ -26,6 +24,21 @@ def search(graph, start, goal):
 	return visited
 
 def construct_path(graph, visited, start):
+	current = start
+	path = []
+	while True:
+		lowest_tile = current
+		for next in graph.neighbors(current):
+			if next in visited:
+				if visited[next] < visited[lowest_tile]:
+					lowest_tile = next
+		if visited[lowest_tile] == 0:
+			break
+		path.append(lowest_tile)
+		current = lowest_tile
+	return path
+
+def old_construct_path(graph, visited, start):
 	current = start
 	path = []
 	# Weight to be added to movements in order to
