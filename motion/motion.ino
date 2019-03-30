@@ -11,7 +11,7 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
-  send_sensor_data();
+  cam_up();
 }
 
 void loop() {
@@ -44,7 +44,11 @@ void runCommand(){
       turn(data1, data2, 700, data3);
     }
     else if (flag == 2){
-      acceleration(data1, data2, 350, 8, data3);
+      int n = 8;
+      if (data2 < 36){
+        n = 4; 
+      }
+      acceleration(data1, data2, 350, n, data3);
     }
     else if (flag == 3){
       pickup();

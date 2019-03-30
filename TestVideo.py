@@ -13,7 +13,7 @@ import get_stats_from_image
 import queue, threading, serial, time
 
 import sys
-sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
