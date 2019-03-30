@@ -50,9 +50,14 @@ def check_pick_up():
     pass
     
 # TODO: Refine pick_up. Take care of edge cases.
+
+# Change log
+# [0.0.1] Benji
+# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+# - for 1.5 seconds is the minimum delay that guarantees fresh video data
 def pick_up(movement, pic_q):
     movement.cam_down()
-    time.sleep(2)
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     dist = 0
@@ -84,12 +89,17 @@ def pick_up(movement, pic_q):
 # EDGE CASE 1: obstacle is in way of target
 # Potential solution: go to another connected tile
 # EDGE CASE 2: target not detected after two additional scans.
+
+# Change log
+# [0.0.1] Benji
+# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+# - for 1.5 seconds is the minimum delay that guarantees fresh video data
 def approach(movement, pic_q, first_call=True, cam_up=True):
     movement.cam_up() if cam_up else movement.cam_down()
     adj_degrees = 10 if first_call else -20
     angle = 0
     dist = 0
-    time.sleep(2)
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     print("CAM UP: {}".format(object_stats))
@@ -102,11 +112,9 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
                 dist = stats[2] - 1
                 movement.move(fwd, dist)
                 target_found = True
-                time.sleep(2)
                 pick_up(movement, pic_q)
     if not target_found:
         movement.turn(adj_degrees)
-        time.sleep(2)
         if first_call:
             approach(movement, pic_q, False, cam_up)
         if not first_call and cam_up:
@@ -117,7 +125,14 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
         movement.move(rev, dist)
         movement.turn(angle)
 
+# Change log
+# [0.0.1] Benji
+# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+# - for 1.5 seconds is the minimum delay that guarantees fresh video data
 def map(movement, pic_q):
+    movement.cam_up()
+    print(movement.facing)
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     for stat in object_stats:
@@ -126,6 +141,11 @@ def map(movement, pic_q):
         dist = stat[2]
         print(obj_type, angle, dist)
         movement.map(obj_type, angle, dist)
+
+def begin_round(movement, pic_q):
+    for _ in range(8):
+        movement.turn(45)
+        map(movement, pic_q)
 
 def follow_path(movement, pic_q):
     movement.find_path()
@@ -136,6 +156,8 @@ def follow_path(movement, pic_q):
         for obs in movement.get_obstacles():
             if obs in movement.path:
                 movement.path.clear()
+                movement.find_path()
+    movement.face(movement.goal)
 
 def get_sensor_data(serial):
     byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
@@ -234,26 +256,25 @@ def main():
 
     wait_for_button(buttonPin, ledPin)
     time.sleep(2)
-
-    #for _ in range(12):
-     #   print(movement.facing)
-      #  map(movement, pic_q)
-       # movement.turn(30)
-        #time.sleep(2)
-    
-    movement.goal = (4,1)
-    follow_path(movement, pic_q)
-    time.sleep(2)
     
 
-
-    # TODO: Implement approach with autonomous movement.
-    approach(movement, pic_q) 
-    time.sleep(2)
-    movement.goal = (4,4)
-    follow_path(movement,pic_q)
-    time.sleep(2)
-    movement.drop()
+    drop_point = (7,7)
+    begin_round(movement, pic_q)
+    print(movement.get_obstacles())
+    targs = [(1,6),(7,0)]
+    
+    # move to target, pick up
+    # move to drop_point and drop block until no more targets
+    for item in targs:
+        movement.goal = item
+        follow_path(movement, pic_q)
+        approach(movement, pic_q)
+        movement.goal = drop_point
+        follow_path(movement, pic_q)
+        movement.move(fwd, 6)
+        movement.drop()
+        movement.move(rev, 6)
+    
                 
     vt.join()
     #camera.close()

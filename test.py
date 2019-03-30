@@ -2,6 +2,7 @@ from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, serial, time, math
 import json
+from constants import strr,strl, fwd
 
 def corrected_angle(angle, dist):
     angle = 180 - angle
@@ -27,11 +28,7 @@ grid = Grid(8,8)
 movement = GridMovement(grid, ser)
 map_JSON('mar1.json', movement)
 
-def get_sensor_data(serial):
-    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
-    serial.write(byteArr)
-    time.sleep(1)
-    dist = int.from_bytes(serial.read(1),'little')
-    print(dist)
 
-get_sensor_data(ser)
+movement.facing = 210
+movement.map(7, -16, 70)
+

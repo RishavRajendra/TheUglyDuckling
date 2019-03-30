@@ -126,7 +126,7 @@ void cam_up(){
   int highDelay = speed;
   int lowDelay = 20000 - steps;
   pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
+  for (int cnt = 0; cnt < steps; cnt++){
     digitalWrite(pin, LOW);
     delayMicroseconds(lowDelay);
     digitalWrite(pin, HIGH);
@@ -148,6 +148,7 @@ void cam_down(){
     delayMicroseconds(highDelay);
   }
 }
+
 
 /* Sensor Code */
 

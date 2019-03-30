@@ -1,9 +1,8 @@
 # GridMovement class 
 # Handles all grid based navigation for the robot
 
-from .grid import Grid
 from . import grassfire as gf 
-import queue, time, math
+import time, math
 
 NORTH = 90
 SOUTH = 270
@@ -31,6 +30,7 @@ class GridMovement:
 		self.left45 = b'\x14'
 		self.right45 = b'\x41'
 	
+		self.is_cam_up = True
 		self.grid = grid
 		self.serial = serial
 		self.current = HOME
@@ -109,41 +109,41 @@ class GridMovement:
 		# face goal after following path
 		self.face(self.goal)
 
+
+	def facing_next_step(self):
+		mov = self.path[0]
+		result = (mov[0] - self.current[0], mov[1] - self.current[1])
+		return self.translate_dir(result) == (0,1)
+
 	def follow_next_step(self):
 		dist = 12
-		checking_dup = True
-		result = None
-		is_diagonal = False
-		mov = None
-		while checking_dup and self.path:
-			mov = self.path.pop(0)
-			result = (mov[0] - self.current[0], mov[1] - self.current[1])
-			if self.path:
-				nextMov = self.path[0]
-				nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
-				if nextResult == result:
-					dist = dist + 12
-					self.current = mov
-				else:
-					checking_dup = False
+
+		diag = False if self.facing % 90 == 0 or self.facing == 0 else True
 		
-		if dist > 12:
+		mov = self.path[0]
+		if not self.facing_next_step():
 			self.face(mov)
-			self.accelerate(dist, is_diagonal)
-			if is_diagonal and self.path:
-				self.face(self.path[0])
-		elif is_diagonal:
-			self.face(mov)
-			result = self.translate_dir(result)
-			self.move(self.movement[result][0], dist)
-			if self.path:
-				self.face(self.path[0])
 		else:
-			result = self.translate_dir(result)
-			self.move(self.movement[result][0], dist)
-		self.current = mov
-		if not self.path:
-			self.face(self.goal)
+			checking_dup = True
+			while checking_dup and self.path:
+				mov = self.path.pop(0)
+				result = (mov[0] - self.current[0], mov[1] - self.current[1])
+				if self.path:
+					nextMov = self.path[0]
+					nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
+					if nextResult == result:
+						dist = dist + 12
+						self.current = mov
+					else:
+						checking_dup = False
+
+			if dist > 12:
+				self.accelerate(dist, diag)
+			else:
+				self.move(self.fwd, dist, diag)
+			self.current = mov
+
+
 
 	# Face a tile connected to current tile
 	def face(self, obj):
@@ -177,29 +177,45 @@ class GridMovement:
 		y = math.ceil(y) if y < 0 else math.floor(y)
 		return (x,y)
 
+
 	def map(self,obj, angle, dist):
+		if abs(angle) > 25:
+			return
 		offset = 6
-		diag_offset = math.sqrt(288) / 2
-		angle_rads = math.radians((angle* -1) + math.radians(self.facing))
+		cam_offset = 2.5
+		diag_offset = 4#math.sqrt(288) / 2
+		angle_rads = math.radians((angle* -1) + self.facing)
 
 		o_length = math.sin(angle_rads) * dist
 		a_length = math.cos(angle_rads) * dist
 
 		if self.facing == EAST or self.facing == WEST:
-			x = a_length/12
+			if -cam_offset<a_length<cam_offset:
+				x = 0
+			else:
+				x =  (a_length+cam_offset)/12 if a_length < 0 else (a_length - offset)/12
 			if -offset<o_length<offset:
 				y= 0
 			else:
-				y = o_length is (o_length + offset)/12 if o_length < 0 else (o_length - offset)/12
+				y = (o_length + offset)/12 if o_length < 0 else (o_length - offset)/12
+			if x == 0 and y == 0:
+				x = 1 if self.facing == EAST else -1 
 
 		elif self.facing == NORTH or self.facing == SOUTH:
 			if -offset<a_length<offset:
 				x = 0
 			else:
-				x = a_length is (a_length + offset)/12 if a_length < 0 else (a_length - offset)/12
-			y = o_length/12
+				x = (a_length + offset)/12 if a_length < 0 else (a_length - offset)/12
+			if -cam_offset<o_length<cam_offset:
+				y = 0
+			else:
+				y = (o_length+cam_offset)/12 if o_length < 0 else (o_length - offset)/12
+			if x == 0 and y == 0:
+				y = 1 if self.facing == NORTH else -1
 
 		else:
+			if dist > 39:
+				return
 			x = (a_length + diag_offset)/math.sqrt(288) if a_length < 0 else (a_length - diag_offset)/math.sqrt(288)
 			y = (o_length + diag_offset)/math.sqrt(288) if o_length < 0 else (o_length - diag_offset)/math.sqrt(288)
 			
@@ -218,18 +234,21 @@ class GridMovement:
 	# MOVEMENT FUNCTIONS #
 
 	def turn(self,degrees):
-		slp_t = 0
-		turn_dir = self.rotr
-		print("Turning", degrees)
-		if(degrees < 0):
-			turn_dir = self.rotl
-
-		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
-		self.serial.write(byteArr)
 		# Update current orientation 
 		self.facing = self.facing + degrees
 		self.trim_facing()
-		if abs(degrees) <= 45:
+		slp_t = 0
+		turn_dir = self.rotl
+		print("Turning", degrees)
+		if(degrees < 0):
+			turn_dir = self.rotr
+
+		byteArr = b'\x01' + turn_dir +bytes([abs(degrees)])+b'\x00'
+		self.serial.write(byteArr)
+		
+		if abs(degrees) <= 25:
+			slp_t = 1
+		elif abs(degrees) <= 45:
 			slp_t = 2
 		elif abs(degrees) <= 90:
 			slp_t = 3
@@ -238,12 +257,23 @@ class GridMovement:
 		else:
 			slp_t = 5
 		time.sleep(slp_t)
+				
 
-	def move(self,dir, dist):
+	def move(self,dir, dist, diag=False):
+		slp_t = 0
+		if dist < 5:
+			slp_t = 1
+		elif dist < 10:
+			slp_t = 2
+		elif dist == 255:
+			slp_t = 2
+		else:
+			slp_t = 3
 		print("Moving ", dist, " inches")
-		byteArr = b'\x00' + dir +bytes([dist])+b'\x00'
+		byte = b'\x00' if is_diagonal else b'\x01'
+		byteArr = b'\x00' + dir +bytes([dist])+byte
 		self.serial.write(byteArr)
-		time.sleep(3)
+		time.sleep(slp_t)
 
 	def accelerate(self,dist, is_diagonal=False):
 		print("Accelerating ", dist, " inches")
@@ -275,13 +305,15 @@ class GridMovement:
 		time.sleep(1)
 
 	def cam_up(self): 
-		byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
-		self.serial.write(byteArr)
-		# Give video thread time to collect new image
-		time.sleep(2)
+		if not self.is_cam_up:
+			byteArr = b'\x06'  + b'\x00' + b'\x00' + b'\x00'
+			self.serial.write(byteArr)
+			self.is_cam_up = True
+			time.sleep(.2)
 
 	def cam_down(self): 
-		byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
-		self.serial.write(byteArr)
-		# Give video thread time to collect new image
-		time.sleep(2)
+		if self.is_cam_up:
+			byteArr = b'\x07'  + b'\x00' + b'\x00' + b'\x00'
+			self.serial.write(byteArr)
+			self.is_cam_up = False
+			time.sleep(.2)

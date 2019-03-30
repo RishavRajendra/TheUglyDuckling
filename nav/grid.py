@@ -18,12 +18,15 @@ class Grid:
 	def passable(self, id):
 		return id not in self.obstacles
 
+	# Change log
+	# [0.0.1] Benji
+	# - removed diagonal neighbors to discourage diagonal paths in grassfire 
 	def neighbors(self, id):
 		(x, y) = id
 		results = [(x+1, y), (x-1, y), # E and W
-							 (x, y+1), (x, y-1), # N and S
-							 (x+1, y+1), (x-1, y+1), # NE and NW
-							 (x+1, y-1), (x-1, y-1)] # SE and SW
+							 (x, y+1), (x, y-1)] # N and S
+							 #(x+1, y+1), (x-1, y+1), # NE and NW
+							 #(x+1, y-1), (x-1, y-1)] # SE and SW
 		results = filter(self.in_bounds, results) # Only coordinates in bounds
 		results = filter(self.passable, results) # Only unoccupied coordinates 
 		return results
