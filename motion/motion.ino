@@ -11,7 +11,9 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   reset_servo();
+//  pickup();
   cam_up();
+//  mov(strr, 15, 500);
 }
 
 void loop() {

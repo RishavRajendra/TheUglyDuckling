@@ -29,6 +29,10 @@ movement = GridMovement(grid, ser)
 map_JSON('mar1.json', movement)
 
 
-movement.facing = 210
-movement.map(7, -16, 70)
-
+def get_sensor_data(serial):
+    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
+    serial.write(byteArr)
+    time.sleep(1)
+    return int.from_bytes(serial.read(1),'little')
+    
+print(get_sensor_data(ser))
