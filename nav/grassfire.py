@@ -23,7 +23,13 @@ def search(graph, start, goal):
 
 	return visited
 
-def construct_path(graph, visited, start):
+"""
+Change log
+    -[0.0.1] Benji
+        --- If we want to move to a specific spot we can
+        --- include the goal
+"""
+def construct_path(graph, visited, start, include_goal=False):
 	current = start
 	path = []
 	while True:
@@ -32,10 +38,12 @@ def construct_path(graph, visited, start):
 			if next in visited:
 				if visited[next] < visited[lowest_tile]:
 					lowest_tile = next
-		if visited[lowest_tile] == 0:
+		if visited[lowest_tile] == 0 and not include_goal:
 			break
 		path.append(lowest_tile)
 		current = lowest_tile
+		if visited[lowest_tile] == 0:
+			break
 	return path
 
 

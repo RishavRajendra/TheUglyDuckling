@@ -10,13 +10,16 @@ class Grid:
 		self.obstacles = []
 		self.targets = [] #Not used yet
 		self.mothership = [] #Not used yet
+		self.sides = []
+		self.slopes = []
 
 	def in_bounds(self, id):
 		(x, y) = id
 		return 0 <= x < self.width and 0 <= y < self.height
 
 	def passable(self, id):
-		return id not in self.obstacles
+		if id not in self.obstacles or id not in self.sides or id not in self.slopes:
+			return id
 
 	# Change log
 	# [0.0.1] Benji
@@ -38,6 +41,21 @@ class Grid:
 	def add_target(self, target):
 		if (target not in self.targets):
 			self.targets.append(target)
+	def add_mothership(self, part):
+		if part not in self.mothership:
+			self.mothership.append(part)
+			
+	def add_slope(self, slope):
+		if slope not in self.slopes:
+			self.slopes.append(slope)
+	def add_side(self, side):
+		if side not in self.sides:
+			self.sides.append(side)
+			
+	def get_mothership(self):
+		return self.mothership
 	
 	def get_obstacles(self):
 		return self.obstacles
+		
+

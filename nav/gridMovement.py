@@ -54,9 +54,14 @@ class GridMovement:
 		pass
 
 	# Generates shortest path to goal using grassfire algorithim
-	def find_path(self):
+	"""
+	Change Log
+		[0.0.1]
+			--- Add ability to include goal in path
+	"""
+	def find_path(self, include_goal=False):
 		visited = gf.search(self.grid, self.current, self.goal)
-		self.path = gf.construct_path(self.grid, visited, self.current)
+		self.path = gf.construct_path(self.grid, visited, self.current, include_goal)
 
 	# Follows the generated path by subtracting the next location
 	# from self.current and using translate_dir() and self.movement
@@ -138,9 +143,9 @@ class GridMovement:
 						checking_dup = False
 
 			if dist > 12:
-				self.accelerate(dist, diag)
+				self.accelerate(dist)
 			else:
-				self.move(self.fwd, dist, diag)
+				self.move(self.fwd, dist)
 			self.current = mov
 
 
@@ -179,11 +184,11 @@ class GridMovement:
 
 
 	def map(self,obj, angle, dist):
-		if abs(angle) > 25:
+		if abs(angle) > 30:
 			return
 		offset = 6
 		cam_offset = 2.5
-		diag_offset = 4#math.sqrt(288) / 2
+		diag_offset = 0#4#math.sqrt(288) / 2
 		angle_rads = math.radians((angle* -1) + self.facing)
 
 		o_length = math.sin(angle_rads) * dist
@@ -226,9 +231,15 @@ class GridMovement:
 		print(result)
 		if obj == 7:
 			self.grid.add_obstacle(result)
+		elif obj == 9: 
+			self.grid.add_slope(result)
+		elif obj == 8:
+			self.grid.add_side(result)
+	
 			
 	def map_target(self,target):
 		self.grid.add_target(target)
+
 
 	# Communicates movement calls to Arduino
 	# MOVEMENT FUNCTIONS #
@@ -259,7 +270,7 @@ class GridMovement:
 		time.sleep(slp_t)
 				
 
-	def move(self,dir, dist, diag=False):
+	def move(self,dir, dist, is_diagonal=False):
 		slp_t = 0
 		if dist < 5:
 			slp_t = 1

@@ -17,7 +17,7 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -51,11 +51,13 @@ def check_pick_up():
     
 # TODO: Refine pick_up. Take care of edge cases.
 
-# Change log
-# [0.0.1] Benji
-# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-# - for 1.5 seconds is the minimum delay that guarantees fresh video data
-def pick_up(movement, pic_q):
+"""
+Change log
+    -[0.0.1] Benji
+        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
+"""
+def pick_up(movement, pic_q,approach_movement_list):
     movement.cam_down()
     time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
@@ -63,13 +65,12 @@ def pick_up(movement, pic_q):
     dist = 0
     angle = 0
     print("CAM DOWN: {}".format(object_stats))
-    time.sleep(2)
     if not object_stats:
         print("CAM DOWN: NO OBJECT FOUND")
         #movement.cam_up()
         #movement.move(rev, 5)
         #time.sleep(2)
-        approach(movement, pic_q, True, cam_up=False)
+        approach(movement, pic_q,approach_movement_list, True, cam_up=False)
     else:
         print("CAM DOWN: Something located")
         for stats in object_stats:
@@ -77,12 +78,13 @@ def pick_up(movement, pic_q):
                 print("MOVING TOWARDS TARGET")
                 angle = corrected_angle(stats[1], stats[2])
                 movement.turn(angle*-1)
+                approach_movement_list.put([angle])
                 dist = math.ceil(stats[2]*.7)
-                # move only 80% of the calculated distance to stop at pickup spot and not the front of the robot
+                # move only 70% of the calculated distance to stop at pickup spot and not the front of the robot
                 movement.move(fwd, dist)
-            movement.pickup()
-            movement.move(rev, dist)
-            movement.turn(angle)
+                approach_movement_list.put([rev, dist])
+                movement.pickup()
+            
 
 
 # TODO: Refine approach. Take care of edge cases.
@@ -90,11 +92,13 @@ def pick_up(movement, pic_q):
 # Potential solution: go to another connected tile
 # EDGE CASE 2: target not detected after two additional scans.
 
-# Change log
-# [0.0.1] Benji
-# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-# - for 1.5 seconds is the minimum delay that guarantees fresh video data
-def approach(movement, pic_q, first_call=True, cam_up=True):
+"""
+Change log
+    -[0.0.1] Benji
+        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
+"""
+def approach(movement, pic_q, approach_movement_list, first_call=True, cam_up=True):
     movement.cam_up() if cam_up else movement.cam_down()
     adj_degrees = 10 if first_call else -20
     angle = 0
@@ -109,27 +113,31 @@ def approach(movement, pic_q, first_call=True, cam_up=True):
             if(stats[0] > 0 and stats[0] < 7):
                 angle = corrected_angle(stats[1], stats[2]) 
                 movement.turn(angle*-1)
+                approach_movement_list.put([angle])
                 dist = stats[2] - 1
                 movement.move(fwd, dist)
+                approach_movement_list.put([rev, dist])
                 target_found = True
-                pick_up(movement, pic_q)
+                pick_up(movement, pic_q,approach_movement_list)
     if not target_found:
         movement.turn(adj_degrees)
+        approach_movement_list.put([-adj_degrees])
         if first_call:
-            approach(movement, pic_q, False, cam_up)
+            approach(movement, pic_q,approach_movement_list, False, cam_up)
         if not first_call and cam_up:
             movement.turn(10)
-            approach(movement, pic_q, True, False)
+            approach_movement_list.put([-10])
+            approach(movement, pic_q,approach_movement_list, True, False)
         movement.turn(adj_degrees*-1)
-    else:
-        movement.move(rev, dist)
-        movement.turn(angle)
+        approach_movement_list.put([adj_degrees])
 
-# Change log
-# [0.0.1] Benji
-# - Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-# - for 1.5 seconds is the minimum delay that guarantees fresh video data
-def map(movement, pic_q):
+"""
+Change log
+    -[0.0.1] Benji
+        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
+"""
+def map(movement, pic_q, beginning=False):
     movement.cam_up()
     print(movement.facing)
     time.sleep(1.5)
@@ -140,15 +148,28 @@ def map(movement, pic_q):
         angle = stat[1]
         dist = stat[2]
         print(obj_type, angle, dist)
-        movement.map(obj_type, angle, dist)
+        if obj_type == 9:
+            dist = dist + 3
+        if beginning:
+            movement.map(obj_type, angle, dist)
+        elif obj_type == 7:
+            movement.map(obj_type, angle, dist)
+   
+        
+    
 
 def begin_round(movement, pic_q):
     for _ in range(8):
         movement.turn(45)
-        map(movement, pic_q)
-
-def follow_path(movement, pic_q):
-    movement.find_path()
+        map(movement, pic_q, True)
+        
+"""
+Change Log
+    [0.0.1]
+        --- Added parameter to allow including goal in path
+"""
+def follow_path(movement, pic_q, include_goal=False):
+    movement.find_path(include_goal)
     while movement.path:
         print(movement.path)
         movement.follow_next_step()
@@ -156,14 +177,28 @@ def follow_path(movement, pic_q):
         for obs in movement.get_obstacles():
             if obs in movement.path:
                 movement.path.clear()
-                movement.find_path()
-    movement.face(movement.goal)
+                movement.find_path(include_goal)
+    if not movement.goal == movement.current:
+        movement.face(movement.goal)
 
 def get_sensor_data(serial):
     byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
     serial.write(byteArr)
     time.sleep(1)
     return int.from_bytes(serial.read(1),'little')
+    
+"""
+Go to Home square
+"""
+def go_home(movement, pic_q):
+    if not movement.goal == movement.current:
+        movement.path.clear()
+        movement.goal = (4,4)
+        follow_path(movement, pic_q, True)
+
+#####
+##### Mothership code
+####
 
 """ 
 Approach mothership from close
@@ -171,6 +206,7 @@ Assuming that the robot is atleast pointed towards the mothership
 Gets close the the mothership and calls mothership side angle
 """
 def approach_mothership_side(movement, pic_q, serial):
+    time.sleep(1.5)
     processed_frame, classes, boxes, scores = pic_q.get()
     object_stats = get_data(processed_frame, classes, boxes, scores)
     
@@ -182,7 +218,7 @@ def approach_mothership_side(movement, pic_q, serial):
     if object_stats:
         for stats in object_stats:
             if stats[0] == 8:
-                movement.turn(corrected_angle(stats[1], stats[2]))
+                movement.turn(-corrected_angle(stats[1], stats[2]))
                 if abs(distance_from_sensor - stats[2]) <= 5:
                     print("----------------Moving forward--------------")
                     movement.move(fwd, int((distance_from_sensor+stats[2])/2))
@@ -226,6 +262,125 @@ def mothership_side_angle(movement, pic_q, serial):
         # TODO: Have fun!
         pass
 
+"""
+Return true if obj is in our field of vision
+else change goal and return False
+"""
+def verify_obj(movement, pic_q, obj):
+    time.sleep(1.5)
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_data(processed_frame, classes, boxes, scores)
+
+    for stats in object_stats:
+        if stats[0] == obj:
+            return True
+    
+    facing = movement.facing
+    tx, ty = movement.goal[0], movement.goal[1]
+    
+    if obj == 9:
+        c = 1 if tx > 4 else -1
+        d = 1 if ty > 4 else -1
+        if (facing == 90 or facing == 270):
+            movement.goal = (tx + c, ty)
+        else:
+            movement.goal = (tx, ty + d) 
+
+    return False
+
+def locate_obj(movement, pic_q, obj):
+    facing = movement.facing
+    cx, cy = movement.current[0], movement.current[1]
+    tx, ty = movement.goal[0], movement.goal[1]
+
+    if facing == 90:
+        angle = 45 if tx < cx else -45
+    elif facing == 270:
+        angle = -45 if tx < cx else 45
+    elif facing == 0:
+        angle = -45 if ty < cy else 45
+    else:
+        angle = 45 if ty < cy else -45
+
+    for _ in range(2):
+        movement.turn(angle)
+        if verify_obj(movement, pic_q, obj):
+            return True 
+
+    return False
+"""
+Mapping mothership by side because we detected a side
+"""
+def map_by_side(movement, pic_q, serial, goal=None):
+    print("-------Checking side-------")
+    # Move to initial mapped side
+    movement.goal = movement.grid.sides[0] if goal == None else goal 
+    follow_path(movement, pic_q)
+    
+    # Verify it's location
+    # If it's where we think it is - awesome-
+
+    if verify_obj(movement,pic_q, 8):
+        movement.grid.sides.clear()
+        map(movement, pic_q, True)
+        # current location is access_point. Map it
+        # approach
+        approach_mothership_side(movement, pic_q, serial)
+    # else if we locate it
+    elif locate_obj(movement, pic_q, 8):
+        # current location is access_point. Map it
+        # we should be facing the side so approach 
+        approach_mothership_side(movement, pic_q, serial)
+    # else go home - you're drunk - try again later
+    else:
+        print("Go Home")
+        go_home(movement, pic_q)
+
+"""
+Mapping mothership by slope because we didn't find a side
+"""
+def map_by_slope(movement, pic_q, serial, first_call=True):
+    print("-------Checking slope-------")
+    # Move to initial mapped slope
+    movement.goal = movement.grid.slopes[0] if first_call else movement.goal
+    follow_path(movement, pic_q)
+
+    # Verify it's location
+    # If it's where we think it is
+    if verify_obj(movement, pic_q, 9):
+        movement.grid.slopes.clear()
+        map(movement, pic_q, True)
+        slope = movement.grid.slopes[0]
+        # we try to map by side for both possibilities
+        tx, ty = slope[0], slope[1]
+
+        c = 1 if tx > 4 else -1
+        d = 1 if ty > 4 else -1
+
+        movement.grid.sides = [(tx + c, ty),(tx, ty + d)]
+        movement.grid.access_points = [(tx + c, ty - d),(tx - c - c, ty + d)]
+        print("access points are ", movement.grid.access_points)
+
+        for i in range(2):
+            movement.goal = movement.grid.access_points[i]
+            follow_path(movement, pic_q, True)
+            map_by_side(movement, pic_q, serial, movement.grid.sides[i])
+            # we'll know the first try was successful if grid.mothership has objs in it 
+            
+    # Else we try one more time with new guess
+    elif not first_call: 
+        map_by_slope(movement, pic_q, serial, False)
+    # Else go home - you're drunk - try again later
+    else:
+        print("Go Home")
+        go_home(movement, pic_q)
+
+
+def map_mothership(movement, pic_q, serial):
+    if movement.grid.sides:
+        map_by_side(movement, pic_q, serial)
+    else:
+        map_by_slope(movement, pic_q, serial)
 
 def main():
     # Initialize frame rate calculation
@@ -253,28 +408,61 @@ def main():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(ledPin, GPIO.OUT, initial=GPIO.LOW)
+    
+    # Keep track of movements after approach is called
+    approach_movement_list = queue.LifoQueue()
 
     wait_for_button(buttonPin, ledPin)
     time.sleep(2)
     
-
-    drop_point = (7,7)
+    
     begin_round(movement, pic_q)
-    print(movement.get_obstacles())
-    targs = [(1,6),(7,0)]
+    map_mothership(movement, pic_q, ser)
+    
+    """
+    if grid.sides:
+        movement.goal = grid.sides[0]
+    elif grid.slopes:
+        movement.goal = (grid.slopes[0][0] -2, grid.slopes[0][1])
+    follow_path(movement, pic_q)
+    if verify_side(movement, pic_q):
+        approach_mothership_side(movement, pic_q, ser)
+    else:
+        grid.slopes = [(grid.slopes[0][0] -1, grid.slopes[0][0])]
+        movement.goal =(grid.slopes[0][0] +1, grid.slopes[0][0]-1)
+        if verify_side(movement, pic_q):
+            approach_mothership_side(movement, pic_q, ser)
+    
+    
+    
+    while True:
+        pass
+    
+   
+    drop_point = (4,7)
+    #begin_round(movement, pic_q)
+    #print(movement.get_obstacles())
+    targs = [(7,7),(6,5),(5,6),(2,3),(3,1),(5,1)]
     
     # move to target, pick up
     # move to drop_point and drop block until no more targets
     for item in targs:
         movement.goal = item
         follow_path(movement, pic_q)
-        approach(movement, pic_q)
+        approach(movement, pic_q, approach_movement_list)
+        while not approach_movement_list.empty():
+            move = approach_movement_list.get()
+            if len(move) == 1:
+                movement.turn(move[0])
+            else:
+                movement.move(move[0], move[1])
         movement.goal = drop_point
         follow_path(movement, pic_q)
         movement.move(fwd, 6)
         movement.drop()
         movement.move(rev, 6)
-    
+        movement.reset_servo()
+    """
                 
     vt.join()
     #camera.close()
