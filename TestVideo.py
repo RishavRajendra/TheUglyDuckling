@@ -13,7 +13,7 @@ import get_stats_from_image
 import queue, threading, serial, time
 
 import sys
-sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -70,7 +70,7 @@ def main():
                     inches = get_stats_from_image.get_distance(1, height_of_object_pixels)
             elif classes[0][i] == 8 and scores[0][i] > 0.3:
                 inches = get_stats_from_image.get_distance(2, height_of_object_pixels)
-            elif classes[0][i] == 9 and scores[0][i] > 0.3:
+            elif classes[0][i] == 9 and scores[0][i] > 0.5:
                 inches = get_stats_from_image.get_distance(3, height_of_object_pixels)
             if scores[0][i] > 0.3:
                 angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)

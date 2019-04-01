@@ -38,6 +38,10 @@ object_type = 0 (obstacle)
 object type = 1 (target)
 object type = 2 (side)
 object type = 3 (slope)
+
+Changelog:
+ -- Version 0.0.1 Rishav
+    --- Mothership side has its own error val
 """
 def get_distance(object_type, height_of_object_pixels):
     if object_type == 0:
@@ -45,7 +49,7 @@ def get_distance(object_type, height_of_object_pixels):
     if object_type == 1:
         return int(((TARGET_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
     if object_type == 2:
-        return int(((MOTHERSHIP_SIDE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
+        return int(((MOTHERSHIP_SIDE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels)/PIXEL_PER_MM))/10)
     if object_type == 3:
         return int(((MOTHERSHIP_SLOPE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
         
@@ -73,7 +77,7 @@ def get_sensor_data(serial):
 def get_data(processed_frame, classes, boxes, scores):
     result = []
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.4:
+        if scores[0][i] > 0.3:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300

@@ -17,7 +17,7 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -415,10 +415,6 @@ def main():
     wait_for_button(buttonPin, ledPin)
     time.sleep(2)
     
-    
-    begin_round(movement, pic_q)
-    map_mothership(movement, pic_q, ser)
-    
     """
     if grid.sides:
         movement.goal = grid.sides[0]
@@ -437,12 +433,12 @@ def main():
     
     while True:
         pass
-    
+    """
    
-    drop_point = (4,7)
+    drop_point = (4, 7)
     #begin_round(movement, pic_q)
     #print(movement.get_obstacles())
-    targs = [(7,7),(6,5),(5,6),(2,3),(3,1),(5,1)]
+    targs = [(4, 1),(3, 4)]
     
     # move to target, pick up
     # move to drop_point and drop block until no more targets
@@ -462,7 +458,7 @@ def main():
         movement.drop()
         movement.move(rev, 6)
         movement.reset_servo()
-    """
+    
                 
     vt.join()
     #camera.close()

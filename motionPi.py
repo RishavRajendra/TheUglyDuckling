@@ -35,8 +35,7 @@ class motionThread(threading.Thread):
         super(motionThread, self).__init__()
         self.func = { 'move': self.move,
                       'turn': self.turn,
-                      'move45': self.move45
-                      'gridMov': self.gridMov}
+                      'move45': self.move45}
         self.queue = queue
         self.stoprequest = threading.Event()
 
