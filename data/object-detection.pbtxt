@@ -36,5 +36,5 @@ item {
 }
 item {
  id: 10
- name: 'slope'
+ name: 'corner'
 }
