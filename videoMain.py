@@ -10,7 +10,9 @@ import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev, buttonPin, ledPin
-from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, get_midpoint, mothership_angle
+from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, \
+get_midpoint, mothership_angle, corrected_angle, get_closest_target
+from targetApproach import approach, check_pick_up
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, threading, serial, time, math
@@ -31,105 +33,6 @@ def wait_for_button(buttonPin, ledPin):
         pass
     GPIO.output(ledPin, GPIO.LOW)
     print('Executing')
-
-def corrected_angle(angle, dist, cam_up=True):
-    cd = CENTER_DISTANCE_UP if cam_up else CENTER_DISTANCE_DOWN
-    sign = -1 if angle < 0 else 1
-    angle = 180 - abs(angle)
-    a = math.sqrt(math.pow(dist,2) + math.pow(cd, 2) - 2*dist*cd*math.cos(math.radians(angle)))
-    angle_c = math.degrees(math.asin(math.sin(math.radians(angle))*dist/a))
-    angle_b  = 180 -angle - angle_c
-    print(angle_c, angle_b)
-    if angle_c < angle_b:
-        return math.floor(angle_c) * sign
-    
-    return math.floor(angle_b) * sign 
-
-# TODO: Check if the block is actually picked up
-def check_pick_up():
-    pass
-    
-# TODO: Refine pick_up. Take care of edge cases.
-
-"""
-Change log
-    -[0.0.1] Benji
-        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
-"""
-def pick_up(movement, pic_q,approach_movement_list):
-    movement.cam_down()
-    time.sleep(1.5)
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
-    dist = 0
-    angle = 0
-    print("CAM DOWN: {}".format(object_stats))
-    if not object_stats:
-        print("CAM DOWN: NO OBJECT FOUND")
-        #movement.cam_up()
-        #movement.move(rev, 5)
-        #time.sleep(2)
-        approach(movement, pic_q,approach_movement_list, True, cam_up=False)
-    else:
-        print("CAM DOWN: Something located")
-        for stats in object_stats:
-            if(stats[0] > 0 and stats[0] < 7):
-                print("MOVING TOWARDS TARGET")
-                angle = corrected_angle(stats[1], stats[2])
-                movement.turn(angle*-1)
-                approach_movement_list.put([angle])
-                dist = math.ceil(stats[2]*.7)
-                # move only 70% of the calculated distance to stop at pickup spot and not the front of the robot
-                movement.move(fwd, dist)
-                approach_movement_list.put([rev, dist])
-                movement.pickup()
-            
-
-
-# TODO: Refine approach. Take care of edge cases.
-# EDGE CASE 1: obstacle is in way of target
-# Potential solution: go to another connected tile
-# EDGE CASE 2: target not detected after two additional scans.
-
-"""
-Change log
-    -[0.0.1] Benji
-        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
-"""
-def approach(movement, pic_q, approach_movement_list, first_call=True, cam_up=True):
-    movement.cam_up() if cam_up else movement.cam_down()
-    adj_degrees = 10 if first_call else -20
-    angle = 0
-    dist = 0
-    time.sleep(1.5)
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
-    print("CAM UP: {}".format(object_stats))
-    target_found = False
-    if object_stats:
-        for stats in object_stats:
-            if(stats[0] > 0 and stats[0] < 7):
-                angle = corrected_angle(stats[1], stats[2]) 
-                movement.turn(angle*-1)
-                approach_movement_list.put([angle])
-                dist = stats[2] - 1
-                movement.move(fwd, dist)
-                approach_movement_list.put([rev, dist])
-                target_found = True
-                pick_up(movement, pic_q,approach_movement_list)
-    if not target_found:
-        movement.turn(adj_degrees)
-        approach_movement_list.put([-adj_degrees])
-        if first_call:
-            approach(movement, pic_q,approach_movement_list, False, cam_up)
-        if not first_call and cam_up:
-            movement.turn(10)
-            approach_movement_list.put([-10])
-            approach(movement, pic_q,approach_movement_list, True, False)
-        movement.turn(adj_degrees*-1)
-        approach_movement_list.put([adj_degrees])
 
 """
 Change log
