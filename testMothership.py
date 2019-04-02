@@ -17,7 +17,7 @@ import queue, threading, serial, time, math
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -280,24 +280,19 @@ def verify_obj(movement, pic_q, obj):
 
 def locate_obj(movement, pic_q, obj):
     print("--------Locating Object-------")
-    facing = movement.facing
-    cx, cy = movement.current[0], movement.current[1]
-    tx, ty = movement.goal[0], movement.goal[1]
-
-    if facing == 90:
-        angle = 45 if tx < cx else -45
-    elif facing == 270:
-        angle = -45 if tx < cx else 45
-    elif facing == 0:
-        angle = -45 if ty < cy else 45
-    else:
-        angle = 45 if ty < cy else -45
 
     for _ in range(2):
-        movement.turn(angle)
+        movement.turn(45)
         if verify_obj(movement, pic_q, obj):
             return True 
-
+    
+    movement.turn(-90)
+    
+    for _ in range(2):
+        movement.turn(-45)
+        if verify_obj(movement, pic_q, obj):
+            return True
+            
     return False
 """
 Mapping mothership by side because we detected a side
@@ -305,11 +300,11 @@ Mapping mothership by side because we detected a side
 def map_by_side(movement, pic_q):
     print("-------Checking side-------")
     # Move to initial mapped side or updated side
-    movement.goal = movement.grid.sides[0]
+    movement.set_goal(movement.grid.sides[0])
     follow_path(movement, pic_q)
 
     # Verify location
-    if verify_obj(pic_q, 8):
+    if verify_obj(movement, pic_q, 8):
         print("------Side Verified------")
         # remap side now that we're closer
         prev_side = movement.grid.sides[0]
@@ -360,21 +355,21 @@ Mapping mothership by slope because we didn't find a side
 def map_by_slope(movement, pic_q):
     print("-------Checking slope-------")
     # Move to initial mapped slope or updated slope
-    movement.goal = movement.grid.slopes[0]
+    movement.set_goal(movement.grid.slopes[0])
     follow_path(movement, pic_q)
 
     # Verify the slope's location
-    if verify_obj(pic_q, 9):
+    if verify_obj(movement, pic_q, 9):
         # remap side now that we're closer
         prev_slope = movement.grid.slopes[0]
         movement.grid.slopes.clear()
         map(movement, pic_q, True)
         current = movement.grid.slopes[0]
-        print("Previous slope location was: ", prev_side)
+        print("Previous slope location was: ", prev_slope)
         print("Current slope location is: ", current)
 
         # if it's in the correct location
-        if prev_slope[-] == current[0] and prev_slope[1] == current[1]:
+        if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
             # create two guesses to map by side from
             slope = movement.grid.slopes[0]
             # we try to map by side for both possibilities
@@ -402,9 +397,12 @@ def map_by_slope(movement, pic_q):
         prev_slope = movement.grid.slopes[0]
         movement.grid.slopes.clear()
         map(movement, pic_q, True)
+        current = movement.grid.slopes[0]
+        print("Previous slope location was: ", prev_slope)
+        print("Current slope location is: ", current)
 
         # if it's in the correct location
-        if prev_slope == movement.slopes[0]:
+        if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
             # create two guesses to map by side from
             slope = movement.grid.slopes[0]
             # we try to map by side for both possibilities
@@ -419,6 +417,8 @@ def map_by_slope(movement, pic_q):
                 map_by_side(movement, pic_q)
                 # we break if mothership has anything in it - we only add to mothership 
                 # list if map by side was a success
+                if movement.grid.mothership:
+                    break
 
         else:
             # map by slope again
@@ -471,6 +471,7 @@ def main():
     
     begin_round(movement, pic_q)
     map_mothership(movement, pic_q)
+    print("Mothership is located in the following tiles: ", grid.mothership)
     
     """
     if grid.sides:
