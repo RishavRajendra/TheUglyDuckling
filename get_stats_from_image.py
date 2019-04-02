@@ -61,23 +61,6 @@ def get_distance(object_type, height_of_object_pixels):
 def cam_down_distance(height_of_object_pixels):
     return int(((CAM_DOWN_TARGET_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
 
-"""
-Returns the average distance of the object infront of the mothership
-Mid-range IR sensor connected to the Arduino Mega 2560
-Raspberry pi gets data using serial
-"""
-def get_sensor_data(serial):
-    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
-    serial.write(byteArr)
-    time.sleep(1)
-    dist = int.from_bytes(serial.read(1),'little')
-    if dist > 4 and dist <= 15:
-        return dist - 3
-    if dist > 15:
-        return dist - 4
-    else:
-        return 0
-
 # Returns [object_name, angle, inches]
 def get_data(pic_q):
     processed_frame, classes, boxes, scores = pic_q.get()

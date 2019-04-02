@@ -1,3 +1,5 @@
+from get_stats_from_image import corrected_angle, get_closest_target
+
 # TODO: Check if the block is actually picked up
 def check_pick_up(movement, pic_q):
     success = False
