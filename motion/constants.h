@@ -20,6 +20,16 @@ volatile byte slaveWheels;
 volatile float steps;
 volatile float steps_counter;
 volatile bool flag1;
+volatile byte downLookValueLeft; //down looking IR sensor flags
+volatile byte downLookValueRight;
+
+const byte downLookRight = 38;
+const byte downLookLeft = 39;
+
+//Where I think I am //Ceraso
+float facingAngle = 0.0;
+float xPos = 54; 
+float yPos = 42;
 
 //Measurements
 float diagonal_dist = 1.40;

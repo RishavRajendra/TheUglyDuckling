@@ -292,3 +292,132 @@ void ud_bot(){
   rotl = B00000000;
   rotr = B10101010;
 }
+
+void updateFacingAngle(byte dir, float dist) {
+  Serial.print("facingAngle updated from ");
+  Serial.print(facingAngle);
+  
+  if (dir == rotl){
+    facingAngle += dist;
+  }
+  else if (dir == rotr){
+    facingAngle -= dist;
+  }
+  while (facingAngle <= -180){ //see if you can replace these with facingAngle = fixDegrees(facingAngle);
+    facingAngle += 360;
+  }
+  while (facingAngle > 180){
+    facingAngle -= 360;
+  }
+
+void ctc4_setup() {
+  noInterrupts();
+  TCCR4A = 0;  // clear counter control register
+  TCCR4B = 0;
+  TCNT4 = 0;
+
+  OCR4A = 16000; // compare match register – 1000 usecond delay
+          // countCompareValue = delayInMicroseconds * 16
+          // countCompareValue = 16000000 / prescaler / desired frequency
+  TCCR4B |= (1 << WGM42); // count to compare mode
+  TCCR4B |= (1 << CS40); // 1 prescaler
+  TIMSK4 |= (1 << OCIE4A); // enable timer compare interrupt
+  interrupts();
+}
+
+void ctc3_setup() {
+  noInterrupts();
+  TCCR3A = 0;  // clear counter control register
+  TCCR3B = 0;
+  TCNT3 = 0;
+ // OCR3A = 16000; // compare match register – 1000 usecond delay
+          // countCompareValue = delayinmicroseconds * 16 
+          // countCompareValue = 16000000 / prescaler / desired frequency
+  TCCR3B |= (1 << WGM32); // count to compare mode
+  TCCR3B |= (1 << CS30); // 1 prescaler
+  TIMSK3 |= (1 << OCIE3A); // enable timer compare interrupt
+  interrupts();
+}
+//3: Slave
+ISR(TIMER3_COMPA_vect) { // timer compare ISR
+  downLookValueLeft = digitalRead(downLookLeft);
+  if (steps > 0 && downLookValueLeft == 0) {
+    PORTL ^= slaveWheels;
+//    PORTL ^= slaveWheels;
+  }
+  steps_counter++;
+}
+
+//4: Master
+ISR(TIMER4_COMPA_vect) { // timer compare ISR
+  downLookValueRight = digitalRead(downLookRight);
+  if (steps > 0 && downLookValueRight == 0) {
+    PORTL ^= masterWheels;
+//    PORTL ^= masterWheels;
+  }
+
+  steps--;
+}
+
+void varsIntTurn(byte dir, float dist, long del, float ratio, byte master, byte slave) {
+  ctc3_setup();
+  ctc4_setup();
+  PORTL = dir;
+  updateFacingAngle(dir, dist); //update global Facing Angle
+  float stepf = dist*steps_per_degree;
+  masterWheels = master;
+  slaveWheels = slave;
+
+  noInterrupts();
+  //OCR4A = 16 * del - 1;//setup speed for master
+  OCR4A = 16 * del;
+  TCNT4 = 0;//reset
+  float temp = del * ratio;
+  long slaveDelay = temp;
+  //OCR3A = slaveDelay * 16 - 1;//setup speed for slave 
+  OCR3A = slaveDelay * 16;
+  TCNT3 = 0;//reset
+  steps = stepf;
+  steps_counter = 0;  //reset step counter
+  interrupts();
+
+}
+
+void edgeAlign() {
+  for (int i = 3; i > 0; i--) { //decrementing loop scales the forward motion to be a smaller approach each time
+    varsInt(rev, i * 8, 1000, straight, rightmotors, leftmotors);
+
+    while (steps > 0) {
+      if (downLookValueLeft == 1 && downLookValueRight == 1) {
+        steps = 0;
+      }
+    }
+    
+    delay(500);
+    mov(rev, 2, 1000);
+    delay(500);
+  }
+}
+
+void varsInt(byte dir, float dist, long del, float ratio, byte master, byte slave) {
+  updateXandY(dir, dist);
+  ctc3_setup();
+  ctc4_setup();
+  PORTL = dir;
+  float stepf = dist*steps_per_inch;
+  masterWheels = master;
+  slaveWheels = slave;
+
+  noInterrupts();
+  //OCR4A = 16 * del - 1;//setup speed for master
+  OCR4A = 16 * del;
+  TCNT4 = 0;//reset
+  float temp = del * ratio;
+  long slaveDelay = temp;
+  //OCR3A = slaveDelay * 16 - 1;//setup speed for slave 
+  OCR3A = slaveDelay * 16;
+  TCNT3 = 0;//reset
+  steps = stepf;
+  steps_counter = 0;  //reset step counter
+  interrupts();
+}
