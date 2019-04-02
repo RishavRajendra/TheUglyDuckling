@@ -1,29 +1,138 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+__author__ = "Rishav Rajendra, Benji Lee"
+__license__ = "MIT"
+__status__ = "Development"
+
 import cv2
 import numpy as np
-from nav.grid import Grid
+import RPi.GPIO as GPIO
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev
+from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, get_midpoint, mothership_angle
 from nav.gridMovement import GridMovement
+from nav.grid import Grid
+import queue, threading, serial, time, math
 from video_thread import VideoThread
-from get_stats_from_image import get_angle, get_distance, get_data
-from serial import Serial
-from constants import fwd, rev, rotl, rotr, strl, strr, \
-        CAMERA_RESOLUTION, CAMERA_FRAMERATE
-import time, math, threading, queue
 
 import sys
 sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
+import warnings
+warnings.filterwarnings('ignore')
+
+def wait_for_button():
+    # Inizialize button
+    GPIO.setmode(GPIO.BOARD)
+    buttonPin = 8
+    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    print('----------------------Ready-----------------------')
+    #Prevent further code execution until button is pressed
+    while GPIO.input(buttonPin) is not 0:
+        pass
+    print('---------------------Executing--------------------')
+
+def corrected_angle(angle, dist, cam_up=True):
+    cd = CENTER_DISTANCE_UP if cam_up else CENTER_DISTANCE_DOWN
+    sign = -1 if angle < 0 else 1
+    angle = 180 - abs(angle)
+    a = math.sqrt(math.pow(dist,2) + math.pow(cd, 2) - 2*dist*cd*math.cos(math.radians(angle)))
+    angle_c = math.degrees(math.asin(math.sin(math.radians(angle))*dist/a))
+    angle_b  = 180 -angle - angle_c
+    if angle_c < angle_b:
+        return math.floor(angle_c) * sign
+    
+    return math.floor(angle_b) * sign 
+
+# TODO: Check if the block is actually picked up
+def check_pick_up():
+    pass
+        
+""" 
+Approach mothership from close
+Assuming that the robot is atleast pointed towards the mothership
+Gets close the the mothership and calls mothership side angle
+"""
+def approach_mothership_side(movement, pic_q, serial):
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_data(processed_frame, classes, boxes, scores)
+    
+    # Get current distance with IR sensor for validation
+    distance_from_sensor = get_sensor_data(serial)
+    print("Distance from sensor: {}".format(distance_from_sensor))
+    print(object_stats)
+    
+    if object_stats:
+        for stats in object_stats:
+            if stats[0] == 8:
+                movement.turn(corrected_angle(stats[1], stats[2]))
+                if abs(distance_from_sensor - stats[2]) <= 5:
+                    print("----------------Moving forward--------------")
+                    movement.move(fwd, int((distance_from_sensor+stats[2])/2))
+                    movement.cam_down()
+                    mothership_side_angle(movement, pic_q, serial)
+                else:
+                    print("-------------Validation Failed-----------------")
+                    # TODO: Handle edge cases
+                    approach_mothership_side(movement, pic_q, serial)
+    else:
+        # TODO: Handle edge cases
+        approach_mothership_side(movement, pic_q, serial)
+
+"""
+Turns the angle it believes the mothership is at from the front of the robot
+"""
+def mothership_side_angle(movement, pic_q, serial):
+    distance_from_sensor = get_sensor_data(serial)
+    # If sensor says the block is too far away, go forward 1 inch
+    if distance_from_sensor != 0:
+        movement.move(fwd, 1)
+        mothership_side_angle(movement, pic_q, serial)
+
+    processed_frame, classes, boxes, scores = pic_q.get()
+    object_stats = get_midpoint(processed_frame, classes, boxes, scores)
+    
+    boxes_midpoint = []
+    # Get midpoints of letters inside the mothership
+    if object_stats:
+        for stats in object_stats:
+            if stats[0] > 0 and stats[0] < 7:
+                boxes_midpoint.append(stats[1])
+                    
+    print(boxes_midpoint)
+    if len(boxes_midpoint) >= 2:
+        angle = mothership_angle(boxes_midpoint)
+        # Turn to be somewhat parallel to the mothership
+        movement.turn(angle)
+    else:
+        # TODO: Have fun!
+        pass
+
 def main():
     objectifier = Model()
 
-    # Initialize serial communication
-    ser = Serial('/dev/ttyACM0',9600, timeout=2)
+    # Start serial connection to arduino
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
     time.sleep(1)
 
-    # Initialize Grid movement for movement
+    # Initialize queues
+    pic_q = queue.LifoQueue(5)
+    command_q = queue.Queue()
+    # Inizialize grid and gridmovement
     grid = Grid(8,8)
     movement = GridMovement(grid, ser)
-    movement.move(fwd, 2)
+    # Initialize VideoThread
+    vt = VideoThread(pic_q, objectifier)
+    vt.start()
+
+    wait_for_button()
+    time.sleep(2)
+       
+    approach_mothership_side(movement, pic_q, ser)
+                
+    vt.join()
 
 if __name__ == '__main__':
     main()

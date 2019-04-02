@@ -39,14 +39,14 @@ destination = os.getcwd()
 # This is where the magic happens
 try :
     for f in files:
-        full_file_name = '{}/{}'.format(portInformation[portName], 'mar1.json')
+        full_file_name = '{}/{}'.format(portInformation[portName], 'mars1.json')
         if (os.path.isfile(full_file_name)):
         	shutil.copy(full_file_name, destination)
 except Exception as e:
     print(e)
 
 # Read the json file
-with open('mar1.json', encoding='utf-8') as data_file:
+with open('mars1.json', encoding='utf-8') as data_file:
 	data = json.loads(data_file.read())
 
 print(data)
