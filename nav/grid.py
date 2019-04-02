@@ -12,8 +12,9 @@ class Grid:
 		self.mothership = [] #Not used yet
 		self.sides = []
 		self.slopes = []
+		self.exclusion_list = []
 		self.access_points = []
-		self.obstacles_max = 0
+		self.obstacles_max = 20
 		self.last_side_angle = 0
 
 	def in_bounds(self, id):
@@ -21,8 +22,14 @@ class Grid:
 		return 0 <= x < self.width and 0 <= y < self.height
 
 	def passable(self, id):
-		if id not in self.obstacles or id not in self.sides or id not in self.slopes:
-			return id
+		blocked = []
+		blocked.extend(self.obstacles)
+		blocked.extend(self.sides)
+		blocked.extend(self.slopes)
+		blocked.extend(self.targets)
+		blocked.extend(self.mothership)
+		return (id not in blocked) or (id in self.exclusion_list)
+			
 
 	"""
 	Change Log
@@ -61,13 +68,18 @@ class Grid:
 	def add_mothership(self, part):
 		if part not in self.mothership:
 			self.mothership.append(part)
+		
 			
 	def add_slope(self, slope):
 		if slope not in self.slopes:
 			self.slopes.append(slope)
+		
+		
 	def add_side(self, side):
 		if side not in self.sides:
 			self.sides.append(side)
+		
+		
 			
 	def get_mothership(self):
 		return self.mothership

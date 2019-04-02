@@ -46,6 +46,11 @@ class GridMovement:
 		
 	def get_obstacles(self):
 		return self.grid.get_obstacles()
+	
+	def set_goal(self, goal):
+		self.grid.exclusion_list.clear()
+		self.goal = goal
+		self.grid.exclusion_list.append(goal)
 
 	# Not yet implemented
 	# If we haven't aquired a block yet, set closest block as goal.
@@ -132,7 +137,7 @@ class GridMovement:
 
 
 	def map(self,obj, angle, dist):
-		if abs(angle) > 30:
+		if abs(angle) > 40:
 			return
 		offset = 6
 		cam_offset = 2.5
