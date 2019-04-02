@@ -72,9 +72,11 @@ def main():
                 inches = get_stats_from_image.get_distance(2, height_of_object_pixels)
             elif classes[0][i] == 9 and scores[0][i] > 0.5:
                 inches = get_stats_from_image.get_distance(3, height_of_object_pixels)
+            elif classes[0][i] == 10 and scores[0][i] > 0.3:
+                inches = get_stats_from_image.get_distance(4, height_of_object_pixels)
             if scores[0][i] > 0.3:
                 angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)
-                print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
+                print('{} detected at {}{} {} inches away. Midpoint:({},{}). Height: {}'.format(classes[0][i],angle,chr(176),inches, int(mid_x), int(mid_y), int(height_of_object_pixels)))
         
         cv2.imshow('Object detector', processed_frame)
 

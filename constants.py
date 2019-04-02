@@ -28,6 +28,7 @@ OBSTACLE_HEIGHT = 35
 TARGET_HEIGHT = 15
 MOTHERSHIP_SIDE_HEIGHT = 15
 MOTHERSHIP_SLOPE_HEIGHT = 23
+CORNER_HEIGHT = 80
 
 # Distance from beginning of camera range to center of robot
 CENTER_DISTANCE_UP = 6.5

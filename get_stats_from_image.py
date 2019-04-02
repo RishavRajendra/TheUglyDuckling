@@ -8,7 +8,7 @@ import cv2
 import math, time
 from constants import CENTER_LINEx1y1, CENTER_LINEx2y2, PIXEL_PER_MM, \
 ERROR_VAL, FOCAL_LENGTH, OBSTACLE_HEIGHT, TARGET_HEIGHT, MOTHERSHIP_SIDE_HEIGHT, \
-MOTHERSHIP_SLOPE_HEIGHT, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN
+MOTHERSHIP_SLOPE_HEIGHT, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, CORNER_HEIGHT
 from operator import itemgetter
 
 # angle = arctan((m2-m1)/(1+(m1*m2)))
@@ -41,6 +41,7 @@ object_type = 0 (obstacle)
 object type = 1 (target)
 object type = 2 (side)
 object type = 3 (slope)
+object type = 4 (corner)
 
 Changelog:
  -- Version 0.0.1 Rishav
@@ -55,7 +56,8 @@ def get_distance(object_type, height_of_object_pixels):
         return int(((MOTHERSHIP_SIDE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels)/PIXEL_PER_MM))/10)
     if object_type == 3:
         return int(((MOTHERSHIP_SLOPE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
-        
+    if object_type == 4:
+        return int(((CORNER_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
 def cam_down_distance(height_of_object_pixels):
     return int(((CAM_DOWN_TARGET_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
 
