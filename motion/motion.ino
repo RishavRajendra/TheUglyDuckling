@@ -10,64 +10,67 @@ void setup() {
   DDRL = B11111111;
   ud_bot();
   Serial.begin(9600);
-  reset_servo();
-//  pickup();
+  drop();
+  //  pickup();
   cam_up();
-//  mov(strr, 15, 500);
+  //  mov(strr, 15, 500);
+  //  edgeAlign(); //reverse align to edge 3 times by Ceraso
 }
 
 void loop() {
-  readPython();
-  runCommand();
+  //objectID();
+  //Serial.println(analogRead(rearLookLong)); //test the fwdLooking mid range sensors and rev looking long range sensor
+  //readPython();
+  //runCommand();
 }
 
 //Wait for function calls from RaspberryPi
-void readPython(){
-  if(Serial.available() > 0){
+void readPython() {
+  if (Serial.available() > 0) {
     byte data [4];
     Serial.readBytes(data, 4);
-    for(int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++) {
       queue.push(data[i]);
     }
   }
- }
+}
 // Run commands waiting in queue
-void runCommand(){
-  if (!queue.isEmpty()){
+void runCommand() {
+  if (!queue.isEmpty()) {
     int flag = (int)queue.pop();
     byte data1 = queue.pop();
     byte data2 = queue.pop();
     byte data3 = queue.pop();
-    
-    if (flag == 0){
-     mov(data1, data2, 400);
+
+    if (flag == 0) {
+      mov(data1, data2, 400);
     }
-    else if (flag == 1){
+    else if (flag == 1) {
       turn(data1, data2, 700, data3);
     }
-    else if (flag == 2){
+    else if (flag == 2) {
       int n = 8;
-      if (data2 < 36){
-        n = 4; 
+      if (data2 < 36) {
+        n = 4;
       }
       acceleration(data1, data2, 350, n, data3);
     }
-    else if (flag == 3){
+    else if (flag == 3) {
       pickup();
     }
-    else if (flag == 4){
+    else if (flag == 4) {
       drop();
     }
-    else if (flag == 5){
+    else if (flag == 5) {
       reset_servo();
     }
-    else if (flag == 6){
+    else if (flag == 6) {
       cam_up();
     }
-    else if (flag == 7){
+    else if (flag == 7) {
       cam_down();
     }
-    else if(flag == 8){
+    else if (flag == 8) {
       send_sensor_data();
     }
     else if(flag == 9){
@@ -83,7 +86,7 @@ void runCommand(){
 
 /*Servo Code*/
 
-void pickup(){
+void pickup() {
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   int i = 1850;
@@ -99,7 +102,7 @@ void pickup(){
   delay(10);
 }
 
-void drop(){
+void drop() {
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   int i = 2500;
@@ -115,7 +118,7 @@ void drop(){
   delay(10);
 }
 
-void reset_servo(){
+void reset_servo() {
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   int i = 500;
@@ -131,14 +134,14 @@ void reset_servo(){
   delay(10);
 }
 
-void cam_up(){
+void cam_up() {
   int speed = 2500;
   int steps = 13;
   int pin = 6;
   int highDelay = speed;
   int lowDelay = 20000 - steps;
   pinMode(pin, OUTPUT);
-  for (int cnt = 0; cnt < steps; cnt++){
+  for (int cnt = 0; cnt < steps; cnt++) {
     digitalWrite(pin, LOW);
     delayMicroseconds(lowDelay);
     digitalWrite(pin, HIGH);
@@ -146,14 +149,14 @@ void cam_up(){
   }
 }
 
-void cam_down(){
+void cam_down() {
   int speed = 250;
   int steps = 13;
   int pin = 6;
   int highDelay = speed;
   int lowDelay = 20000 - steps;
   pinMode(pin, OUTPUT);
-  for (int cnt=0; cnt < steps; cnt++){
+  for (int cnt = 0; cnt < steps; cnt++) {
     digitalWrite(pin, LOW);
     delayMicroseconds(lowDelay);
     digitalWrite(pin, HIGH);
@@ -207,13 +210,13 @@ void mov(byte dir, float dist, long del) {
 void gridMov(byte dir, long dist, long del, byte motors) {
   PORTL = dir;
   float stepf = dist * steps_per_inch;
-  if (motors != motion){
+  if (motors != motion) {
     stepf *= 2;
   }
-  if (dir == strr || dir == strl){
+  if (dir == strr || dir == strl) {
     stepf = dist * steps_per_inch_strafe;
   }
-  
+
   long steps = stepf;
   for (long i = 0; i < steps; i++) {
     delayMicroseconds(del);
@@ -223,9 +226,9 @@ void gridMov(byte dir, long dist, long del, byte motors) {
 
 //Turn given degrees- Only used with rotl or rotr
 void turn(byte dir, float dist, long del, byte flag) {
-//  if( flag == 1){
-//    dist/camera_degree_ratio;
-//  }
+  //  if( flag == 1){
+  //    dist/camera_degree_ratio;
+  //  }
   PORTL = dir;
   float stepf = dist * steps_per_degree;
   long steps = stepf;
@@ -276,9 +279,9 @@ void vars(byte dir, float dist, long del, float ratio, byte master, byte slave) 
 }
 
 void acceleration(byte dir, float dist, long del, int N, byte flag) {
-//  if (flag == 0){
-//    dist *= diagonal_dist;
-//  }
+  //  if (flag == 0){
+  //    dist *= diagonal_dist;
+  //  }
   float total_dis = N * (N + 1) / 2 * 3 * start_dis;
 
   if (total_dis > dist) {
@@ -300,7 +303,7 @@ void acceleration(byte dir, float dist, long del, int N, byte flag) {
 }
 
 //Declares directional bytes for UglyDuckling bot
-void ud_bot(){
+void ud_bot() {
   fwd = B10100000;
   rev = B00001010;
   strl = B00100010;
@@ -440,7 +443,9 @@ void varsInt(byte dir, float dist, long del, float ratio, byte master, byte slav
 }
 
 byte objectID() {
+<<<<<<< HEAD
   delay(500);
+
   byte type = 0;
   long sum_right, sum_left, avg_right, avg_left, dist_right, dist_left;
   int i;
@@ -499,6 +504,22 @@ void align() {
 
 void alignmentMap() {
   int dist = 450;
+  
+  //Lower Mid
+  float centerAngleM;
+  bool laststateM = false;
+  long sumA = 0;
+  long thresholdM = 250;
+  long maxDistM = 0;
+  objectcountM = 0;
+
+  //Lower Long
+  float centerAngleLL;
+  bool laststateLL = false;
+  long sumB = 0;
+  long thresholdLL = 400;
+  long maxDistLL = 0;
+  objectcountLL = 0;
 
   //Upper Long
   float centerAngleUL;
@@ -514,18 +535,71 @@ void alignmentMap() {
   varsIntTurn(rotl, dist, 2000, 1.0, leftmotion, rightmotion); //begin turning
 
   //determine initial conditions
-  long c = analogRead(rearLookLong);
+  long a = analogRead(A1);
+  long b = analogRead(A4);
+  long c = analogRead(A8);
+  if (a < thresholdM)
+    laststateM = false;
+  if (b < thresholdLL)
+    laststateLL = false;
   if (c < thresholdUL)
     laststateUL = false;
 
   //take reads while turning
   while (steps > 0) {
+
+    sumA = 0;
+    sumB = 0;
     sumC = 0;
 
     for (i = 0; i < 50; i++) {
-      sumC += analogRead(rearLookLong);
+      sumA += analogRead(A0);
+      sumB += analogRead(A4);
+      sumC += analogRead(A8);
     }
+    a = sumA / i;
+    b = sumB / i;
     c = sumC / i;
+
+    //Lower Mid Data Storage
+    if (laststateM && a > maxDistM)
+      maxDistM = a;
+    if (a > thresholdM && !laststateM) {
+      firstEdgeM[objectcountM] = steps;
+      laststateM = true;
+    }
+    if (a < thresholdM && laststateM) {
+      secondEdgeM[objectcountM] = steps;
+      centerM[objectcountM] = dist*steps_per_degree - (firstEdgeM[objectcountM] + secondEdgeM[objectcountM]) / 2;
+      widthM[objectcountM] = (firstEdgeM[objectcountM] - secondEdgeM[objectcountM]);
+      laststateM = false;
+
+      distToTargetM[objectcountM] = calScale * pow(maxDistM,calPower);
+      if (widthM[objectcountM] > 60 && widthM[objectcountM] < 200 && distToTargetM[objectcountM] < 14) {
+        objectcountM++;
+        maxDistM = 0;
+      }
+    }
+
+    //Lower Long Data Storage
+    if (laststateLL && b > maxDistLL)
+      maxDistLL = b;
+    if (b > thresholdLL && !laststateLL) {
+      firstEdgeLL[objectcountLL] = steps;
+      laststateLL = true;
+    }
+    if (b < thresholdLL && laststateLL) {
+      secondEdgeLL[objectcountLL] = steps;
+      centerLL[objectcountLL] = dist*steps_per_degree - (firstEdgeLL[objectcountLL] + secondEdgeLL[objectcountLL]) / 2;
+      widthLL[objectcountLL] = (firstEdgeLL[objectcountLL] - secondEdgeLL[objectcountLL]);
+      laststateLL = false;
+
+      if (widthLL[objectcountLL] > 170) {
+        distToTargetLL[objectcountLL] = calScaleLong * pow(maxDistLL, calPowerLong);
+        objectcountLL++;
+        maxDistLL = 0;
+      }
+    }
 
     //Upper Long Data Storage
     if (laststateUL && c > maxDistUL)
@@ -536,14 +610,18 @@ void alignmentMap() {
     }
     if (c < thresholdUL && laststateUL) {
       secondEdgeUL[objectcountUL] = steps;
-      centerUL[objectcountUL] = (firstEdgeUL[objectcountUL] + secondEdgeUL[objectcountUL]) / 2;
+
+      centerUL[objectcountUL] = dist*steps_per_degree - (firstEdgeUL[objectcountUL] + secondEdgeUL[objectcountUL]) / 2;
+
       centerstepsUL[objectcountUL] = centerUL[objectcountUL];
       widthUL[objectcountUL] = (firstEdgeUL[objectcountUL] - secondEdgeUL[objectcountUL]);
       laststateUL = false;
 
       if (widthUL[objectcountUL] > 20) {
         distToTargetUL[objectcountUL] = calScaleUpperLong * pow(maxDistUL, calPowerUpperLong);
-        if (widthUL[objectcountUL] > 20 && widthUL[objectcountUL] < 130) {
+
+        if (widthUL[objectcountUL] > 40 && widthUL[objectcountUL] < 110) {
+
           objectcountUL++;
         }
         maxDistUL = 0;
@@ -551,8 +629,26 @@ void alignmentMap() {
     }
     delay(50);
   }
-  
+
+  //correctFacingAngle();
+  //calspd(); //calibrate steps per degree
+
+
   //convert degrees to radians
+  //Lower Mid
+  for (i = 0; i < objectcountM; i++) {
+    centerM[i] /= steps_per_degree;
+    //  center[i] -= 180;
+    centerM[i] *= (pi / 180);
+    centerM[i] = fixRadians(centerM[i]);
+  }
+  //Lower Long
+  for (i = 0; i < objectcountLL; i++) {
+    centerLL[i] /= steps_per_degree;
+    centerLL[i] -= 180;
+    centerLL[i] *= (pi / 180);
+    centerLL[i] = fixRadians(centerLL[i]);
+  }
   //Upper Long
   for (i = 0; i < objectcountUL; i++) {
     centerUL[i] /= steps_per_degree;
@@ -560,7 +656,52 @@ void alignmentMap() {
     centerUL[i] *= (pi / 180);
     centerUL[i] = fixRadians(centerUL[i]);
   }
-  
+
+
+  //Display Mid Range Sensor Data
+  Serial.println("Mid Range Sensor");
+  Serial.print("Objects = ");
+  Serial.print("\t");
+  Serial.println(objectcountM);
+  Serial.print("Width");
+  Serial.print("\t");
+  Serial.print("Center");
+  Serial.print("\t");
+  Serial.print("distToTarget");
+  Serial.print("\t");
+  Serial.println("obstacle");
+  Serial.println(" ");
+  for (i = 0; i < objectcountM; i++) {
+    Serial.print(widthM[i]);
+    Serial.print("\t");
+    Serial.print(centerM[i]);
+    Serial.print("\t");
+    Serial.print(distToTargetM[i]);
+    Serial.print("\t");
+    Serial.print("\t");
+    Serial.println(objObstacleM[i]);
+  }
+
+  //Display Lower Long Range Sensor Data
+  Serial.println(" ");
+  Serial.println("Lower Long Range Sensor");
+  Serial.print("Objects = ");
+  Serial.print("\t");
+  Serial.println(objectcountLL);
+  Serial.print("Width");
+  Serial.print("\t");
+  Serial.print("Center");
+  Serial.print("\t");
+  Serial.println("distToTarget");
+  Serial.println(" ");
+  for (i = 0; i < objectcountLL; i++) {
+    Serial.print(widthLL[i]);
+    Serial.print("\t");
+    Serial.print(centerLL[i]);
+    Serial.print("\t");
+    Serial.println(distToTargetLL[i]);
+  }
+
   //Display Upper Long Range Sensor Data
   Serial.println(" ");
   Serial.println("Upper Long Range Sensor");
