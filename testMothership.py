@@ -10,7 +10,8 @@ import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev, buttonPin, ledPin
-from get_stats_from_image import get_angle, get_distance, get_data, get_sensor_data, get_midpoint, mothership_angle
+from get_stats_from_image import get_angle, get_distance, get_data, get_midpoint, mothership_angle
+from misc import get_sensor_data
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, threading, serial, time, math
@@ -140,9 +141,8 @@ Change log
 def map(movement, pic_q, beginning=False):
     movement.cam_up()
     print(movement.facing)
-    time.sleep(1.5)
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
+    time.sleep(3)
+    object_stats = get_data(pic_q)
     for stat in object_stats:
         obj_type = stat[0]
         angle = stat[1]
@@ -181,11 +181,6 @@ def follow_path(movement, pic_q, include_goal=False):
     if not movement.goal == movement.current:
         movement.face(movement.goal)
 
-def get_sensor_data(serial):
-    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
-    serial.write(byteArr)
-    time.sleep(1)
-    return int.from_bytes(serial.read(1),'little')
     
 """
 Go to Home square
@@ -206,9 +201,8 @@ Assuming that the robot is atleast pointed towards the mothership
 Gets close the the mothership and calls mothership side angle
 """
 def approach_mothership_side(movement, pic_q, serial):
-    time.sleep(1.5)
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
+    time.sleep(3)
+    object_stats = get_data(pic_q)
     
     # Get current distance with IR sensor for validation
     distance_from_sensor = get_sensor_data(serial)
@@ -242,8 +236,7 @@ def mothership_side_angle(movement, pic_q, serial):
         movement.move(fwd, 1)
         mothership_side_angle(movement, pic_q, serial)
 
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_midpoint(processed_frame, classes, boxes, scores)
+    object_stats = get_midpoint(pic_q)
     
     boxes_midpoint = []
     # Get midpoints of letters inside the mothership
@@ -268,30 +261,42 @@ else change goal and return False
 """
 def verify_obj(movement, pic_q, obj):
     print("------Verifying Object------")
-    time.sleep(1.5)
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
+    time.sleep(3)
+    object_stats = get_data(pic_q)
 
     for stats in object_stats:
         if stats[0] == obj:
+            o_type = stats[0]
+            angle = stats[1]
+            dist = stats[2]
+            if obj == 9:
+                movement.grid.slopes.clear()
+                dist = dist + 3
+            if obj == 8:
+                movement.grid.sides.clear()
+            movement.map(o_type, angle, dist)
             return True
-
-    return False
+    
+    # If we can't verify it through imaging then
+    # we use the sensors
+    return movement.is_mothership()
+    
+        
 
 def locate_obj(movement, pic_q, obj):
     print("--------Locating Object-------")
 
-    for _ in range(2):
-        movement.turn(45)
-        if verify_obj(movement, pic_q, obj):
-            return True 
+    movement.turn(45)
+    if verify_obj(movement, pic_q, obj):
+        return True 
     
-    movement.turn(-90)
+    movement.turn(-45)
+    if verify_obj(movement, pic_q, obj):
+        return True
     
-    for _ in range(2):
-        movement.turn(-45)
-        if verify_obj(movement, pic_q, obj):
-            return True
+    movement.turn(-45)
+    if verify_obj(movement, pic_q, obj):
+        return True
             
     return False
 """
@@ -302,14 +307,13 @@ def map_by_side(movement, pic_q):
     # Move to initial mapped side or updated side
     movement.set_goal(movement.grid.sides[0])
     follow_path(movement, pic_q)
-
+    prev_side = movement.grid.sides[0]
     # Verify location
     if verify_obj(movement, pic_q, 8):
         print("------Side Verified------")
         # remap side now that we're closer
-        prev_side = movement.grid.sides[0]
-        movement.grid.sides.clear()
-        map(movement, pic_q, True)
+        
+        
         current = movement.grid.sides[0]
         print("Previous side location was: ", prev_side)
         print("Current side location is: ", current)
@@ -327,9 +331,7 @@ def map_by_side(movement, pic_q):
     # else if we locate it.
     elif locate_obj(movement, pic_q, 8):
         # remap side now that we're closer
-        prev_side = movement.grid.sides[0]
-        movement.grid.sides.clear()
-        map(movement, pic_q, True)
+    
         current = movement.grid.sides[0]
         print("Previous side location was: ", prev_side)
         print("Current side location is: ", current)
@@ -357,13 +359,9 @@ def map_by_slope(movement, pic_q):
     # Move to initial mapped slope or updated slope
     movement.set_goal(movement.grid.slopes[0])
     follow_path(movement, pic_q)
-
+    prev_slope = movement.goal
     # Verify the slope's location
     if verify_obj(movement, pic_q, 9):
-        # remap side now that we're closer
-        prev_slope = movement.grid.slopes[0]
-        movement.grid.slopes.clear()
-        map(movement, pic_q, True)
         current = movement.grid.slopes[0]
         print("Previous slope location was: ", prev_slope)
         print("Current slope location is: ", current)
@@ -378,14 +376,19 @@ def map_by_slope(movement, pic_q):
             c = 1 if tx > 4 else -1
             d = 1 if ty > 4 else -1
             guesses = [(tx + c, ty),(tx, ty + d)]
+            print("Guesses are: ", guesses)
             
-            for guess in guesses:
-                movement.grid.sides.append(guess)
+            if movement.grid.sides:
                 map_by_side(movement, pic_q)
-                # we break if mothership has anything in it - we only add to mothership 
-                # list if map by side was a success
-                if movement.grid.mothership:
-                    break
+            else:
+                
+                for guess in guesses:
+                    movement.grid.sides.append(guess)
+                    map_by_side(movement, pic_q)
+                    # we break if mothership has anything in it - we only add to mothership 
+                    # list if map by side was a success
+                    if movement.grid.mothership:
+                        break
 
         else:
             # map by slope again
@@ -394,9 +397,7 @@ def map_by_slope(movement, pic_q):
     # Else if we locate the slope
     elif locate_obj(movement, pic_q, 9):
         # remap side now that we're closer
-        prev_slope = movement.grid.slopes[0]
-        movement.grid.slopes.clear()
-        map(movement, pic_q, True)
+        
         current = movement.grid.slopes[0]
         print("Previous slope location was: ", prev_slope)
         print("Current slope location is: ", current)
@@ -412,13 +413,16 @@ def map_by_slope(movement, pic_q):
             d = 1 if ty > 4 else -1
             guesses = [(tx + c, ty),(tx, ty + d)]
             
-            for guess in guesses:
-                movement.grid.sides.append(guess)
-                map_by_side(movement, pic_q)
-                # we break if mothership has anything in it - we only add to mothership 
-                # list if map by side was a success
-                if movement.grid.mothership:
-                    break
+            if movement.grid.sides:
+                map_by_side(movement,pic_q)
+            else:
+                for guess in guesses:
+                    movement.grid.sides.append(guess)
+                    map_by_side(movement, pic_q)
+                    # we break if mothership has anything in it - we only add to mothership 
+                    # list if map by side was a success
+                    if movement.grid.mothership:
+                        break
 
         else:
             # map by slope again
@@ -430,10 +434,12 @@ def map_by_slope(movement, pic_q):
 
 
 def map_mothership(movement, pic_q):
+    movement.drop()
     if movement.grid.sides:
         map_by_side(movement, pic_q)
     else:
         map_by_slope(movement, pic_q)
+    movement.reset_servo()
 
 def main():
     # Initialize frame rate calculation
@@ -472,6 +478,8 @@ def main():
     begin_round(movement, pic_q)
     map_mothership(movement, pic_q)
     print("Mothership is located in the following tiles: ", grid.mothership)
+    if grid.mothership:
+        approach_mothership_side(movement, pic_q, ser)
     
     """
     if grid.sides:

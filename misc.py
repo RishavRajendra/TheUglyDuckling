@@ -5,6 +5,7 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
+import time
 
 def wait_for_button(buttonPin, ledPin, GPIO):
     print('Ready')
@@ -24,14 +25,10 @@ def get_sensor_data(serial):
     byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
     serial.write(byteArr)
     time.sleep(1)
-    dist = int.from_bytes(serial.read(1),'little')
-    if dist > 4 and dist <= 15:
-        return dist - 3
-    if dist > 15:
-        return dist - 4
-    else:
-        return 0
-
+    left = int.from_bytes(serial.read(1),'little')
+    right = int.from_bytes(serial.read(1),'little')
+    return left, right
+    
 # TODO
 def align_corner(movement, pic_q):
 	pass

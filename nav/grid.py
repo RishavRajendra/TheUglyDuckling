@@ -13,7 +13,7 @@ class Grid:
 		self.sides = []
 		self.slopes = []
 		self.exclusion_list = []
-		self.access_points = []
+		self.access_point = None
 		self.obstacles_max = 20
 		self.last_side_angle = 0
 

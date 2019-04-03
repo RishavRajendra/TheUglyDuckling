@@ -217,7 +217,8 @@ class GridMovement:
 		# facing == 45
 		else:
 			mothership = [(sx,sy), (sx +1 , sy), (sx, sy +1 ), (sx+1, sy +1)]
-
+		
+		self.grid.access_point = self.current
 		self.grid.mothership = mothership
 
 	# Communicates movement calls to Arduino
@@ -307,3 +308,14 @@ class GridMovement:
 			self.serial.write(byteArr)
 			self.is_cam_up = False
 			time.sleep(.2)
+	
+	"""
+	Returns True if sensor data received from Arduino Mega 2560
+	detects that we are infront of the mothership
+	"""
+	def is_mothership(self):
+		byteArr = b'\x09' + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
+		time.sleep(1)
+		i = int.from_bytes(self.serial.read(1),'little')
+		return True if i == 1 else False
