@@ -73,6 +73,9 @@ void runCommand(){
     else if(flag == 9){
       objectID();
     }
+    else if(flag == 10){
+      edgeAlign();
+    }
     //Signal back to RaspberryPi    
 //    Serial.write(B11111111);
   }
@@ -398,7 +401,7 @@ void varsIntTurn(byte dir, float dist, long del, float ratio, byte master, byte 
 }
 
 void edgeAlign() {
-  for (int i = 3; i > 0; i--) { //decrementing loop scales the forward motion to be a smaller approach each time
+  for (int i = 2; i > 0; i--) { //decrementing loop scales the forward motion to be a smaller approach each time
     varsInt(rev, i * 8, 1000, straight, cerasoright, cerasoleft); //back up to the edge; varsInt lets you read sensors while you move
 
     while (steps > 0) { //0 out the remaining steps of varsInt when both sensors are off the board (downLookValues == 1)

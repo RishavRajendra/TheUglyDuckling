@@ -319,3 +319,11 @@ class GridMovement:
 		time.sleep(1)
 		i = int.from_bytes(self.serial.read(1),'little')
 		return True if i == 1 else False
+		
+	"""
+	Calls edgAlign() from the Arduino Mega 2560
+	"""
+	def edge_align(self):
+		byteArr =  b'\x0A' + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
+		time.sleep(8)

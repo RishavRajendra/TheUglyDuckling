@@ -31,6 +31,4 @@ movement = GridMovement(grid, ser)
 
 
 
-movement.drop()
-print(get_sensor_data(ser))
-movement.reset_servo()
+movement.edge_align()
