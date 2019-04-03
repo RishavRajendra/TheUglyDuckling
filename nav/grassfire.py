@@ -2,7 +2,12 @@
 import collections, copy, time
 
 
-def search(graph, start, goal):
+"""
+Change Log
+	[0.0.1] Benji
+		--- Can have diagonal search if diag set to True
+"""
+def search(graph, start, goal, diag=False):
 	unvisited = MyQueue()
 	unvisited.put(goal)
 	visited = {}
@@ -14,7 +19,7 @@ def search(graph, start, goal):
 		if current == start:
 			break
 	
-		for next in graph.neighbors(current):
+		for next in graph.neighbors(current, diag):
 			if next not in visited:
 				unvisited.put(next)
 				# Check if next is diagonal
@@ -23,9 +28,16 @@ def search(graph, start, goal):
 
 	return visited
 
+# Checks if there is a valid path to the target.
+# If start is not in visited - no valid path 
+def have_valid_path(visited, start):
+	return True if start in visited else False
+
+
+# TODO: Add diagonal path construction
 """
 Change log
-    -[0.0.1] Benji
+    [0.0.1] Benji
         --- If we want to move to a specific spot we can
         --- include the goal
 """

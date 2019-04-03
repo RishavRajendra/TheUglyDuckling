@@ -46,6 +46,11 @@ class GridMovement:
 		
 	def get_obstacles(self):
 		return self.grid.get_obstacles()
+	
+	def set_goal(self, goal):
+		self.grid.exclusion_list.clear()
+		self.goal = goal
+		self.grid.exclusion_list.append(goal)
 
 	# Not yet implemented
 	# If we haven't aquired a block yet, set closest block as goal.
@@ -56,64 +61,12 @@ class GridMovement:
 	# Generates shortest path to goal using grassfire algorithim
 	"""
 	Change Log
-		[0.0.1]
+		[0.0.1] Benji
 			--- Add ability to include goal in path
 	"""
 	def find_path(self, include_goal=False):
 		visited = gf.search(self.grid, self.current, self.goal)
 		self.path = gf.construct_path(self.grid, visited, self.current, include_goal)
-
-	# Follows the generated path by subtracting the next location
-	# from self.current and using translate_dir() and self.movement
-	# to determine the proper movement
-	def follow_path(self):
-		dist = 12 # Default distance we want to move
-		# Loop with index so that we can check the next movement
-		# along with curent move
-		for index, mov in enumerate(self.path):
-			currentResult = (mov[0] - self.current[0], mov[1] - self.current[1])
-			currentResult = self.translate_dir(currentResult)
-			diagonal = gf.is_diagonal(self.current, mov)
-			end_of_path = index == len(self.path) - 1
-
-			# Don't bother checking next move if it doesn't exist
-			if (not end_of_path):
-				nextMov = self.path[index+1]
-				nextResult = (nextMov[0] - mov[0], nextMov[1] - mov[1])
-				nextResult = self.translate_dir(nextResult)
-				# If next move request is the same as current 
-				# increase distance moved
-				if (currentResult == nextResult):
-					self.face(mov)	
-					dist = dist +12
-					self.current = mov
-					# We want to skip over the rest of the loop
-					# We're not ready to push a movement call to queue
-					continue
-
-			# if dist > 12 then we have duplicate movements
-			# We will accelerate
-			if(dist > 12):
-				self.accelerate(self.movement[currentResult][0], dist)
-			# Otherwise normal movement
-			else:
-				# if mov is diagonal turn towards it first
-				if(diagonal):
-					self.face(mov)
-
-				self.move(self.movement[currentResult][0], dist)
-				# if mov was diagonal and we're not at end of path
-				# turn towards the next mov
-				if(diagonal and not end_of_path):
-					self.face(self.path[index + 1])
-
-			# reset distance in case there was a stacked call 
-			dist = 12
-			self.current = mov
-		
-		# face goal after following path
-		self.face(self.goal)
-
 
 	def facing_next_step(self):
 		mov = self.path[0]
@@ -184,7 +137,7 @@ class GridMovement:
 
 
 	def map(self,obj, angle, dist):
-		if abs(angle) > 30:
+		if abs(angle) > 40:
 			return
 		offset = 6
 		cam_offset = 2.5
@@ -235,11 +188,38 @@ class GridMovement:
 			self.grid.add_slope(result)
 		elif obj == 8:
 			self.grid.add_side(result)
+			self.grid.last_side_angle = angle
 	
 			
 	def map_target(self,target):
 		self.grid.add_target(target)
 
+	# Maps mothership based on provided side and current facing
+	def map_mothership(self, side):
+		sign = 1 if self.grid.last_side_angle < 0 else -1
+		sx, sy = side[0], side[1]
+
+		if self.facing == 90:
+
+			mothership = [(sx,sy), (sx +1 * sign, sy), (sx, sy +1), (sx +1 * sign, sy +1)]
+		elif self.facing == 0:
+			mothership = [(sx,sy), (sx +1 , sy), (sx, sy -1 * sign), (sx +1, sy -1*sign)]
+		elif self.facing == 180:
+			mothership = [(sx,sy), (sx -1 , sy), (sx, sy +1 * sign), (sx -1, sy +1*sign)]
+		elif self.facing == 270:
+			mothership = [(sx,sy), (sx -1 * sign , sy), (sx, sy -1), (sx -1 * sign, sy -1)]
+		elif self.facing == 135:
+			mothership = [(sx,sy), (sx -1 , sy), (sx, sy +1 ), (sx-1, sy +1)]
+		elif self.facing == 235:
+			mothership = [(sx,sy), (sx -1 , sy), (sx, sy -1 ), (sx-1, sy -1)]
+		elif self.facing == 315:
+			mothership = [(sx,sy), (sx +1 , sy), (sx, sy -1 ), (sx+1, sy -1)]
+		# facing == 45
+		else:
+			mothership = [(sx,sy), (sx +1 , sy), (sx, sy +1 ), (sx+1, sy +1)]
+		
+		self.grid.access_point = self.current
+		self.grid.mothership = mothership
 
 	# Communicates movement calls to Arduino
 	# MOVEMENT FUNCTIONS #
@@ -328,3 +308,14 @@ class GridMovement:
 			self.serial.write(byteArr)
 			self.is_cam_up = False
 			time.sleep(.2)
+	
+	"""
+	Returns True if sensor data received from Arduino Mega 2560
+	detects that we are infront of the mothership
+	"""
+	def is_mothership(self):
+		byteArr = b'\x09' + b'\x00' + b'\x00' + b'\x00'
+		self.serial.write(byteArr)
+		time.sleep(1)
+		i = int.from_bytes(self.serial.read(1),'little')
+		return True if i == 1 else False

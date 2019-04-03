@@ -73,8 +73,11 @@ void runCommand() {
     else if (flag == 8) {
       send_sensor_data();
     }
-    //Signal back to RaspberryPi
-    //    Serial.write(B11111111);
+    else if(flag == 9){
+      objectID();
+    }
+    //Signal back to RaspberryPi    
+//    Serial.write(B11111111);
   }
 }
 
@@ -161,20 +164,30 @@ void cam_down() {
 
 /* Sensor Code */
 
-void send_sensor_data() {
-  float val = 0.0;
-  for (int i = 0; i < 5; i++) {
-    val = analogRead(sensorpin);
-    val = calscale * pow(val, calpower);
+void send_sensor_data(){
+  float val1 = 0.0;
+  float val2 = 0.0;
+  for (int i = 0; i < 5; i++){
+    val1 = analogRead(fwdLookLeft);
+    val2 = analogRead(fwdLookRight);
+    val1 = calscale * pow(val1, calpower);
+    val2 = calscale * pow(val2, calpower);
   }
-  float sum = 0;
-  for (int i = 0; i < 5; i++) {
-    val = analogRead(sensorpin);
-    val = calscale * pow(val, calpower);
-    sum += val;
+  float sum1 = 0;
+  float sum2 = 0;
+  for (int i = 0; i<5; i++){
+    val1 = analogRead(fwdLookLeft);
+    val2 = analogRead(fwdLookRight);
+    val1 = calscale * pow(val1, calpower);
+    val2 = calscale * pow(val2, calpower);
+    sum1 += val1;
+    sum2 += val2;
   }
-  int avg = sum / 5;
-  Serial.write(avg);
+  int avg1 = sum1/5;
+  int avg2 = sum2/5;
+  Serial.write(avg1);
+  Serial.write(avg2);
+  
 }
 
 /*Motor Code*/
@@ -427,6 +440,9 @@ void varsInt(byte dir, float dist, long del, float ratio, byte master, byte slav
 }
 
 byte objectID() {
+<<<<<<< HEAD
+  delay(500);
+
   byte type = 0;
   long sum_right, sum_left, avg_right, avg_left, dist_right, dist_left;
   int i;
@@ -444,15 +460,14 @@ byte objectID() {
 
   if (dist_right < 14 && dist_left < 14) { //these inch values should be calibrated 
     type = 1;
-    Serial.println("objectID saw a mothership");
+//    Serial.println("objectID saw a mothership");
   }
   else {
     type = 0;
-    Serial.println("objectID did not see an object");
+//    Serial.println("objectID did not see an object");
   }
-  
-  type = type / i;
-  return type;
+//  type = type/i;
+  Serial.write(type);
 
 }
 
@@ -529,6 +544,7 @@ void alignmentMap() {
 
   //take reads while turning
   while (steps > 0) {
+
     sumA = 0;
     sumB = 0;
     sumC = 0;
@@ -591,14 +607,18 @@ void alignmentMap() {
     }
     if (c < thresholdUL && laststateUL) {
       secondEdgeUL[objectcountUL] = steps;
+
       centerUL[objectcountUL] = dist*steps_per_degree - (firstEdgeUL[objectcountUL] + secondEdgeUL[objectcountUL]) / 2;
+
       centerstepsUL[objectcountUL] = centerUL[objectcountUL];
       widthUL[objectcountUL] = (firstEdgeUL[objectcountUL] - secondEdgeUL[objectcountUL]);
       laststateUL = false;
 
       if (widthUL[objectcountUL] > 20) {
         distToTargetUL[objectcountUL] = calScaleUpperLong * pow(maxDistUL, calPowerUpperLong);
+
         if (widthUL[objectcountUL] > 40 && widthUL[objectcountUL] < 110) {
+
           objectcountUL++;
         }
         maxDistUL = 0;
@@ -633,6 +653,7 @@ void alignmentMap() {
     centerUL[i] *= (pi / 180);
     centerUL[i] = fixRadians(centerUL[i]);
   }
+
 
   //Display Mid Range Sensor Data
   Serial.println("Mid Range Sensor");

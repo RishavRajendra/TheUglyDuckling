@@ -34,7 +34,7 @@ const byte rearLookLong = A2;
 //Where I think I am //Ceraso
 float facingAngle = 0.0;
 float xPos = 54; 
-float yPos = 42;
+float yPos = 54;
 
 //Measurements
 float diagonal_dist = 1.40;
@@ -54,3 +54,16 @@ float threshold = 300;
 int sensorpin = A1;
 float calscale = 59994.0;
 float calpower = -1.494;
+
+//-------------CHARLIE CONSTANTS---------------//
+const int objcnt = 30;
+float realTheta[4] = {-1, -1, -1, -1}; //real angles between the corner posts
+float theta[4] = {}; //theoretical angles between corner posts
+int objectcountUL = 0;
+long firstEdgeUL[objcnt], secondEdgeUL[objcnt], widthUL[objcnt],  centerstepsUL[objcnt];
+float centerUL[objcnt], distToTargetUL[objcnt];
+float xobjUL[objcnt], yobjUL[objcnt];
+const float calScaleUpperLong = 5854042.18;
+const float calPowerUpperLong = -1.91;
+const float pi = 3.14159265;
+float CA[4] = {}; //theoritical angle locations of corner posts
