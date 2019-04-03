@@ -188,7 +188,6 @@ class GridMovement:
 			self.grid.add_slope(result)
 		elif obj == 8:
 			self.grid.add_side(result)
-			self.grid.last_side_angle = angle
 	
 			
 	def map_target(self,target):

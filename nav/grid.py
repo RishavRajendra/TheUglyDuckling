@@ -77,18 +77,14 @@ class Grid:
 	def add_mothership(self, part):
 		if part not in self.mothership:
 			self.mothership.append(part)
-		
 			
 	def add_slope(self, slope):
 		if slope not in self.slopes:
 			self.slopes.append(slope)
 		
-		
 	def add_side(self, side):
 		if side not in self.sides:
-			self.sides.append(side)
-		
-		
+			self.sides.append(side)		
 			
 	def get_mothership(self):
 		return self.mothership

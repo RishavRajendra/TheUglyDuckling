@@ -68,10 +68,15 @@ def follow_path(movement, pic_q, include_goal=False):
         print(movement.path)
         movement.follow_next_step()
         map(movement, pic_q)
-        for obs in movement.get_obstacles():
-            if obs in movement.path:
+        for move in movement.path:
+            if not movement.grid.passable(move):
                 movement.path.clear()
                 movement.find_path(include_goal)
+                break
+        # for obs in movement.get_obstacles():
+        #     if obs in movement.path:
+        #         movement.path.clear()
+        #         movement.find_path(include_goal)
     if not movement.goal == movement.current:
         movement.face(movement.goal)
 
