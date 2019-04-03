@@ -20,8 +20,8 @@ void setup() {
 void loop() {
   //objectID();
   //Serial.println(analogRead(rearLookLong)); //test the fwdLooking mid range sensors and rev looking long range sensor
-  //readPython();
-  //runCommand();
+  readPython();
+  runCommand();
 }
 
 //Wait for function calls from RaspberryPi
@@ -440,7 +440,6 @@ void varsInt(byte dir, float dist, long del, float ratio, byte master, byte slav
 }
 
 byte objectID() {
-<<<<<<< HEAD
   delay(500);
 
   byte type = 0;
@@ -501,22 +500,6 @@ void align() {
 
 void alignmentMap() {
   int dist = 450;
-  
-  //Lower Mid
-  float centerAngleM;
-  bool laststateM = false;
-  long sumA = 0;
-  long thresholdM = 250;
-  long maxDistM = 0;
-  objectcountM = 0;
-
-  //Lower Long
-  float centerAngleLL;
-  bool laststateLL = false;
-  long sumB = 0;
-  long thresholdLL = 400;
-  long maxDistLL = 0;
-  objectcountLL = 0;
 
   //Upper Long
   float centerAngleUL;
@@ -532,71 +515,18 @@ void alignmentMap() {
   varsIntTurn(rotl, dist, 2000, 1.0, leftmotion, rightmotion); //begin turning
 
   //determine initial conditions
-  long a = analogRead(A1);
-  long b = analogRead(A4);
-  long c = analogRead(A8);
-  if (a < thresholdM)
-    laststateM = false;
-  if (b < thresholdLL)
-    laststateLL = false;
+  long c = analogRead(rearLookLong);
   if (c < thresholdUL)
     laststateUL = false;
 
   //take reads while turning
   while (steps > 0) {
-
-    sumA = 0;
-    sumB = 0;
     sumC = 0;
 
     for (i = 0; i < 50; i++) {
-      sumA += analogRead(A0);
-      sumB += analogRead(A4);
-      sumC += analogRead(A8);
+      sumC += analogRead(rearLookLong);
     }
-    a = sumA / i;
-    b = sumB / i;
     c = sumC / i;
-
-    //Lower Mid Data Storage
-    if (laststateM && a > maxDistM)
-      maxDistM = a;
-    if (a > thresholdM && !laststateM) {
-      firstEdgeM[objectcountM] = steps;
-      laststateM = true;
-    }
-    if (a < thresholdM && laststateM) {
-      secondEdgeM[objectcountM] = steps;
-      centerM[objectcountM] = dist*steps_per_degree - (firstEdgeM[objectcountM] + secondEdgeM[objectcountM]) / 2;
-      widthM[objectcountM] = (firstEdgeM[objectcountM] - secondEdgeM[objectcountM]);
-      laststateM = false;
-
-      distToTargetM[objectcountM] = calScale * pow(maxDistM,calPower);
-      if (widthM[objectcountM] > 60 && widthM[objectcountM] < 200 && distToTargetM[objectcountM] < 14) {
-        objectcountM++;
-        maxDistM = 0;
-      }
-    }
-
-    //Lower Long Data Storage
-    if (laststateLL && b > maxDistLL)
-      maxDistLL = b;
-    if (b > thresholdLL && !laststateLL) {
-      firstEdgeLL[objectcountLL] = steps;
-      laststateLL = true;
-    }
-    if (b < thresholdLL && laststateLL) {
-      secondEdgeLL[objectcountLL] = steps;
-      centerLL[objectcountLL] = dist*steps_per_degree - (firstEdgeLL[objectcountLL] + secondEdgeLL[objectcountLL]) / 2;
-      widthLL[objectcountLL] = (firstEdgeLL[objectcountLL] - secondEdgeLL[objectcountLL]);
-      laststateLL = false;
-
-      if (widthLL[objectcountLL] > 170) {
-        distToTargetLL[objectcountLL] = calScaleLong * pow(maxDistLL, calPowerLong);
-        objectcountLL++;
-        maxDistLL = 0;
-      }
-    }
 
     //Upper Long Data Storage
     if (laststateUL && c > maxDistUL)
@@ -607,18 +537,14 @@ void alignmentMap() {
     }
     if (c < thresholdUL && laststateUL) {
       secondEdgeUL[objectcountUL] = steps;
-
-      centerUL[objectcountUL] = dist*steps_per_degree - (firstEdgeUL[objectcountUL] + secondEdgeUL[objectcountUL]) / 2;
-
+      centerUL[objectcountUL] = (firstEdgeUL[objectcountUL] + secondEdgeUL[objectcountUL]) / 2;
       centerstepsUL[objectcountUL] = centerUL[objectcountUL];
       widthUL[objectcountUL] = (firstEdgeUL[objectcountUL] - secondEdgeUL[objectcountUL]);
       laststateUL = false;
 
       if (widthUL[objectcountUL] > 20) {
         distToTargetUL[objectcountUL] = calScaleUpperLong * pow(maxDistUL, calPowerUpperLong);
-
-        if (widthUL[objectcountUL] > 40 && widthUL[objectcountUL] < 110) {
-
+        if (widthUL[objectcountUL] > 20 && widthUL[objectcountUL] < 130) {
           objectcountUL++;
         }
         maxDistUL = 0;
@@ -626,26 +552,8 @@ void alignmentMap() {
     }
     delay(50);
   }
-
-  //correctFacingAngle();
-  //calspd(); //calibrate steps per degree
-
-
+  
   //convert degrees to radians
-  //Lower Mid
-  for (i = 0; i < objectcountM; i++) {
-    centerM[i] /= steps_per_degree;
-    //  center[i] -= 180;
-    centerM[i] *= (pi / 180);
-    centerM[i] = fixRadians(centerM[i]);
-  }
-  //Lower Long
-  for (i = 0; i < objectcountLL; i++) {
-    centerLL[i] /= steps_per_degree;
-    centerLL[i] -= 180;
-    centerLL[i] *= (pi / 180);
-    centerLL[i] = fixRadians(centerLL[i]);
-  }
   //Upper Long
   for (i = 0; i < objectcountUL; i++) {
     centerUL[i] /= steps_per_degree;
@@ -653,52 +561,7 @@ void alignmentMap() {
     centerUL[i] *= (pi / 180);
     centerUL[i] = fixRadians(centerUL[i]);
   }
-
-
-  //Display Mid Range Sensor Data
-  Serial.println("Mid Range Sensor");
-  Serial.print("Objects = ");
-  Serial.print("\t");
-  Serial.println(objectcountM);
-  Serial.print("Width");
-  Serial.print("\t");
-  Serial.print("Center");
-  Serial.print("\t");
-  Serial.print("distToTarget");
-  Serial.print("\t");
-  Serial.println("obstacle");
-  Serial.println(" ");
-  for (i = 0; i < objectcountM; i++) {
-    Serial.print(widthM[i]);
-    Serial.print("\t");
-    Serial.print(centerM[i]);
-    Serial.print("\t");
-    Serial.print(distToTargetM[i]);
-    Serial.print("\t");
-    Serial.print("\t");
-    Serial.println(objObstacleM[i]);
-  }
-
-  //Display Lower Long Range Sensor Data
-  Serial.println(" ");
-  Serial.println("Lower Long Range Sensor");
-  Serial.print("Objects = ");
-  Serial.print("\t");
-  Serial.println(objectcountLL);
-  Serial.print("Width");
-  Serial.print("\t");
-  Serial.print("Center");
-  Serial.print("\t");
-  Serial.println("distToTarget");
-  Serial.println(" ");
-  for (i = 0; i < objectcountLL; i++) {
-    Serial.print(widthLL[i]);
-    Serial.print("\t");
-    Serial.print(centerLL[i]);
-    Serial.print("\t");
-    Serial.println(distToTargetLL[i]);
-  }
-
+  
   //Display Upper Long Range Sensor Data
   Serial.println(" ");
   Serial.println("Upper Long Range Sensor");
