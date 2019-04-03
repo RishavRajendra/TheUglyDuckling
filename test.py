@@ -19,6 +19,14 @@ def map_JSON(filename, movement):
     y_arr = data['y coords']
     for i in range(size):
       movement.map_target((x_arr[i], y_arr[i]))
+      
+def get_sensor_data(serial):
+    byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'
+    serial.write(byteArr)
+    time.sleep(1)
+    left = int.from_bytes(serial.read(1),'little')
+    right = int.from_bytes(serial.read(1),'little')
+    print(left, right)
 angle = 0
 dist = 0
 
@@ -26,11 +34,11 @@ ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
 time.sleep(1)
 q = queue.Queue()
 grid = Grid(8,8)
-movement = GridMovement(grid, ser)
+#movement = GridMovement(grid, ser)
 #map_JSON('mar1.json', movement)
 
+get_sensor_data(ser)
 
-
-movement.drop()
-print(get_sensor_data(ser))
-movement.reset_servo()
+#movement.drop()
+#print(get_sensor_data(ser))
+#movement.reset_servo()

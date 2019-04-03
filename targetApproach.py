@@ -1,4 +1,6 @@
 from get_stats_from_image import corrected_angle, get_closest_target
+from constants import fwd, rev
+import time, math
 
 # TODO: Check if the block is actually picked up
 def check_pick_up(movement, pic_q):
@@ -61,6 +63,7 @@ def pick_up(movement, pic_q):
 
 # Moves the robot close to the target
 def approach_helper(angle, distance, pic_q, movement):
+    movement.reset_servo()
     adjustedDistance = math.ceil(distance*0.9)
     adjustedAngle = corrected_angle(angle, adjustedDistance)
     # move towards the target

@@ -22,6 +22,7 @@ PIXEL_PER_MM = 102.3
 
 # Magic number to compensate for labelling.
 ERROR_VAL = 3.3
+MOTHERSHIP_SIDE_ERROR = 7
 
 # Height of object
 OBSTACLE_HEIGHT = 35

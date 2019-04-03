@@ -69,7 +69,7 @@ def main():
                 if scores[0][i] > 0.3:
                     inches = get_stats_from_image.get_distance(1, height_of_object_pixels)
             elif classes[0][i] == 8 and scores[0][i] > 0.3:
-                inches = get_stats_from_image.get_distance(2, height_of_object_pixels)
+                inches = get_stats_from_image.get_distance(5, height_of_object_pixels)
             elif classes[0][i] == 9 and scores[0][i] > 0.5:
                 inches = get_stats_from_image.get_distance(3, height_of_object_pixels)
             elif classes[0][i] == 10 and scores[0][i] > 0.3:
