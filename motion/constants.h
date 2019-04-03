@@ -10,6 +10,8 @@ byte strr;
 byte motion = B01010101;
 byte leftmotion = B00010001;
 byte rightmotion = B01000100;
+byte cerasoright = B01010000;
+byte cerasoleft = B00000101;
 byte frontmotion = B01010000;
 byte rearmotion = B00000101;
 byte motion45right = B00010100;
@@ -25,6 +27,9 @@ volatile byte downLookValueRight;
 
 const byte downLookRight = 38;
 const byte downLookLeft = 39;
+const byte fwdLookRight = A0;
+const byte fwdLookLeft = A1;
+const byte rearLookLong = A2;
 
 //Where I think I am //Ceraso
 float facingAngle = 0.0;
