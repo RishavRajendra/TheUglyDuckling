@@ -1,6 +1,6 @@
 # The Ugly Duckling
 
-Autonomous robot for 2019 IEEE Region 5 Autonomous Robotics Competition.
+Autonomous Mars Rover to pick up targets and deliver to the mothership while avoiding obstacles. Competed at the 2019 IEEE R5 Autonomous Robotics Competition. 
 
 ![alt text](https://github.com/RishavRajendra/TheUglyDuckling/blob/master/pictures/playingField.png)
 
@@ -10,9 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Tested on Python 3.7.2
-
-What things you need to install the software and how to install them
+Tested on Python 3.5.3
 
 ```
 pip install pySerial
@@ -20,10 +18,23 @@ pip install keyboard
 pip install numpy
 pip install pandas
 ```
-## Authors
+## Contributors
+
+#### Programming
 
 * **Rishav Rajendra** - [Website](https://rishavrajendra.github.io)
 * **Benji Lee**
+* **Michael Ceraso** - [Linkedin](https://www.linkedin.com/in/soceraso/)
+
+#### Mechanical
+
+* **James Winnert** - [Linkedin](https://www.linkedin.com/in/jameswinnert/)
+
+#### Motor Controller Board and Electrical
+
+* **Michael Ceraso** - [Linkedin](https://www.linkedin.com/in/soceraso/)
+* **Wade Rivero** - [Linkedin](https://www.linkedin.com/in/wade-rivero-60ab64101/)
+* **Rishav Rajendra (Explosive Electrical)**
 
 ## License
 
