@@ -16,7 +16,8 @@ from mothership_commands import map_mothership, approach_mothership_side
 from nav.gridMovement import GridMovement
 from misc import wait_for_button, follow_path, begin_round, go_home
 from nav.grid import Grid
-import queue, threading, serial, time, math
+import queue, threading, serial, time, math, logging
+from datetime import datetime
 from video_thread import VideoThread
 
 import sys
@@ -79,7 +80,7 @@ def main():
     time.sleep(2)
     
     log.info("Starting round")
-    begin_round(movement, pic_q, log)
+    begin_round(movement, pic_q)
 
     log.info("I will try and map the mothership")
     map_mothership(movement, pic_q, log)

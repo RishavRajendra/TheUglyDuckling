@@ -7,14 +7,12 @@ __status__ = "Development"
 from get_stats_from_image import get_data
 import time
 
-def wait_for_button(buttonPin, ledPin, GPIO, log):
-    log.info('Ready')
+def wait_for_button(buttonPin, ledPin, GPIO):
     GPIO.output(ledPin, GPIO.HIGH)
     #Prevent further code execution until button is pressed
     while GPIO.input(buttonPin) is not 0:
         pass
     GPIO.output(ledPin, GPIO.LOW)
-    log.info('Executing') 
 
 """
 Returns the average distance of the object infront of the mothership
@@ -41,7 +39,6 @@ Change log
 """
 def map_movement(movement, pic_q, log, beginning=False):
     movement.cam_up()
-    log.info(movement.facing)
     time.sleep(3)
     object_stats = get_data(pic_q)
     for stat in object_stats:

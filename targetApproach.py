@@ -36,8 +36,7 @@ def pick_up(movement, pic_q):
     time.sleep(3)
     # Get data from the closest object
     target_id, angle, inches, midpoint = get_closest_target(pic_q, True)
-    if target_id == 0:
-    else:
+    if target_id is not 0:
         if midpoint[0] > 125 and midpoint[0] < 230 and midpoint[1] > 255:
             movement.pickup()
         else:
