@@ -455,3 +455,444 @@ byte objectID() {
   return type;
 
 }
+
+void align() {
+  int a, b, cnt;
+  Serial.println("AlignmentMap");
+  alignmentMap();
+  Serial.println("calcTheoAngles");
+  calcTheoAngles(xPos, yPos, facingAngle);
+  Serial.println("validatePosts");
+  cnt = validatePosts();
+  if (cnt > 2) {
+    Serial.println("Calc Quadratic");
+    if (cnt == 4) {
+      calcQuadratic(2, 3);
+    }
+    if (cnt == 3) {
+      for (int i = 0; i < 4; i++) {
+        if (realTheta[i] != -1 && realTheta[(i + 1) % 4] != -1) {
+          a = i;
+          b = (i + 1) % 4;
+          Serial.print(a);
+          Serial.print("\t");
+          Serial.println(b);
+        }
+      }
+      calcQuadratic(a, b);
+    }
+  }
+}
+
+void alignmentMap() {
+  int dist = 450;
+  
+  //Lower Mid
+  float centerAngleM;
+  bool laststateM = false;
+  long sumA = 0;
+  long thresholdM = 250;
+  long maxDistM = 0;
+  objectcountM = 0;
+
+  //Lower Long
+  float centerAngleLL;
+  bool laststateLL = false;
+  long sumB = 0;
+  long thresholdLL = 400;
+  long maxDistLL = 0;
+  objectcountLL = 0;
+
+  //Upper Long
+  float centerAngleUL;
+  bool laststateUL = false;
+  long sumC = 0;
+  long thresholdUL = 400;
+  long maxDistUL = 0;
+  objectcountUL = 0;
+
+  int i;
+  long centersteps[20];
+
+  varsIntTurn(rotl, dist, 2000, 1.0, leftmotion, rightmotion); //begin turning
+
+  //determine initial conditions
+  long a = analogRead(A1);
+  long b = analogRead(A4);
+  long c = analogRead(A8);
+  if (a < thresholdM)
+    laststateM = false;
+  if (b < thresholdLL)
+    laststateLL = false;
+  if (c < thresholdUL)
+    laststateUL = false;
+
+  //take reads while turning
+  while (steps > 0) {
+    sumA = 0;
+    sumB = 0;
+    sumC = 0;
+
+    for (i = 0; i < 50; i++) {
+      sumA += analogRead(A0);
+      sumB += analogRead(A4);
+      sumC += analogRead(A8);
+    }
+    a = sumA / i;
+    b = sumB / i;
+    c = sumC / i;
+
+    //Lower Mid Data Storage
+    if (laststateM && a > maxDistM)
+      maxDistM = a;
+    if (a > thresholdM && !laststateM) {
+      firstEdgeM[objectcountM] = steps;
+      laststateM = true;
+    }
+    if (a < thresholdM && laststateM) {
+      secondEdgeM[objectcountM] = steps;
+      centerM[objectcountM] = dist*steps_per_degree - (firstEdgeM[objectcountM] + secondEdgeM[objectcountM]) / 2;
+      widthM[objectcountM] = (firstEdgeM[objectcountM] - secondEdgeM[objectcountM]);
+      laststateM = false;
+
+      distToTargetM[objectcountM] = calScale * pow(maxDistM,calPower);
+      if (widthM[objectcountM] > 60 && widthM[objectcountM] < 200 && distToTargetM[objectcountM] < 14) {
+        objectcountM++;
+        maxDistM = 0;
+      }
+    }
+
+    //Lower Long Data Storage
+    if (laststateLL && b > maxDistLL)
+      maxDistLL = b;
+    if (b > thresholdLL && !laststateLL) {
+      firstEdgeLL[objectcountLL] = steps;
+      laststateLL = true;
+    }
+    if (b < thresholdLL && laststateLL) {
+      secondEdgeLL[objectcountLL] = steps;
+      centerLL[objectcountLL] = dist*steps_per_degree - (firstEdgeLL[objectcountLL] + secondEdgeLL[objectcountLL]) / 2;
+      widthLL[objectcountLL] = (firstEdgeLL[objectcountLL] - secondEdgeLL[objectcountLL]);
+      laststateLL = false;
+
+      if (widthLL[objectcountLL] > 170) {
+        distToTargetLL[objectcountLL] = calScaleLong * pow(maxDistLL, calPowerLong);
+        objectcountLL++;
+        maxDistLL = 0;
+      }
+    }
+
+    //Upper Long Data Storage
+    if (laststateUL && c > maxDistUL)
+      maxDistUL = c;
+    if (c > thresholdUL && !laststateUL) {
+      firstEdgeUL[objectcountUL] = steps;
+      laststateUL = true;
+    }
+    if (c < thresholdUL && laststateUL) {
+      secondEdgeUL[objectcountUL] = steps;
+      centerUL[objectcountUL] = dist*steps_per_degree - (firstEdgeUL[objectcountUL] + secondEdgeUL[objectcountUL]) / 2;
+      centerstepsUL[objectcountUL] = centerUL[objectcountUL];
+      widthUL[objectcountUL] = (firstEdgeUL[objectcountUL] - secondEdgeUL[objectcountUL]);
+      laststateUL = false;
+
+      if (widthUL[objectcountUL] > 20) {
+        distToTargetUL[objectcountUL] = calScaleUpperLong * pow(maxDistUL, calPowerUpperLong);
+        if (widthUL[objectcountUL] > 40 && widthUL[objectcountUL] < 110) {
+          objectcountUL++;
+        }
+        maxDistUL = 0;
+      }
+    }
+    delay(50);
+  }
+
+  //correctFacingAngle();
+  //calspd(); //calibrate steps per degree
+
+
+  //convert degrees to radians
+  //Lower Mid
+  for (i = 0; i < objectcountM; i++) {
+    centerM[i] /= steps_per_degree;
+    //  center[i] -= 180;
+    centerM[i] *= (pi / 180);
+    centerM[i] = fixRadians(centerM[i]);
+  }
+  //Lower Long
+  for (i = 0; i < objectcountLL; i++) {
+    centerLL[i] /= steps_per_degree;
+    centerLL[i] -= 180;
+    centerLL[i] *= (pi / 180);
+    centerLL[i] = fixRadians(centerLL[i]);
+  }
+  //Upper Long
+  for (i = 0; i < objectcountUL; i++) {
+    centerUL[i] /= steps_per_degree;
+    centerUL[i] -= 180;
+    centerUL[i] *= (pi / 180);
+    centerUL[i] = fixRadians(centerUL[i]);
+  }
+
+  //Display Mid Range Sensor Data
+  Serial.println("Mid Range Sensor");
+  Serial.print("Objects = ");
+  Serial.print("\t");
+  Serial.println(objectcountM);
+  Serial.print("Width");
+  Serial.print("\t");
+  Serial.print("Center");
+  Serial.print("\t");
+  Serial.print("distToTarget");
+  Serial.print("\t");
+  Serial.println("obstacle");
+  Serial.println(" ");
+  for (i = 0; i < objectcountM; i++) {
+    Serial.print(widthM[i]);
+    Serial.print("\t");
+    Serial.print(centerM[i]);
+    Serial.print("\t");
+    Serial.print(distToTargetM[i]);
+    Serial.print("\t");
+    Serial.print("\t");
+    Serial.println(objObstacleM[i]);
+  }
+
+  //Display Lower Long Range Sensor Data
+  Serial.println(" ");
+  Serial.println("Lower Long Range Sensor");
+  Serial.print("Objects = ");
+  Serial.print("\t");
+  Serial.println(objectcountLL);
+  Serial.print("Width");
+  Serial.print("\t");
+  Serial.print("Center");
+  Serial.print("\t");
+  Serial.println("distToTarget");
+  Serial.println(" ");
+  for (i = 0; i < objectcountLL; i++) {
+    Serial.print(widthLL[i]);
+    Serial.print("\t");
+    Serial.print(centerLL[i]);
+    Serial.print("\t");
+    Serial.println(distToTargetLL[i]);
+  }
+
+  //Display Upper Long Range Sensor Data
+  Serial.println(" ");
+  Serial.println("Upper Long Range Sensor");
+  Serial.print("Objects = ");
+  Serial.print("\t");
+  Serial.println(objectcountUL);
+  Serial.print("Width");
+  Serial.print("\t");
+  Serial.print("Center");
+  Serial.print("\t");
+  Serial.println("distToTarget");
+  Serial.println(" ");
+  for (i = 0; i < objectcountUL; i++) {
+    Serial.print(widthUL[i]);
+    Serial.print("\t");
+    Serial.print(centerUL[i]);
+    Serial.print("\t");
+    Serial.println(distToTargetUL[i]);
+  }
+}
+
+int validatePosts() {
+  Serial.println("");
+  int postNum = 0;
+  float rad;
+  int cnt = 0;
+  int validPosts[4] = { -1, -1, -1, -1};
+  for (int i = 0; i < objectcountUL; i++) {
+    rad = (centerstepsUL[i] / steps_per_degree - 180) * DEG_TO_RAD;
+    rad = fixRadians(rad);
+    Serial.print("obj = ");
+    Serial.println(i);
+    Serial.print("actual radians = ");
+    Serial.println(rad);
+    for (int j = 0; j < 4; j++) {
+      Serial.print("comparing to = ");
+      Serial.println(CA[j]);
+      if (abs(rad - CA[j]) < 0.3) {
+        Serial.print("This is a valid post stored in ");
+        if (rad < -1.07) postNum = 2;
+        if (rad < 0 && rad > -1.07) postNum = 3;
+        if (rad < 1.07 && rad > 0) postNum = 0;
+        if (rad > 1.07) postNum = 1;
+        if (validPosts[2] != -1 and postNum == 2) {
+          cnt--;
+        }
+        validPosts[postNum] = i;
+        Serial.println(postNum);
+        cnt++;
+
+      }
+    }
+  }
+  Serial.print("valid posts = ");
+  Serial.println(cnt);
+  Serial.println("");
+  if (cnt == 4) {
+    for (int i = 0; i < 4; i++) {
+      realTheta[i] = fixRadians(centerUL[validPosts[(i + 1) % 4]] - centerUL[validPosts[(i)]]);
+    }
+  }
+  if (cnt == 3) {
+    for (int i = 0; i < 4; i++) {
+      if (validPosts[(i + 1) % 4] != -1 && validPosts[i] != -1) {
+        realTheta[i] = fixRadians(centerUL[validPosts[(i + 1) % 4]] - centerUL[validPosts[(i)]]);
+      }
+      else {
+        realTheta[i] = -1;
+      }
+    }
+  }
+  Serial.println("Real Theta");
+  for (int i = 0; i < 4; i++) {
+    Serial.print(realTheta[i]);
+    Serial.print("\t");
+  }
+  Serial.println("");
+  return cnt;
+}
+
+
+void calcQuadratic(int index0, int index1) {
+  //using the angle between the corner posts, create circles where we are on a point of the circle.
+  Serial.print(realTheta[index0]);
+  Serial.print("\t");
+  Serial.println(realTheta[index1]);
+  float d[4], R[4], radius[4], Cx[4], Cy[4];
+  d[index0] = 48 * tan((pi - realTheta[index0]) / 2);
+  d[index1] = 48 * tan((pi - realTheta[index1]) / 2);
+  R[index0] = 48 * cos(pi - realTheta[index0]) / sin(pi - realTheta[index0]);
+  R[index1] = 48 * cos(pi - realTheta[index1]) / sin(pi - realTheta[index1]);
+  radius[index0] = R[index0] + d[index0];
+  radius[index1] = R[index1] + d[index1];
+
+
+  switch (index0) {
+    case 0:
+      Cx[index0] = 48;
+      Cy[index0] = 96 + R[index0];
+      break;
+
+    case 1:
+      Cx[index0] = -R[index0];
+      Cy[index0] = 48;
+      break;
+
+    case 2:
+      Cx[index0] = 48;
+      Cy[index0] = -R[index0];
+      break;
+
+    case 3:
+      Cx[index0] = 96 + R[index0];
+      Cy[index0] = 48;
+      break;
+  }
+
+  switch (index1) {
+    case 0:
+      Cx[index1] = 48;
+      Cy[index1] = 96 + R[index1];
+      break;
+
+    case 1:
+      Cx[index1] = -R[index1];
+      Cy[index1] = 48;
+      break;
+
+    case 2:
+      Cx[index1] = 48;
+      Cy[index1] = -R[index1];
+      break;
+
+    case 3:
+      Cx[index1] = 96 + R[index1];
+      Cy[index1] = 48;
+      break;
+  }
+
+  //based on the circle centers and radii calculate the x and y coordinates
+  float distance, len, height, px2, py2, x1, x2, y1, y2;
+  distance = sqrt((Cx[index1] - Cx[index0]) * (Cx[index1] - Cx[index0]) + (Cy[index1] - Cy[index0]) * (Cy[index1] - Cy[index0]));
+  len = ((radius[index0] * radius[index0]) - (radius[index1] * radius[index1]) + distance * distance) / (2 * distance);
+  height = sqrt(radius[index0] * radius[index0] - len * len);
+  px2 = Cx[index0] + len * (Cx[index1] - Cx[index0]) / distance;
+  py2 = Cy[index0] + len * (Cy[index1] - Cy[index0]) / distance;
+  x1 = 96 - px2 + height * (Cy[index1] - Cy[index0]) / distance;
+  x2 = 96 - px2 - height * (Cy[index1] - Cy[index0]) / distance;
+  y1 = py2 + height * (Cx[index1] - Cx[index0]) / distance;
+  y2 = py2 - height * (Cx[index1] - Cx[index0]) / distance;
+
+  Serial.println(x1);
+  Serial.println(x2);
+  Serial.println(y1);
+  Serial.println(y2);
+  Serial.println(" ");
+  if (x1 > 4 && x1 < 92) {
+    xPos = x1;
+  }
+  if (x2 > 4 && x2 < 92) {
+    xPos = x2;
+  }
+  if (y1 > 4 && y1 < 92) {
+    yPos = y1;
+  }
+  if (y2 > 4 && y2 < 92) {
+    yPos = y2;
+  }
+  Serial.print(xPos);
+  Serial.print("\t");
+  Serial.println(yPos);
+}
+
+void calcTheoAngles(float xp, float yp, float angle) {
+  float theta01, theta02, theta11, theta12, theta21, theta22, theta31, theta32;
+
+  theta01 = atan((xp) / (96 - yp));
+  theta02 = atan((96 - xp) / (96 - yp));
+  theta11 = atan((96 - yp) / (96 - xp));
+  theta12 = atan(yp / (96 - xp));
+  theta21 = atan((96 - xp) / yp);
+  theta22 = atan((xp) / yp);
+  theta31 = atan(yp / (xp));
+  theta32 = atan((96 - yp) / (xp));
+
+  angle = angle * DEG_TO_RAD;
+
+  theta[0] = theta01 + theta02;
+  theta[1] = theta11 + theta12;
+  theta[2] = theta21 + theta22;
+  theta[3] = theta31 + theta32;
+  CA[0] = theta02 + angle;
+  CA[1] = CA[0] + theta[1];
+  CA[2] = CA[1] + theta[2];
+  CA[3] = CA[2] + theta[3];
+  Serial.println("Calculated Angles to Posts:");
+  for (int i = 0; i < 4; i++) {
+    CA[i] = fixRadians(CA[i]);
+    Serial.print(CA[i]);
+    Serial.print("\t");
+  }
+  Serial.println("");
+  Serial.println("Calculated Angles btwn Posts");
+  Serial.print(theta[0]);
+  Serial.print("\t");
+  Serial.print(theta[1]);
+  Serial.print("\t");
+  Serial.print(theta[2]);
+  Serial.print("\t");
+  Serial.println(theta[3]);
+  Serial.println(" ");
+}
+
+float fixRadians(float input) {
+  while (input < -pi) input += 2 * pi;
+  while (input > pi) input -= 2 * pi;
+  return input;
+}
