@@ -7,13 +7,20 @@ class Grid:
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
+
+		# Blocked tiles
 		self.obstacles = []
-		self.targets = [] #Not used yet
-		self.mothership = [] #Not used yet
+		self.targets = [] 
+		self.mothership = []
 		self.sides = []
 		self.slopes = []
-		self.exclusion_list = []
+		self.corners = [(0,0),(0,7),(7,0), (7,7)]
+
+		# Potential align points
+		self.align_points = [(1,1), (1,6), (6,1), (6,6)]
+
 		self.access_point = None
+		
 		self.obstacles_max = 20
 		self.last_side_angle = 0
 
@@ -24,6 +31,8 @@ class Grid:
 	def passable(self, id):
 		blocked = []
 		blocked.extend(self.obstacles)
+		blocked.extend(self.targets)
+		blocked.extend(self.corners)
 		blocked.extend(self.sides)
 		blocked.extend(self.slopes)
 		blocked.extend(self.targets)
