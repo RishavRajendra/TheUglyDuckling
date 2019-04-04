@@ -226,11 +226,12 @@ def approach_mothership_side(movement, pic_q, serial, log):
                 movement.turn(-corrected_angle(stats[1], stats[2]))
 
                 # Get distance from the sensors
-                distance_from_sensor = sensor_distance(serial)
+                distance_from_sensor = sensor_distance(serial,log)
                 log.debug('Distance from sensor: {}'.format(distance_from_sensor))
 
                 # If the difference of sensor distance and camera distance is greater that 5,
                 # Something is wrong
+                print(abs(distance_from_sensor - stats[2]))
                 if abs(distance_from_sensor - stats[2]) <= 5:
                     log.info("----------------Mothership sensor validation passed----------------")
                     # Move towards the side of the mothership
@@ -242,8 +243,7 @@ def approach_mothership_side(movement, pic_q, serial, log):
                     # Side should only be detected once
                     movement.turn(corrected_angle(stats[1], stats[2]))
                     
-                    if side_angle is not None:
-                        return [corrected_angle(stats[1], stats[2]),int((distance_from_sensor+stats[2])/2),side_angle]
+                    return [corrected_angle(stats[1], stats[2]),int((distance_from_sensor+stats[2])/2),side_angle]
                 else:
                     log.info("-------------Validation Failed-----------------")
                     break

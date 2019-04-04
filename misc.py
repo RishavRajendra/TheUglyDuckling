@@ -141,8 +141,8 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
         movement.follow_next_step()
         if map_as_we_go:
         	map(movement, pic_q)
-        for obs in movement.get_obstacles():
-            if obs in movement.path:
+        for move in movement.path:
+            if not movement.grid.passable(move):
                 movement.path.clear()
                 movement.find_path(include_goal)
     if not movement.goal == movement.current:
@@ -153,7 +153,7 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
 def begin_round(movement, pic_q):
     for _ in range(8):
         movement.turn(45)
-        map_movement(movement, pic_q, True)
+        map(movement, pic_q, True)
 
 """
 Go to Home square

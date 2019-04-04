@@ -1,0 +1,6 @@
+2019-04-04 02:33:44,758 -- INFO - Starting round
+2019-04-04 02:34:24,868 -- INFO - I will try and map the mothership
+2019-04-04 02:34:24,869 -- INFO - Checking side
+2019-04-04 02:34:42,913 -- INFO - Side Verified
+2019-04-04 02:34:42,914 -- INFO - Side location adjusted
+2019-04-04 02:34:42,918 -- INFO - Success! Now work on the logic for placing the other pieces

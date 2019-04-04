@@ -21,7 +21,7 @@ from datetime import datetime
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -80,6 +80,7 @@ def main():
     time.sleep(2)
     
     log.info("Starting round")
+    
     begin_round(movement, pic_q)
 
     log.info("I will try and map the mothership")
@@ -95,21 +96,20 @@ def main():
     # This should be the coordinate of the side
     # Could not figure out how to get that.
     # Need sleep
-    drop_point = movement.get_access_point()
-    
+
     targs = [(4,7)]
     for item in targs:
         movement.set_goal(item)
         follow_path(movement, pic_q)
         approach(movement, pic_q)
-        go_home(movement, pic_q)
-        movement.set_goal = drop_point
-        follow_path(movement, pic_q, log)
+        #go_home(movement, pic_q)
+        movement.set_goal = movement.get_access_point()
+        follow_path(movement, pic_q, True)
         movement.turn(-1*mothership_angle)
         movement.move(fwd, dist)
         movement.turn(-1*side_angle)
         movement.drop()
-    
+   
     vt.join()
     #camera.close()
 

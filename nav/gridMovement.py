@@ -222,7 +222,7 @@ class GridMovement:
 		else:
 			mothership = [(sx,sy), (sx +1 , sy), (sx, sy +1 ), (sx+1, sy +1)]
 		
-		self.set_access_point(self.current)
+		self.set_access_point((self.current[0],self.current[1]))
 		self.set_side_point((sx,sy))
 		self.grid.mothership = mothership
 
@@ -342,7 +342,7 @@ class GridMovement:
 		time.sleep(8)
 
 
-def get_access_point(self):
+	def get_access_point(self):
 		return self.access_point["point"]
 
 	def get_side_point(self):
