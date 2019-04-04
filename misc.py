@@ -8,13 +8,11 @@ from get_stats_from_image import get_data
 import time
 
 def wait_for_button(buttonPin, ledPin, GPIO):
-    print('Ready')
     GPIO.output(ledPin, GPIO.HIGH)
     #Prevent further code execution until button is pressed
     while GPIO.input(buttonPin) is not 0:
         pass
     GPIO.output(ledPin, GPIO.LOW)
-    print('Executing') 
 
 """
 Returns the average distance of the object infront of the mothership
@@ -130,7 +128,7 @@ def map(movement, pic_q, beginning=False):
             movement.map(obj_type, angle, dist)
         elif obj_type == 7:
             movement.map(obj_type, angle, dist)
-	    	    
+
 """
 Change Log
     [0.0.1]
@@ -148,3 +146,19 @@ def follow_path(movement, pic_q, include_goal=False):
                 movement.find_path(include_goal)
     if not movement.goal == movement.current:
         movement.face(movement.goal)
+
+# Called at the start of the round. 
+# Maps relative locations to obstacles and mothership from start point
+def begin_round(movement, pic_q):
+    for _ in range(8):
+        movement.turn(45)
+        map_movement(movement, pic_q, True)
+
+"""
+Go to Home square
+"""
+def go_home(movement, pic_q):
+    if not movement.goal == movement.current:
+        movement.path.clear()
+        movement.goal = (4,4)
+        follow_path(movement, pic_q, True)
