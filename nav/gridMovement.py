@@ -86,6 +86,8 @@ class GridMovement:
 		if not self.facing_next_step():
 			self.face(mov)
 		else:
+			
+			
 			checking_dup = True
 			while checking_dup and self.path:
 				mov = self.path.pop(0)
@@ -99,11 +101,10 @@ class GridMovement:
 					else:
 						checking_dup = False
 
-			if dist > 12:
-				self.accelerate(dist)
-			else:
-				self.move(self.fwd, dist)
+			
+			self.move(self.fwd, dist)
 			self.current = mov
+			
 
 
 
@@ -260,10 +261,18 @@ class GridMovement:
 			slp_t = 1
 		elif dist < 10:
 			slp_t = 2
-		elif dist == 255:
-			slp_t = 2
+		elif dist < 13:
+			slp_t = 4
+		elif dist < 25:
+			slp_t = 6.5
+		elif dist < 37:
+			slp_t = 9
+		elif dist < 49:
+			slp_t = 12
+		elif dist < 61:
+			slp_t = 15
 		else:
-			slp_t = 3
+			slp_t = 18
 		print("Moving ", dist, " inches")
 		byte = b'\x00' if is_diagonal else b'\x01'
 		byteArr = b'\x00' + dir +bytes([dist])+byte

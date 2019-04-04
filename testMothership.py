@@ -439,8 +439,18 @@ def main():
     time.sleep(2)
     
     
-    movement.align_points.append((6,6))
-    back_dat_ass_up(movement, pic_q)
+    #movement.align_points.append((6,6))
+    movement.align_points.append((1,1))
+    i = 0
+    for corner in grid.corners:
+        movement.set_goal(corner)
+        follow_path(movement, pic_q)
+        if i == 0:
+            back_dat_ass_up(movement, pic_q)
+        movement.set_goal((4,4))
+        follow_path(movement, pic_q, True)
+        i = i +1
+    
     """
     begin_round(movement, pic_q)
     map_mothership(movement, pic_q)

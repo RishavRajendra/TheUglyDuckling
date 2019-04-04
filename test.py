@@ -36,7 +36,3 @@ q = queue.Queue()
 grid = Grid(8,8)
 #movement = GridMovement(grid, ser)
 #map_JSON('mar1.json', movement)
-
-get_sensor_data(ser)
-
-movement.edge_align()
