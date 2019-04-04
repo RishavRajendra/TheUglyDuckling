@@ -18,8 +18,6 @@ class Grid:
 
 		# Potential align points
 		self.align_points = [(1,1), (1,6), (6,1), (6,6)]
-
-		self.access_point = None
 		
 		self.exclusion_list = []
 		

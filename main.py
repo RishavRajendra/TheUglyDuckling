@@ -95,15 +95,15 @@ def main():
     # This should be the coordinate of the side
     # Could not figure out how to get that.
     # Need sleep
-    drop_point = (4,2)
+    drop_point = movement.get_access_point()
     
     targs = [(4,7)]
-    for items in targs:
-        movement.goal = items
-        follow_path(movement, pic_q, log)
+    for item in targs:
+        movement.set_goal(item)
+        follow_path(movement, pic_q)
         approach(movement, pic_q)
         go_home(movement, pic_q)
-        movement.goal = drop_point
+        movement.set_goal = drop_point
         follow_path(movement, pic_q, log)
         movement.turn(-1*mothership_angle)
         movement.move(fwd, dist)

@@ -44,9 +44,12 @@ class GridMovement:
 			(1,1): [self.fwd, b'\x00', -45], (-1, 1): [self.fwd, b'\x00', 45],
 			(1,-1): [self.fwd, b'\x00', -135], (-1,-1): [self.fwd, b'\x00', 135]
 			}
+
+		self.access_point = {"point": None,
+												 "side_angle": None,
+												 "side_point": None,
+												 "letters": None}
 		
-	def get_obstacles(self):
-		return self.grid.get_obstacles()
 	
 	def set_goal(self, goal):
 		self.grid.exclusion_list.clear()
@@ -218,7 +221,8 @@ class GridMovement:
 		else:
 			mothership = [(sx,sy), (sx +1 , sy), (sx, sy +1 ), (sx+1, sy +1)]
 		
-		self.grid.access_point = self.current
+		self.set_access_point(self.current)
+		self.set_side_point((sx,sy))
 		self.grid.mothership = mothership
 
 	# Communicates movement calls to Arduino
@@ -327,3 +331,28 @@ class GridMovement:
 		byteArr =  b'\x0A' + b'\x00' + b'\x00' + b'\x00'
 		self.serial.write(byteArr)
 		time.sleep(8)
+
+
+def get_access_point(self):
+		return self.access_point["point"]
+
+	def get_side_point(self):
+		return self.access_point["side_point"]
+
+	def get_side_angle(self):
+		return self.access_point["side_angle"]
+
+	def get_access_point_letters(self):
+		return self.access_point["letters"]
+
+	def set_access_point(self, point):
+		self.access_point["point"] = point
+
+	def set_side_point(self, point):
+		self.access_point["side_point"] = point
+
+	def set_side_angle(self, angle):
+		self.access_point["side_angle"] = angle
+
+	def set_access_letters(self, letters):
+		self.access_point["letters"] = letters

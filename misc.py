@@ -101,7 +101,7 @@ def back_dat_ass_up(movement, pic_q):
 
 	for edge in edges:
 		movement.set_goal(edge)
-		follow_path(movement, pic_q, True)
+		follow_path(movement, pic_q, True, False)
 		movement.turn(180)
 		movement.edge_align()
 		
@@ -134,12 +134,13 @@ Change Log
     [0.0.1]
         --- Added parameter to allow including goal in path
 """
-def follow_path(movement, pic_q, include_goal=False):
+def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
     movement.find_path(include_goal)
     while movement.path:
         print(movement.path)
         movement.follow_next_step()
-        map(movement, pic_q)
+        if map_as_we_go:
+        	map(movement, pic_q)
         for obs in movement.get_obstacles():
             if obs in movement.path:
                 movement.path.clear()
