@@ -36,5 +36,5 @@ CENTER_DISTANCE_UP = 6.5
 CENTER_DISTANCE_DOWN = 6
 
 # GPIO pins
-buttonPin = 8
-ledPin = 32
+BUTTONPIN = 8
+LEDPIN = 32

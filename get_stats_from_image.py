@@ -180,6 +180,8 @@ def get_midpoint(processed_frame, classes, boxes, scores):
 # Fixing error values for better results
 def mothership_side_close_distance(pic_q):
     processed_frame, classes, boxes, scores = pic_q.get()
+    result = []
+    result.append([100, 100])
     
     for i, b in enumerate(boxes[0]):
         if scores[0][i] > 0.3:
@@ -203,8 +205,10 @@ def mothership_side_close_distance(pic_q):
             if classes[0][i] == 8:
                 inches = get_distance(5, height_of_object_pixels)
                 angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
-                break
-    return [inches, angle]
+                result.append([inches, angle])
+    result = sorted(result, key=itemgetter(0))
+    # Return the closest side
+    return result[0]
 
 # Returns sorted blocks
 def two_blocks(pic_q):

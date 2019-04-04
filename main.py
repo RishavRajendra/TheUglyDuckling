@@ -9,7 +9,7 @@ import numpy as np
 import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import fwd, rev, buttonPin, ledPin
+from constants import fwd, rev, BUTTONPIN, LEDPIN
 from get_stats_from_image import get_data, get_midpoint, mothership_angle, corrected_angle
 from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side
@@ -70,13 +70,13 @@ def main():
     
     # Setup GPIO
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(ledPin, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(BUTTONPIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(LEDPIN, GPIO.OUT, initial=GPIO.LOW)
     
     # Keep track of movements after approach is called
     approach_movement_list = queue.LifoQueue()
 
-    wait_for_button(buttonPin, ledPin, GPIO)
+    wait_for_button(GPIO)
     time.sleep(2)
     
     log.info("Starting round")
@@ -87,7 +87,7 @@ def main():
     map_mothership(movement, pic_q, log)
     log.info("Mothership is located in the following tiles: ", grid.mothership)
 
-    mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, log)
+    mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, log, GPIO)
     log.debug("Mothership angle: {}, Distance: {}, Side_angle: {}".format(mothership_angle, dist, side_angle))
 
     log.info("Going home")

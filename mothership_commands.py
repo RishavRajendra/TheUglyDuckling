@@ -5,7 +5,7 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
-from misc import follow_path, get_sensor_data, go_home
+from misc import follow_path, get_sensor_data, go_home, blink_led_twice
 from get_stats_from_image import corrected_angle, two_blocks, mothership_angle
 from constants import fwd, rev, rotl, rotr, strl, strr
 import time, math
@@ -209,56 +209,89 @@ def sensor_distance(serial, log):
     # Right sensor bad
     return left_sensor_dist
 
+def approach_mothership_side_helper(camera_distance, distance_from_sensor, angle, pic_q, movement):
+    # Move towards the side of the mothership
+    if camera_distance == 0:
+        distance_to_move = distance_from_sensor - 1
+    else:
+        distance_to_move = int((distance_from_sensor+camera_distance)/2)-1
+
+    movement.move(fwd, distance_to_move)
+    # Get the angle of the mothership. Found not found on first try, move left and right one inch
+    side_angle = mothership_side_angle(movement, pic_q, 1, log, GPIO)
+            
+    # Try again if angle could not be found
+    # This generally happens when robot is too far from the side
+    if side_angle is False:
+        movement.move(fwd, 1)
+        side_angle = mothership_side_angle(movement, pic_q, 2, log, GPIO)
+        movement.move(rev, 1)
+
+    if side_angle is False:
+        # After the second try, give up for now
+        side_angle = 0
+
+    # Reverse movements
+    movement.move(rev, distance_to_move)
+    # Side should only be detected once
+    movement.turn(corrected_angle(angle, camera_distance))
+                    
+    return side_angle
+
 """ 
 Approach mothership from close
 Assuming that the robot is atleast pointed towards the mothership
 Gets close the the mothership and calls mothership side angle
 """
-def approach_mothership_side(movement, pic_q, serial, log):
+def approach_mothership_side(movement, pic_q, serial, log, GPIO):
     time.sleep(3)  # Let camera catch up
-    object_stats = get_data(pic_q) # Grab picture data
+    camera_distance, angle = mothership_side_close_distance(pic_q) # Grab picture data
     
-    print(object_stats)
-    
-    if object_stats:
-        for stats in object_stats:
-            if stats[0] == 8:
-                movement.turn(-corrected_angle(stats[1], stats[2]))
+    if distance is not 100:
+        movement.turn(-corrected_angle(angle, camera_distance))
 
-                # Get distance from the sensors
+        # Get distance from the sensors
+        distance_from_sensor = sensor_distance(serial,log)
+        log.debug('Distance from sensor: {}'.format(distance_from_sensor))
+
+        # If the difference of sensor distance and camera distance is greater that 5,
+        # Something is wrong
+        print(abs(distance_from_sensor - camera_distance))
+        if abs(distance_from_sensor - camera_distance) <= 5:
+            log.info("Mothership sensor validation passed")
+            side_angle = approach_mothership_side_helper(camera_distance, distance_from_sensor, angle, pic_q, movement)
+        else:
+            log.info("Mothership sensor validation Failed")
+            movement_list = [-15, 15]
+            for action in movement_list:
+                movement.turn(action)
+                # Let camera catch up
+                time.sleep(2)
                 distance_from_sensor = sensor_distance(serial,log)
                 log.debug('Distance from sensor: {}'.format(distance_from_sensor))
 
-                # If the difference of sensor distance and camera distance is greater that 5,
-                # Something is wrong
-                print(abs(distance_from_sensor - stats[2]))
-                if abs(distance_from_sensor - stats[2]) <= 5:
-                    log.info("----------------Mothership sensor validation passed----------------")
-                    # Move towards the side of the mothership
-                    movement.move(fwd, int((distance_from_sensor+stats[2])/2)-1)
-                    # Get the angle of the mothership. Found not found on first try, move left and right one inch
-                    side_angle = mothership_side_angle(movement, pic_q, 1, log)
-                    # Reverse movements
-                    movement.move(rev, int((distance_from_sensor+stats[2])/2)-1)
-                    # Side should only be detected once
-                    movement.turn(corrected_angle(stats[1], stats[2]))
+                camera_distance, angle = mothership_side_close_distance(pic_q) # Grab picture data
+                if camera_distance is not 100:
+                    if abs(distance_from_sensor - camera_distance) <= 5:
+                        log.info("Mothership sensor validation passed")
+                        side_angle = approach_mothership_side_helper(camera_distance, distance_from_sensor, angle, pic_q, movement)
+                        movement.turn(-1*action)
+                        
+                movement.turn(-1*action)
+            log.info("Mothership sensor validation Failed")
+            # Just rely on sensors if everything else fails
+            side_angle = approach_mothership_side_helper(0, distance_from_sensor, angle, pic_q, movement)
                     
-                    return [corrected_angle(stats[1], stats[2]),int((distance_from_sensor+stats[2])/2),side_angle]
-                else:
-                    log.info("-------------Validation Failed-----------------")
-                    break
-                    # TODO: Handle edge cases
-                    #approach_mothership_side(movement, pic_q, serial)
-            else:
-                print("Side not detected")
+        movement.turn(corrected_angle(angle, camera_distance))
+        return [corrected_angle(stats[1], stats[2]),int((distance_from_sensor+stats[2])/2),side_angle]
     else:
         # TODO: Handle edge cases
-        print("Nothing Detected in approach")
+        log.info("Nothing Detected in approach")
 
 """
 Turns the angle it believes the mothership is at from the front of the robot
 """
-def mothership_side_angle(movement, pic_q, side_move_distance, log):
+def mothership_side_angle(movement, pic_q, side_move_distance, log, GPIO):
     # Camera down to look at the letters inside the mothership
     movement.cam_down()
     # Get the closest two blocks from the camera
@@ -276,6 +309,10 @@ def mothership_side_angle(movement, pic_q, side_move_distance, log):
             if len(blocks_in_mothership) > 1:
                 #Get angle of the two blocks w.r.t to front of the robot
                 side_angle = math.ceil(mothership_angle([blocks_in_mothership[0][3], blocks_in_mothership[1][3]])*1.18)
+
+                # Show indication that angle has been detected
+                blink_led_twice(GPIO)
+
                 log.info("Angle detection successful")
                 log.debug("Side angle is: {}".format(side_angle))
                 # Reverse movements
@@ -293,9 +330,13 @@ def mothership_side_angle(movement, pic_q, side_move_distance, log):
         # Two blocks detected on the first try
         #Get angle of the two blocks w.r.t to front of the robot
         log.info("Angle detection successful")
+        
+        # Show indication that angle has been detected
+        blink_led_twice(GPIO)
+        
         side_angle = math.ceil(mothership_angle([blocks_in_mothership[0][3], blocks_in_mothership[1][3]])*1.18)
         log.debug("Side angle is: {}".format(side_angle))
         return side_angle
     # If it does not detect two blocks, return None
     log.info('---------------Angle could not be detected--------------')
-    return None
+    return False

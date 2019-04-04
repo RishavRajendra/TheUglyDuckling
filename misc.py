@@ -5,14 +5,24 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
+from constants import LEDPIN, BUTTONPIN
 import time
 
-def wait_for_button(buttonPin, ledPin, GPIO):
-    GPIO.output(ledPin, GPIO.HIGH)
+def wait_for_button(GPIO):
+    GPIO.output(LEDPIN, GPIO.HIGH)
     #Prevent further code execution until button is pressed
-    while GPIO.input(buttonPin) is not 0:
+    while GPIO.input(BUTTONPIN) is not 0:
         pass
-    GPIO.output(ledPin, GPIO.LOW)
+    GPIO.output(LEDPIN, GPIO.LOW)
+
+def blink_led_twice(GPIO):
+    GPIO.output(LEDPIN, GPIO.HIGH)
+    time.sleep(.2)
+    GPIO.output(LEDPIN, GPIO.LOW)
+    time.sleep(.2)
+    GPIO.output(LEDPIN, GPIO.HIGH)
+    time.sleep(.2)
+    GPIO.output(LEDPIN, GPIO.LOW)
 
 """
 Returns the average distance of the object infront of the mothership
@@ -163,3 +173,4 @@ def go_home(movement, pic_q):
         movement.path.clear()
         movement.goal = (4,4)
         follow_path(movement, pic_q, True)
+
