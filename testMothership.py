@@ -11,7 +11,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, CENTER_DISTANCE_UP, CENTER_DISTANCE_DOWN, rotr, rotl, fwd, rev, buttonPin, ledPin
 from get_stats_from_image import get_angle, get_distance, get_data, get_midpoint, mothership_angle
-from misc import get_sensor_data
+from misc import get_sensor_data, back_dat_ass_up, wait_for_button, follow_path, map
 from nav.gridMovement import GridMovement
 from nav.grid import Grid
 import queue, threading, serial, time, math
@@ -23,7 +23,7 @@ from image_processing import Model
 
 import warnings
 warnings.filterwarnings('ignore')
-
+"""
 def wait_for_button(buttonPin, ledPin):
     print('Ready')
     GPIO.output(ledPin, GPIO.HIGH)
@@ -32,6 +32,7 @@ def wait_for_button(buttonPin, ledPin):
         pass
     GPIO.output(ledPin, GPIO.LOW)
     print('Executing')
+"""
 
 def corrected_angle(angle, dist, cam_up=True):
     cd = CENTER_DISTANCE_UP if cam_up else CENTER_DISTANCE_DOWN
@@ -132,28 +133,7 @@ def approach(movement, pic_q, approach_movement_list, first_call=True, cam_up=Tr
         movement.turn(adj_degrees*-1)
         approach_movement_list.put([adj_degrees])
 
-"""
-Change log
-    -[0.0.1] Benji
-        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
-"""
-def map(movement, pic_q, beginning=False):
-    movement.cam_up()
-    print(movement.facing)
-    time.sleep(3)
-    object_stats = get_data(pic_q)
-    for stat in object_stats:
-        obj_type = stat[0]
-        angle = stat[1]
-        dist = stat[2]
-        print(obj_type, angle, dist)
-        if obj_type == 9:
-            dist = dist + 3
-        if beginning:
-            movement.map(obj_type, angle, dist)
-        elif obj_type == 7:
-            movement.map(obj_type, angle, dist)
+
    
         
     
@@ -163,23 +143,7 @@ def begin_round(movement, pic_q):
         movement.turn(45)
         map(movement, pic_q, True)
         
-"""
-Change Log
-    [0.0.1]
-        --- Added parameter to allow including goal in path
-"""
-def follow_path(movement, pic_q, include_goal=False):
-    movement.find_path(include_goal)
-    while movement.path:
-        print(movement.path)
-        movement.follow_next_step()
-        map(movement, pic_q)
-        for obs in movement.get_obstacles():
-            if obs in movement.path:
-                movement.path.clear()
-                movement.find_path(include_goal)
-    if not movement.goal == movement.current:
-        movement.face(movement.goal)
+
 
     
 """
@@ -471,16 +435,19 @@ def main():
     # Keep track of movements after approach is called
     approach_movement_list = queue.LifoQueue()
 
-    wait_for_button(buttonPin, ledPin)
+    wait_for_button(buttonPin, ledPin, GPIO)
     time.sleep(2)
     
     
+    movement.align_points.append((6,6))
+    back_dat_ass_up(movement, pic_q)
+    """
     begin_round(movement, pic_q)
     map_mothership(movement, pic_q)
     print("Mothership is located in the following tiles: ", grid.mothership)
     if grid.mothership:
         approach_mothership_side(movement, pic_q, ser)
-    
+    """
     """
     if grid.sides:
         movement.goal = grid.sides[0]

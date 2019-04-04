@@ -5,7 +5,6 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
-from main import map, follow_path
 import time
 
 def wait_for_button(buttonPin, ledPin, GPIO):
@@ -91,14 +90,61 @@ Uses edge_align to straighten out our x and y angles
 def back_dat_ass_up(movement, pic_q):
 	
 	point = closest_point(movement.align_points, movement.current)
-
+	print("Closest align point is: ", point)
+	
+	movement.set_goal(point)
+	follow_path(movement, pic_q,True)
+	
 	x = -1 if point[0] == 1 else 1
 	y = -1 if point[1] == 1 else 1
 
 	edges = [(point[0] + x, point[1]), (point[0], point[1] +y)]
+	print("Edges are: ", edges)
 
 	for edge in edges:
 		movement.set_goal(edge)
 		follow_path(movement, pic_q, True)
 		movement.turn(180)
 		movement.edge_align()
+		
+
+"""
+Change log
+    -[0.0.1] Benji
+        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
+        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
+"""
+def map(movement, pic_q, beginning=False):
+    movement.cam_up()
+    print(movement.facing)
+    time.sleep(3)
+    object_stats = get_data(pic_q)
+    for stat in object_stats:
+        obj_type = stat[0]
+        angle = stat[1]
+        dist = stat[2]
+        print(obj_type, angle, dist)
+        if obj_type == 9:
+            dist = dist + 3
+        if beginning:
+            movement.map(obj_type, angle, dist)
+        elif obj_type == 7:
+            movement.map(obj_type, angle, dist)
+	    	    
+"""
+Change Log
+    [0.0.1]
+        --- Added parameter to allow including goal in path
+"""
+def follow_path(movement, pic_q, include_goal=False):
+    movement.find_path(include_goal)
+    while movement.path:
+        print(movement.path)
+        movement.follow_next_step()
+        map(movement, pic_q)
+        for obs in movement.get_obstacles():
+            if obs in movement.path:
+                movement.path.clear()
+                movement.find_path(include_goal)
+    if not movement.goal == movement.current:
+        movement.face(movement.goal)

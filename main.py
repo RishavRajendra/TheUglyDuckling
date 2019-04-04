@@ -13,7 +13,7 @@ from constants import fwd, rev, buttonPin, ledPin
 from get_stats_from_image import get_data, get_midpoint, mothership_angle, corrected_angle
 from targetApproach import approach, check_pick_up
 from nav.gridMovement import GridMovement
-from misc import wait_for_button, get_sensor_data, align_corner
+from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from video_thread import VideoThread
@@ -25,29 +25,7 @@ from image_processing import Model
 import warnings
 warnings.filterwarnings('ignore')
 
-"""
-Change log
-    -[0.0.1] Benji
-        --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
-        --- for 1.5 seconds is the minimum delay that guarantees fresh video data
-"""
-def map(movement, pic_q, beginning=False):
-    movement.cam_up()
-    print(movement.facing)
-    time.sleep(1.5)
-    processed_frame, classes, boxes, scores = pic_q.get()
-    object_stats = get_data(processed_frame, classes, boxes, scores)
-    for stat in object_stats:
-        obj_type = stat[0]
-        angle = stat[1]
-        dist = stat[2]
-        print(obj_type, angle, dist)
-        if obj_type == 9:
-            dist = dist + 3
-        if beginning:
-            movement.map(obj_type, angle, dist)
-        elif obj_type == 7:
-            movement.map(obj_type, angle, dist)
+
    
         
     
@@ -57,28 +35,7 @@ def begin_round(movement, pic_q):
         movement.turn(45)
         map(movement, pic_q, True)
         
-"""
-Change Log
-    [0.0.1]
-        --- Added parameter to allow including goal in path
-"""
-def follow_path(movement, pic_q, include_goal=False):
-    movement.find_path(include_goal)
-    while movement.path:
-        print(movement.path)
-        movement.follow_next_step()
-        map(movement, pic_q)
-        for move in movement.path:
-            if not movement.grid.passable(move):
-                movement.path.clear()
-                movement.find_path(include_goal)
-                break
-        # for obs in movement.get_obstacles():
-        #     if obs in movement.path:
-        #         movement.path.clear()
-        #         movement.find_path(include_goal)
-    if not movement.goal == movement.current:
-        movement.face(movement.goal)
+
 
 def get_sensor_data(serial):
     byteArr = b'\x08' + b'\x00' + b'\x00' + b'\x00'

@@ -21,6 +21,8 @@ class Grid:
 
 		self.access_point = None
 		
+		self.exclusion_list = []
+		
 		self.obstacles_max = 20
 		self.last_side_angle = 0
 
