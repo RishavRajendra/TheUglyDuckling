@@ -7,13 +7,20 @@ class Grid:
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
+
+		# Blocked tiles
 		self.obstacles = []
-		self.targets = [] #Not used yet
-		self.mothership = [] #Not used yet
+		self.targets = [] 
+		self.mothership = []
 		self.sides = []
 		self.slopes = []
+		self.corners = [(0,0),(0,7),(7,0), (7,7)]
+
+		# Potential align points
+		self.align_points = [(1,1), (1,6), (6,1), (6,6)]
+		
 		self.exclusion_list = []
-		self.access_point = None
+		
 		self.obstacles_max = 20
 		self.last_side_angle = 0
 
@@ -24,6 +31,8 @@ class Grid:
 	def passable(self, id):
 		blocked = []
 		blocked.extend(self.obstacles)
+		blocked.extend(self.targets)
+		blocked.extend(self.corners)
 		blocked.extend(self.sides)
 		blocked.extend(self.slopes)
 		blocked.extend(self.targets)
@@ -68,18 +77,14 @@ class Grid:
 	def add_mothership(self, part):
 		if part not in self.mothership:
 			self.mothership.append(part)
-		
 			
 	def add_slope(self, slope):
 		if slope not in self.slopes:
 			self.slopes.append(slope)
 		
-		
 	def add_side(self, side):
 		if side not in self.sides:
-			self.sides.append(side)
-		
-		
+			self.sides.append(side)		
 			
 	def get_mothership(self):
 		return self.mothership

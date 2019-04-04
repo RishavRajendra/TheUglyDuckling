@@ -38,7 +38,3 @@ grid = Grid(8,8)
 #map_JSON('mar1.json', movement)
 
 get_sensor_data(ser)
-
-#movement.drop()
-#print(get_sensor_data(ser))
-#movement.reset_servo()

@@ -14,14 +14,14 @@ from get_stats_from_image import get_data, get_midpoint, mothership_angle, corre
 from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side
 from nav.gridMovement import GridMovement
-from misc import wait_for_button, follow_path, begin_round, go_home
+from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, begin_round, go_home
 from nav.grid import Grid
 import queue, threading, serial, time, math, logging
 from datetime import datetime
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -80,6 +80,7 @@ def main():
     time.sleep(2)
     
     log.info("Starting round")
+    
     begin_round(movement, pic_q)
 
     log.info("I will try and map the mothership")
@@ -95,21 +96,20 @@ def main():
     # This should be the coordinate of the side
     # Could not figure out how to get that.
     # Need sleep
-    drop_point = (4,2)
-    
+
     targs = [(4,7)]
-    for items in targs:
-        movement.goal = items
-        follow_path(movement, pic_q, log)
+    for item in targs:
+        movement.set_goal(item)
+        follow_path(movement, pic_q)
         approach(movement, pic_q)
-        go_home(movement, pic_q)
-        movement.goal = drop_point
-        follow_path(movement, pic_q, log)
+        #go_home(movement, pic_q)
+        movement.set_goal = movement.get_access_point()
+        follow_path(movement, pic_q, True)
         movement.turn(-1*mothership_angle)
         movement.move(fwd, dist)
         movement.turn(-1*side_angle)
         movement.drop()
-    
+   
     vt.join()
     #camera.close()
 
