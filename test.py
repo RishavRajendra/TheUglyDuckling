@@ -29,6 +29,5 @@ grid = Grid(8,8)
 movement = GridMovement(grid, ser)
 #map_JSON('mar1.json', movement)
 
+movement.move(fwd, 72)
 
-
-movement.edge_align()
