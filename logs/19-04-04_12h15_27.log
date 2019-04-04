@@ -1,0 +1,9 @@
+2019-04-04 12:15:43,182 -- INFO - Starting round
+2019-04-04 12:16:23,648 -- INFO - I will try and map the mothership
+2019-04-04 12:16:23,655 -- INFO - Checking side
+2019-04-04 12:16:40,692 -- INFO - Side Verified
+2019-04-04 12:16:40,694 -- INFO - Side location adjusted
+2019-04-04 12:16:40,698 -- INFO - Success! Now work on the logic for placing the other pieces
+2019-04-04 12:16:45,719 -- INFO - ----------------Mothership sensor validation passed----------------
+2019-04-04 12:16:51,950 -- INFO - Angle detection successful
+2019-04-04 12:16:55,959 -- INFO - Going home

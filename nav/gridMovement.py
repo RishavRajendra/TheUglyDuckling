@@ -202,7 +202,9 @@ class GridMovement:
 	def map_mothership(self, side):
 		sign = 1 if self.grid.last_side_angle < 0 else -1
 		sx, sy = side[0], side[1]
-
+		
+		cx,cy = self.current[0], self.current[1]
+		print("Access Point is: ",(cx,cy))
 		if self.facing == 90:
 
 			mothership = [(sx,sy), (sx +1 * sign, sy), (sx, sy +1), (sx +1 * sign, sy +1)]
@@ -222,7 +224,7 @@ class GridMovement:
 		else:
 			mothership = [(sx,sy), (sx +1 , sy), (sx, sy +1 ), (sx+1, sy +1)]
 		
-		self.set_access_point((self.current[0],self.current[1]))
+		self.set_access_point((cx,cy))
 		self.set_side_point((sx,sy))
 		self.grid.mothership = mothership
 
