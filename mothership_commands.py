@@ -96,10 +96,20 @@ def map_by_side(movement, pic_q):
         movement.face((sx,sy))
 
         if verify_obj(movement, pic_q, 8):
+            cx,cy = movement.current[0], movement.current[1]
+            x,y = 0,0
+            if movement.facing == 90:
+                y = 1
+            elif movement.facing == 180:
+                x = -1
+            elif movement.facing == 270:
+                y = -1
+            elif movement.facing == 0:
+                x = 1
             print("Side verified")
             print((sx,sy))
-            movement.set_goal((sx,sy))
-            follow_path(movement, pic_q)
+            movement.set_goal((cx+x,cy + y))
+            follow_path(movement, pic_q, True)
             movement.map_mothership((sx,sy))
             return
 
