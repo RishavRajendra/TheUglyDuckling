@@ -271,11 +271,14 @@ def sensor_distance(serial):
 
 def approach_mothership_side_helper(camera_distance, distance_from_sensor, angle, pic_q, serial, movement, GPIO):
     # Move towards the side of the mothership
+    
     if camera_distance == 0:
-        distance_to_move = distance_from_sensor - 1
+        distance_to_move = distance_from_sensor - 2
+    elif distance_from_sensor == 6:
+        distance_to_move = camera_distance - 2
     else:
-        distance_to_move = int((distance_from_sensor+camera_distance)/2)-1
-
+        distance_to_move = ((camera_distance + distance_from_sensor)/2) - 1
+        
     movement.move(fwd, distance_to_move)
     # Get the angle of the mothership. Found not found on first try, move left and right one inch
     side_angle = mothership_side_angle(movement, pic_q, 1, serial, GPIO)
@@ -441,3 +444,5 @@ def mothership_drop(distance_from_access, angle_from_access, mothership_orient, 
     movement.pickup()
     movement.turn(angle_from_access)
     
+def drop_in_correct_block(movement, pic_q):
+    pass
