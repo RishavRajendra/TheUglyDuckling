@@ -69,8 +69,13 @@ def main():
     map_mothership(movement, pic_q)
     print("Mothership is located in the following tiles: ", grid.mothership)
 
-    
+    # We can save these values in movement.access_point so other functions with access to movement
+    # can use these
     mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, GPIO)
+    movement.set_mothership_angle(mothership_angle)
+    movement.set_side_angle(side_angle)
+    movement.set_access_dist(dist)
+
     print("Mothership angle: {}, Distance: {}, Side_angle: {}".format(mothership_angle, dist, side_angle))
 
     print("Going home")
