@@ -14,7 +14,7 @@ from get_stats_from_image import get_data, get_midpoint, mothership_angle, corre
 from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
 from nav.gridMovement import GridMovement
-from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, begin_round, go_home
+from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, begin_round, go_home, back_dat_ass_up
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from datetime import datetime
@@ -79,6 +79,7 @@ def main():
         movement.set_goal(item)
         follow_path(movement, pic_q)
         approach(movement, pic_q)
+        back_dat_ass_up(movement,pic_q)
         
         go_home(movement, pic_q)
         

@@ -55,7 +55,7 @@ def locate_obj(movement, pic_q, obj):
 Generate guesses as to where the side might be based on slope location
 """
 def generate_guesses(slope):
-    sx,sy = slope[0], slope[1]
+    tx,ty = slope[0], slope[1]
     c = 1 if tx > 4 else -1
     d = 1 if ty > 4 else -1
 
@@ -136,7 +136,7 @@ def map_by_slope(movement, pic_q):
         print("Current slope location is: ", current)
 
         if movement.grid.sides:
-                map_by_side(movement, pic_q, log)
+                map_by_side(movement, pic_q)
                 return
         # if it's in the correct location
         if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
@@ -147,18 +147,16 @@ def map_by_slope(movement, pic_q):
             
             guesses = generate_guesses(slope)
             
-            log.debug("Guesses are: ", guesses)
-            
-            else:
+            print("Guesses are: ", guesses)
                 
-                for guess in guesses:
-                    movement.grid.sides.clear()
-                    movement.grid.sides.append(guess)
-                    map_by_side(movement, pic_q)
-                    # we break if mothership has anything in it - we only add to mothership 
-                    # list if map by side was a success
-                    if movement.grid.mothership:
-                        break
+            for guess in guesses:
+                movement.grid.sides.clear()
+                movement.grid.sides.append(guess)
+                map_by_side(movement, pic_q)
+                # we break if mothership has anything in it - we only add to mothership 
+                # list if map by side was a success
+                if movement.grid.mothership:
+                    break
 
         else:
             # map by slope again
@@ -174,7 +172,7 @@ def map_by_slope(movement, pic_q):
         print("Current slope location is: ", current)
 
         if movement.grid.sides:
-                map_by_side(movement, pic_q, log)
+                map_by_side(movement, pic_q)
                 return
 
         # if it's in the correct location
@@ -204,18 +202,18 @@ def map_by_slope(movement, pic_q):
     else:
 
         if movement.grid.sides:
-                map_by_side(movement, pic_q, log)
+                map_by_side(movement, pic_q)
                 return
-        log.info("Mapping Failed")
+        print("Mapping Failed")
         go_home(movement, pic_q)
 
 def map_mothership(movement, pic_q):
     #movement.drop()
     if movement.grid.sides:
 
-        map_by_side(movement, pic_q, log)
+        map_by_side(movement, pic_q)
     elif movement.grid.slopes:
-        map_by_slope(movement, pic_q, log)
+        map_by_slope(movement, pic_q)
     #movement.reset_servo()
 
 # Two mid-range IR sensors mounted in the front of the robot facing forward

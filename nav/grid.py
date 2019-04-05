@@ -81,26 +81,26 @@ class Grid:
 	def add_target(self, target):
 		if (target not in self.targets):
 			self.targets.append(target)
-		if obstacle in self.edges:
-			self.remove_edge(obstacle)
+		if target in self.edges:
+			self.remove_edge(target)
 
 	def add_mothership(self, part):
 		if part not in self.mothership:
 			self.mothership.append(part)
-		if obstacle in self.edges:
-			self.remove_edge(obstacle)
+		if part in self.edges:
+			self.remove_edge(part)
 
 	def add_slope(self, slope):
 		if slope not in self.slopes:
 			self.slopes.append(slope)
-		if obstacle in self.edges:
-			self.remove_edge(obstacle)
+		if slope in self.edges:
+			self.remove_edge(slope)
 
 	def add_side(self, side):
 		if side not in self.sides:
 			self.sides.append(side)		
-		if obstacle in self.edges:
-			self.remove_edge(obstacle)
+		if side in self.edges:
+			self.remove_edge(side)
 			
 	def get_mothership(self):
 		return self.mothership
