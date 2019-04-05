@@ -6,7 +6,7 @@ __status__ = "Development"
 
 from get_stats_from_image import get_data
 from constants import LEDPIN, BUTTONPIN, fwd, rev
-from targetApproach import approach
+from targetApproach import approach, approach_obstacle
 import time
 
 def wait_for_button(GPIO):
@@ -151,8 +151,10 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
     			
     			# if object is target
     			elif movement.path[0] in movement.grid.targets:
-    				# move to another area and update the location
-    				pass
+    				# move target to another area and update the location
+    				old_goal = (movement.goal[0],movement.goal[1])
+    				relocate_target(movement, pic_q)
+
         print(movement.path)
         movement.follow_next_step()
         if map_as_we_go:
@@ -178,8 +180,6 @@ def relocate_target(movement, pic_q):
 	elif movement.facing == 0:
 		x = 1
 
-
-
 	approach(movement,pic_q)
 	# remove the target's block
 	movement.grid.targets.remove(movement.goal)
@@ -189,7 +189,6 @@ def relocate_target(movement, pic_q):
 	movement.movement(rev, 6)
 	movement.grid.targets.append((cx+x,cy+y))
 
-	pass
 
 # Called at the start of the round. 
 # Maps relative locations to obstacles and mothership from start point
@@ -211,8 +210,8 @@ def go_home(movement, pic_q):
 You forced my hand Layfette
 """
 def kill_object():
-	# approach
+	approach_obstacle(movement, pic_q)
 	back_dat_ass_up(movement, pic_q)
 	movement.turn(180)
-	# drop
-	pass  
+	movement.drop()
+	
