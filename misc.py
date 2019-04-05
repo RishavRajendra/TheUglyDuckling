@@ -107,7 +107,7 @@ Change log
         --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
         --- for 1.5 seconds is the minimum delay that guarantees fresh video data
 """
-def map(movement, pic_q, beginning=False):
+def map(movement, pic_q, beginning=True):
     movement.cam_up()
     print(movement.facing)
     time.sleep(3)
@@ -119,10 +119,10 @@ def map(movement, pic_q, beginning=False):
         print(obj_type, angle, dist)
         if obj_type == 9:
             dist = dist + 3
-        if beginning:
             movement.map(obj_type, angle, dist)
-        elif obj_type == 7:
-            movement.map(obj_type, angle, dist)
+    # experimental
+    if movement.is_mothership():
+    	movement.map(8, 0, 10):
 
 """
 Change Log
