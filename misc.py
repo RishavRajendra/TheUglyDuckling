@@ -5,7 +5,7 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
-from constants import LEDPIN, BUTTONPIN
+from constants import LEDPIN, BUTTONPIN, fwd, rev
 from targetApproach import approach
 import time
 
@@ -137,6 +137,22 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
     	return
     movement.find_path(include_goal)
     while movement.path:
+    		
+    		# check if object in last space that we want to move in.
+    		if len(movement.path) == 1 and include_goal:
+    			# if object is obstacle
+    			if movement.path[0] in movement.grid.obstacles:
+    				old_goal = (movement.goal[0],movement.goal[1])
+    				# check if obstacle in way
+    				kill_object(movement, pic_q)
+    				movement.grid.obstacles.remove(old_goal)
+    				movement.set_goal()
+    				movement.find_path(include_goal)
+    			
+    			# if object is target
+    			elif movement.path[0] in movement.grid.targets:
+    				# move to another area and update the location
+    				pass
         print(movement.path)
         movement.follow_next_step()
         if map_as_we_go:
@@ -147,6 +163,33 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
                 movement.find_path(include_goal)
     if not movement.goal == movement.current:
         movement.face(movement.goal)
+
+# relocate a target block and update the targets list
+def relocate_target(movement, pic_q):
+	cx,cy = movement.current[0], movement.current[1]
+	x,y = 0,0
+	
+	if movement.facing == 90:
+		y = -1
+	elif movement.facing == 180:
+		x = 1
+	elif movement.facing == 270:
+		y = 1
+	elif movement.facing == 0:
+		x = 1
+
+
+
+	approach(movement,pic_q)
+	# remove the target's block
+	movement.grid.targets.remove(movement.goal)
+	movement.turn(180)
+	movement.move(fwd ,6)
+	movement.drop()
+	movement.movement(rev, 6)
+	movement.grid.targets.append((cx+x,cy+y))
+
+	pass
 
 # Called at the start of the round. 
 # Maps relative locations to obstacles and mothership from start point
@@ -169,7 +212,7 @@ You forced my hand Layfette
 """
 def kill_object():
 	# approach
-	# back_dat_ass_up()
-	# spin 180
+	back_dat_ass_up(movement, pic_q)
+	movement.turn(180)
 	# drop
 	pass  
