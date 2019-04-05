@@ -132,6 +132,8 @@ Change Log
         --- Added parameter to allow including goal in path
 """
 def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
+    if movement.goal == movement.current:
+    	return
     movement.find_path(include_goal)
     while movement.path:
         print(movement.path)

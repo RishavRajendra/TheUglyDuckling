@@ -68,13 +68,13 @@ def generate_guesses(slope):
         
 def generate_access_points(side):
     tx,ty = side[0], side[1]
-    c = 2 if tx > 4 else -2
-    d = 2 if ty > 4 else -2
+    c = 2 if tx < 4 else -2
+    d = 2 if ty < 4 else -2
 
     if tx == 4:
-        return [(tx + 2, ty+d),(tx -2, ty + d)]
+        return [(tx, ty+d)]
     elif ty == 4:
-        return [(tx + c, ty+2),(tx +c, ty - 2)]
+        return [(tx + c, ty)]
     else:
         return [(tx + c, ty),(tx, ty + d)]
 
@@ -101,7 +101,7 @@ def map_by_side(movement, pic_q):
             follow_path(movement, pic_q)
             movement.map_mothership((sx,sy))
             return
-            
+
     print("Couldn't locate side")
     go_home(movement, pic_q)
 
