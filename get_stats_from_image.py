@@ -153,6 +153,44 @@ def get_closest_target(pic_q, mid_point=False):
                 else:
                     result.append([int(classes[0][i]), angle, inches])
     result = sorted(result, key=itemgetter(2))
+    return result[0]
+    
+# This function returns the closest obstacle to the robot
+# God knows why Benji wants it
+def get_closest_obstacle(pic_q, mid_point=False):
+    processed_frame, classes, boxes, scores = pic_q.get()
+    result = []
+    
+    # return [0, 0, 100] if nothing is found
+    if mid_point is True:
+        result.append([0, 0, 100, (100, 100)])
+    else:
+        result.append([0, 0, 100])
+    
+    for i, b in enumerate(boxes[0]):
+        if scores[0][i] > 0.6:
+            inches = 0
+            #extract pixel coordinates of detected objects
+            ymin = boxes[0][i][0]*300
+            xmin = boxes[0][i][1]*300
+            ymax = boxes[0][i][2]*300
+            xmax = boxes[0][i][3]*300
+
+            # Calculate mid_pount of the detected object
+            mid_x = (xmax + xmin) / 2
+            mid_y = (ymax + ymin) / 2
+            
+            # Calculate height of the object located for distance measurements
+            height_of_object_pixels = ymax - ymin
+            
+            if classes[0][i] == 7:
+                inches = get_distance(0, height_of_object_pixels)
+                angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
+                
+                print('Obstacle detected at {}{} {} inches away. Midpoint:({},{}). Height: {}'.format(angle,chr(176),inches, int(mid_x), int(mid_y), int(height_of_object_pixels)))
+            
+                result.append([int(classes[0][i]), angle, inches])
+    result = sorted(result, key=itemgetter(2))
     return result[0]        
     
 def get_midpoint(processed_frame, classes, boxes, scores):

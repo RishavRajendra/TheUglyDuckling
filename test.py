@@ -55,6 +55,6 @@ grid = Grid(8,8)
 movement = GridMovement(grid, ser)
 #map_JSON('mar1.json', movement)
 
-points = [(6,6),(1,1),(5,5)]
+#get_sensor_data(ser)
+movement.move(fwd, 6)
 
-print(closest_point(points, movement.current))
