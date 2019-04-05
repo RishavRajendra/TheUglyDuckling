@@ -110,7 +110,10 @@ class GridMovement:
 
 	# Face a tile connected to current tile
 	def face(self, obj):
-		result = (obj[0] - self.current[0], obj[1] - self.current[1])
+		x,y = obj[0] - self.current[0], obj[1] - self.current[1]
+		x = x/abs(x) if not x==0 else 0
+		y = y/abs(y) if not y==0 else 0
+		result = (x,y)
 		result = self.translate_dir(result)
 		degrees = self.movement[result][2]
 		self.turn(degrees)
@@ -142,7 +145,7 @@ class GridMovement:
 
 
 	def map(self,obj, angle, dist):
-		if abs(angle) > 40:
+		if (obj< 8) and abs(angle) > 40:
 			return
 		offset = 6
 		cam_offset = 2.5
@@ -330,10 +333,14 @@ class GridMovement:
 	"""
 	def is_mothership(self):
 		byteArr = b'\x09' + b'\x00' + b'\x00' + b'\x00'
-		self.serial.write(byteArr)
-		time.sleep(1)
-		i = int.from_bytes(self.serial.read(1),'little')
-		return True if i == 1 else False
+		for _ in range(5):
+			self.serial.write(byteArr)
+			time.sleep(.5)
+		for _ in range(5):
+			i = int.from_bytes(self.serial.read(1),'little')
+			if not i == 1:
+				return False
+		return True 
 		
 	"""
 	Calls edgAlign() from the Arduino Mega 2560

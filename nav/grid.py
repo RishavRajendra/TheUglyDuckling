@@ -17,7 +17,10 @@ class Grid:
 		self.corners = [(0,0),(0,7),(7,0), (7,7)]
 
 		# Potential align points
-		self.align_points = [(1,1), (1,6), (6,1), (6,6)]
+		self.edges = [(0,1), (0,2), (0,3), (0,4),(0,5), (0,6),
+									(1,0), (2,0), (3,0), (4,0),(5,0), (6,0),
+									(7,1), (7,2), (7,3), (7,4),(7,5), (7,6),
+									(1,7), (2,7), (3,7), (4,7),(5,7), (6,7)]
 		
 		self.exclusion_list = []
 		
@@ -61,6 +64,9 @@ class Grid:
 		results = filter(self.passable, results) # Only unoccupied coordinates 
 		return results
 
+	def remove_edge(self, edge):
+		self.edges.remove(edge)
+
 	def set_obstacles_max(self, max):
 		self.obstacles_max = max
 
@@ -69,23 +75,33 @@ class Grid:
 			if len(self.obstacles) >= self.obstacles_max:
 				self.obstacles.pop(0)
 			self.obstacles.append(obstacle)
+		if obstacle in self.edges:
+			self.remove_edge(obstacle)
 
 	def add_target(self, target):
 		if (target not in self.targets):
 			self.targets.append(target)
+		if target in self.edges:
+			self.remove_edge(target)
 
 	def add_mothership(self, part):
 		if part not in self.mothership:
 			self.mothership.append(part)
-			
+		if part in self.edges:
+			self.remove_edge(part)
+
 	def add_slope(self, slope):
 		if slope not in self.slopes:
 			self.slopes.append(slope)
-		
+		if slope in self.edges:
+			self.remove_edge(slope)
+
 	def add_side(self, side):
 		if side not in self.sides:
 			self.sides.append(side)		
-			
+		if side in self.edges:
+			self.remove_edge(side)
+
 	def get_mothership(self):
 		return self.mothership
 	

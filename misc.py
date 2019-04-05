@@ -53,24 +53,6 @@ def is_point_safe(movement, pic_q, point):
 
 
 """
-Finds safe align_point and sets it
-"""
-def find_safe_align_points(movement, pic_q):
-	# for all possible align points
-	for point in movement.grid.align_points:
-		if is_point_safe(movement, pic_q, point):
-			# we've found a safe align point but we need to verify
-			# the two connected edge tiles are also empty
-			x = -1 if point[0] == 1 else 1
-			y = -1 if point[1] == 1 else 1
-
-			edges = [(point[0] + x, point[1]), (point[0], point[1] +y)]
-
-			if is_point_safe(movement, pic_q, edge[0]) and is_point_safe(movement, pic_q, edge[1]):
-				movement.align_points.append(point)
-				back_dat_ass_up(movement, pic_q)
-
-"""
 Given a list of points and current point, Returns closest point
 """
 def closest_point(list, current):
@@ -89,7 +71,7 @@ def closest_point(list, current):
 			closest_point = point
 			prev_dist = dist
 
-		return closest_point
+	return closest_point
 
 """
 Uses edge_align to straighten out our x and y angles
@@ -97,23 +79,26 @@ Uses edge_align to straighten out our x and y angles
 
 def back_dat_ass_up(movement, pic_q):
 	
-	point = closest_point(movement.align_points, movement.current)
+	point = closest_point(movement.grid.edges, movement.current)
 	print("Closest align point is: ", point)
-	
+
 	movement.set_goal(point)
-	follow_path(movement, pic_q,True)
+	follow_path(movement, pic_q, True)
+
+	px, py = point[0], point[1]
+
+	if px == 0:
+		angle = 360 - movement.facing if movement.facing >180 else 0 - movement.facing
+	elif px == 7:
+		angle = 180 - movement.facing
+	elif py == 0:
+		angle = 90 - movement.facing
+	else:
+		angle = 270 - movement.facing if not movement.facing == 0 else 270 - 360 
 	
-	x = -1 if point[0] == 1 else 1
-	y = -1 if point[1] == 1 else 1
-
-	edges = [(point[0] + x, point[1]), (point[0], point[1] +y)]
-	print("Edges are: ", edges)
-
-	for edge in edges:
-		movement.set_goal(edge)
-		follow_path(movement, pic_q, True, False)
-		movement.turn(180)
-		movement.edge_align()
+	movement.turn(angle)
+	movement.edge_align()
+	
 		
 
 """
@@ -122,7 +107,7 @@ Change log
         --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
         --- for 1.5 seconds is the minimum delay that guarantees fresh video data
 """
-def map(movement, pic_q, beginning=False):
+def map(movement, pic_q, beginning=True):
     movement.cam_up()
     print(movement.facing)
     time.sleep(3)
@@ -134,17 +119,21 @@ def map(movement, pic_q, beginning=False):
         print(obj_type, angle, dist)
         if obj_type == 9:
             dist = dist + 3
-        if beginning:
-            movement.map(obj_type, angle, dist)
-        elif obj_type == 7:
-            movement.map(obj_type, angle, dist)
-
+        movement.map(obj_type, angle, dist)
+    # experimental
+    """
+    if movement.is_mothership():
+    	movement.map(8, 0, 10):
+		"""
+		
 """
 Change Log
     [0.0.1]
         --- Added parameter to allow including goal in path
 """
 def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
+    if movement.goal == movement.current:
+    	return
     movement.find_path(include_goal)
     while movement.path:
         print(movement.path)

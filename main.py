@@ -21,7 +21,7 @@ from datetime import datetime
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -68,6 +68,7 @@ def main():
     map_mothership(movement, pic_q)
     print("Mothership is located in the following tiles: ", grid.mothership)
 
+    """
     mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, GPIO)
     print("Mothership angle: {}, Distance: {}, Side_angle: {}".format(mothership_angle, dist, side_angle))
 
@@ -88,8 +89,9 @@ def main():
         follow_path(movement, pic_q, True)
         
         block_id = 2
-        
-        mothership_drop(dist, mothership_angle, side_angle, block_id, movement, ser, pic_q)
+    
+        mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q)
+    """
     vt.join()
     #camera.close()
 
