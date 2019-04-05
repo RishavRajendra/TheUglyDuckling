@@ -156,6 +156,5 @@ Go to Home square
 def go_home(movement, pic_q):
     if not movement.goal == movement.current:
         movement.path.clear()
-        movement.goal = (4,4)
-        follow_path(movement, pic_q, True)
-
+        movement.set_goal((4,4))
+        follow_path(movement, pic_q, True)   
