@@ -342,4 +342,57 @@ def approach_other_side(movement, pic_q):
     movement.turn(-1*movement.get_mothership_angle())
     movement.move(fwd, movement.get_access_dist()-2)
     movement.turn(-1*movement.get_side_angle())
+    
+    cx,cy = movement.current[0], movement.current[1]
     # determine which direction is safest to attempt to go around
+
+    if movement.facing == 90:
+        sign = 1 if cx > 4 else -1
+    elif movement.facing == 180:
+        sign = 1 if cy > 4 else -1
+    elif movement.facing == 270:
+        sign = 1 if cx < 4 else -1
+    elif movement.facing == 0:
+        sign = 1 if cy < 4 else -1
+
+    # now go around
+    movement.turn(90*sign)
+    movement.move(fwd, 16) #This distance needs to be checked
+    movement.turn(90*sign*-1)
+    movement.move(fwd, 24) #This distance needs to be checked
+    movement.turn(90*sign*-1)
+    movement.move(fwd, 16) #This distance needs to be checked
+    movement.turn(90*sign*-1)
+    #We should be ready for drop off now
+
+
+"""
+Reverses our approach other side . Assumes we've already approached other side
+"""
+
+def rev_other_side(movement, pic_q):
+    cx,cy = movement.current[0], movement.current[1]
+
+    # determine what direction to come back from
+     if movement.facing == 90:
+        sign = 1 if cx > 4 else -1
+    elif movement.facing == 180:
+        sign = 1 if cy > 4 else -1
+    elif movement.facing == 270:
+        sign = 1 if cx < 4 else -1
+    elif movement.facing == 0:
+        sign = 1 if cy < 4 else -1
+
+    # move back to other side
+    movement.turn(90*sign)
+    movement.move(fwd, 16) #This distance needs to be checked
+    movement.turn(90*sign*-1)
+    movement.move(fwd, 24) #This distance needs to be checked
+    movement.turn(90*sign*-1)
+    movement.move(fwd, 16) #This distance needs to be checked
+    movement.turn(90*sign*-1)
+    
+    # rev from the access point's side
+    movement.turn(movement.get_side_angle())
+    movement.move(rev, movement.get_access_dist()-2)
+    movement.turn(movement.get_mothership_angle())

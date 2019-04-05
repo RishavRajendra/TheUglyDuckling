@@ -133,6 +133,51 @@ Change Log
         --- Added parameter to allow including goal in path
 """
 def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
+	# if we are alreadywhere we want to be then we return
+	if movement.goal == movement.current:
+		return
+	# find path without include goal. If we are including goal
+	# we will add it as the last move
+	movement.find_path()
+
+	# now we execute the damn thing
+	while movement.path:
+		print(movement.path)
+		movement.follow_next_step()
+		if map_as_we_go:
+			map(movement, pic_q)
+		# we're mapping as we go by default so after each move we
+		# check if there is a blocked tile in our path
+		for move in movement.path:
+			# if we find the path is blocked then we generate a new
+			# one and keep going
+			if not movement.grid.passable(move):
+				movement.path.clear()
+				movement.find_path()
+	# After following the path face the goal
+	if not movement.goal == movement.current:
+		movement.face(goal)
+	# Now that we've followed the path
+	# if we're including the goal we can go to it now
+	if include_goal:
+		movement.find_path(include_goal)
+		# check if an object is in that last space
+		if movement.path[0] in movement.grid.obstacles:
+			old_goal = (movement.goal[0], movement.goal[1])
+			# kill the damn thing
+			kill_object(movement, pic_q)
+			movement.grid.obstacles.remove(old_goal)
+			movement.set_goal(old_goal)
+			movement.find_path()
+		# if target in the way move target to new location
+		elif movement.path[0] in movement.grid.targets:
+			old_goal = (movement.goal[0], movement.goal[1])
+			relocate_target(movement, pic_q)
+			movement.set_goal(old_goal)
+			movement.find_path()
+		movement.follow_next_step()
+"""
+def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
     if movement.goal == movement.current:
     	return
     movement.find_path(include_goal)
@@ -167,7 +212,7 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
                 movement.find_path(include_goal)
     if not movement.goal == movement.current:
         movement.face(movement.goal)
-
+"""
 # relocate a target block and update the targets list
 def relocate_target(movement, pic_q):
 	cx,cy = movement.current[0], movement.current[1]
