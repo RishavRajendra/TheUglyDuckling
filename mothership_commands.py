@@ -373,18 +373,10 @@ def mothership_drop(distance_from_access, angle_from_access, mothership_orient, 
     movement.move(fwd, distance_from_access)
     movement.turn(-1*mothership_orient)
     
-    left_sensor, right_sensor = get_sensor_data(serial)
-    
-    for _ in range(5):
-        if left_sensor > 1 and right_sensor > 1:
-            movement.move(fwd, 1)
-        else:
-            break
-    
     movement.drop()
-    movement.pickup()
     
     movement.turn(mothership_orient)
     movement.move(rev, distance_from_access)
+    movement.pickup()
     movement.turn(angle_from_access)
     

@@ -79,14 +79,17 @@ def main():
         movement.set_goal(item)
         follow_path(movement, pic_q)
         approach(movement, pic_q)
-        
+        success, target_id = check_pick_up(movement, pic_q)
+        print("Success: {}, Target Id: {}".format(success, target_id))
         go_home(movement, pic_q)
         
         print("Access point is: ",movement.get_access_point())
         movement.set_goal(movement.get_access_point())
         follow_path(movement, pic_q, True)
         
-        mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q)
+        block_id = 2
+        
+        mothership_drop(dist, mothership_angle, side_angle, block_id, movement, ser, pic_q)
     vt.join()
     #camera.close()
 
