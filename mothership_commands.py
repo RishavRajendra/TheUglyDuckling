@@ -336,7 +336,7 @@ def approach_mothership_side(movement, pic_q, serial, GPIO):
             
             # Just rely on sensors if everything else fails
             side_angle = approach_mothership_side_helper(0, distance_from_sensor, initial_angle, pic_q, serial, movement, GPIO)
-            #movement.turn(corrected_angle(initial_angle, initial_camera_distance))
+            movement.turn(corrected_angle(initial_angle, initial_camera_distance))
             
             return [corrected_angle(initial_angle, initial_camera_distance),int((distance_from_sensor+initial_camera_distance)/2),side_angle]
                     

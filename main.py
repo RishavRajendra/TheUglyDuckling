@@ -14,14 +14,15 @@ from get_stats_from_image import get_data, get_midpoint, mothership_angle, corre
 from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
 from nav.gridMovement import GridMovement
-from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, begin_round, go_home
+from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, \
+begin_round, go_home, back_dat_ass_up
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from datetime import datetime
 from video_thread import VideoThread
 
 import sys
-sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
@@ -68,30 +69,33 @@ def main():
     map_mothership(movement, pic_q)
     print("Mothership is located in the following tiles: ", grid.mothership)
 
-    """
+    
     mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, GPIO)
     print("Mothership angle: {}, Distance: {}, Side_angle: {}".format(mothership_angle, dist, side_angle))
 
     print("Going home")
     go_home(movement, pic_q)
 
-    targs = [(4,7)]
+    targs = [(4,7), (4, 0)]
     for item in targs:
         movement.set_goal(item)
         follow_path(movement, pic_q)
         approach(movement, pic_q)
         success, target_id = check_pick_up(movement, pic_q)
         print("Success: {}, Target Id: {}".format(success, target_id))
+        back_dat_ass_up(movement, pic_q)
         go_home(movement, pic_q)
         
         print("Access point is: ",movement.get_access_point())
         movement.set_goal(movement.get_access_point())
         follow_path(movement, pic_q, True)
+        movement.face(movement.get_side_point())
         
         block_id = 2
-    
-        mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q)
-    """
+        
+        print("Going to drop it")
+        mothership_drop(dist, mothership_angle, side_angle, block_id, movement, serial, pic_q)
+        go_home(movement, pic_q)
     vt.join()
     #camera.close()
 
