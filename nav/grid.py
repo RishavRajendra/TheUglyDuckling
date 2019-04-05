@@ -67,8 +67,8 @@ class Grid:
 	def remove_edge(self, edge):
 		self.edges.remove(edge)
 
-	def set_obstacles_max(self, max):
-		self.obstacles_max = max
+	def set_obstacles_max(self):
+		self.obstacles_max = (len(self.targets)/2)*5
 
 	def add_obstacle(self, obstacle):
 		if (obstacle not in self.obstacles):
