@@ -121,9 +121,11 @@ def map(movement, pic_q, beginning=True):
             dist = dist + 3
             movement.map(obj_type, angle, dist)
     # experimental
+    """
     if movement.is_mothership():
     	movement.map(8, 0, 10):
-
+		"""
+		
 """
 Change Log
     [0.0.1]

@@ -136,7 +136,7 @@ def map_by_slope(movement, pic_q):
         print("Current slope location is: ", current)
 
         if movement.grid.sides:
-                map_by_side(movement, pic_q, log)
+                map_by_side(movement, pic_q)
                 return
         # if it's in the correct location
         if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
@@ -146,9 +146,7 @@ def map_by_slope(movement, pic_q):
             tx, ty = slope[0], slope[1]
             
             guesses = generate_guesses(slope)
-            
-            log.debug("Guesses are: ", guesses)
-            
+                        
             else:
                 
                 for guess in guesses:
@@ -174,7 +172,7 @@ def map_by_slope(movement, pic_q):
         print("Current slope location is: ", current)
 
         if movement.grid.sides:
-                map_by_side(movement, pic_q, log)
+                map_by_side(movement, pic_q)
                 return
 
         # if it's in the correct location
@@ -204,18 +202,17 @@ def map_by_slope(movement, pic_q):
     else:
 
         if movement.grid.sides:
-                map_by_side(movement, pic_q, log)
+                map_by_side(movement, pic_q)
                 return
-        log.info("Mapping Failed")
         go_home(movement, pic_q)
 
 def map_mothership(movement, pic_q):
     #movement.drop()
     if movement.grid.sides:
 
-        map_by_side(movement, pic_q, log)
+        map_by_side(movement, pic_q)
     elif movement.grid.slopes:
-        map_by_slope(movement, pic_q, log)
+        map_by_slope(movement, pic_q)
     #movement.reset_servo()
 
 # Two mid-range IR sensors mounted in the front of the robot facing forward
