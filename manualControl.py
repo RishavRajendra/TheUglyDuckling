@@ -5,7 +5,6 @@ __license__ = "MIT"
 __status__ = "Development"
 
 import serial
-import keyboard
 import time
 import picamera
 import queue
@@ -34,7 +33,7 @@ def pictures():
 	camera.start_preview()
 	while not t1.stoprequest.isSet():
 		time.sleep(2)
-		camera.capture("img{}.jpg".format(a))
+		camera.capture("lastWeek01-{}.jpg".format(a))
 		a = a + 1
 
 # t2 = threading.Thread(target=pictures)			
@@ -44,10 +43,11 @@ camera.resolution = (300,300)
 camera.start_preview()
 time.sleep(2)
 i = 0
-while (i < 180/5):
-	camera.capture("run35_img{}.jpg".format(i))
+while (i < 360/5):
+	camera.capture("lastWeek04-{}.jpg".format(i))
 	in_q.put(['turn',(rotl, 5)])
 	time.sleep(1)
+	i = i + 1
 
 t1.join()
 # while not t1.stoprequest.isSet():

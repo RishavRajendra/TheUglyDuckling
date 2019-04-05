@@ -22,17 +22,19 @@ PIXEL_PER_MM = 102.3
 
 # Magic number to compensate for labelling.
 ERROR_VAL = 3.3
+MOTHERSHIP_SIDE_ERROR = 7
 
 # Height of object
 OBSTACLE_HEIGHT = 35
 TARGET_HEIGHT = 15
 MOTHERSHIP_SIDE_HEIGHT = 15
 MOTHERSHIP_SLOPE_HEIGHT = 23
+CORNER_HEIGHT = 80
 
 # Distance from beginning of camera range to center of robot
 CENTER_DISTANCE_UP = 6.5
 CENTER_DISTANCE_DOWN = 6
 
 # GPIO pins
-buttonPin = 8
-ledPin = 32
+BUTTONPIN = 8
+LEDPIN = 32

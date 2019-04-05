@@ -1,104 +1,117 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-__author__ = "Rishav Rajendra"
+__author__ = "Rishav Rajendra, Benji Lee"
 __license__ = "MIT"
 __status__ = "Development"
 
 import cv2
 import numpy as np
+import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import CAMERA_RESOLUTION, CAMERA_FRAMERATE, fwd, rotr, rotl
-import get_stats_from_image
-import nav.gridMovement
-import nav.grid
-from nav.command import Command
-import queue, threading, serial, time
+from constants import fwd, rev, BUTTONPIN, LEDPIN
+from get_stats_from_image import get_data, get_midpoint, mothership_angle, corrected_angle
+from targetApproach import approach, check_pick_up
+from mothership_commands import map_mothership, approach_mothership_side
+from nav.gridMovement import GridMovement
+from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, begin_round, go_home
+from nav.grid import Grid
+import queue, threading, serial, time, math, logging
+from datetime import datetime
+from video_thread import VideoThread
 
 import sys
-sys.path.append("../tensorflow_duckling/models/research/object_detection/")
+sys.path.append("../../tensorflow_duckling/models/research/object_detection/")
 from image_processing import Model
 
 import warnings
 warnings.filterwarnings('ignore')
 
-def take_picture(camera):
-    camera.capture("command.jpg")
-    return cv2.imread("command.jpg")
-    
-def get_data(processed_frame, classes, boxes, scores):
-    result = []
-    for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.5:
-            #extract pixel coordinates of detected objects
-            ymin = boxes[0][i][0]*300
-            xmin = boxes[0][i][1]*300
-            ymax = boxes[0][i][2]*300
-            xmax = boxes[0][i][3]*300
-
-            # Calculate mid_pount of the detected object
-            mid_x = (xmax + xmin) / 2
-            mid_y = (ymax + ymin) / 2
-
-            height_of_object_pixels = ymax - ymin
-
-            if classes[0][i] == 8:
-                inches = get_stats_from_image.get_distance(0, height_of_object_pixels)
-            elif classes[0][i] == 2 or classes[0][i] == 3 or classes[0][i] == 4 or classes[0][i] == 5 or classes[0][i] == 6 or classes[0][i] == 7:
-                inches = get_stats_from_image.get_distance(1, height_of_object_pixels)
-                
-            angle = get_stats_from_image.get_angle(processed_frame, xmin, ymin, xmax, ymax)
-            #print('{} detected at {}{} {} inches away'.format(classes[0][i],angle,chr(176),inches))
-            result.append([classes[0][i], angle, inches])
-    return result
-
 def main():
+    # Logging
+    log = logging.getLogger(__name__)
+    log.setLevel(logging.DEBUG)
+
+    # Formatter for logger
+    formatter = logging.Formatter('%(asctime)s -- %(levelname)s - %(message)s')
+
+    # Create file handler which logs even debug messages
+    fh = logging.FileHandler('logs/{}.log'.format(datetime.now().strftime("%y-%m-%d_%Hh%M_%S")))
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(formatter)
+    log.addHandler(fh)
+
+    # Create console handler
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
+
     # Initialize frame rate calculation
     frame_rate_calc = 1
     freq = cv2.getTickFrequency()
     font = cv2.FONT_HERSHEY_SIMPLEX
-    
-    Initialise camera
-    camera = PiCamera()
-    camera.resolution = (300,300)
 
     objectifier = Model()
 
-    Start serial connection to arduino
+    # Start serial connection to arduino
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
     time.sleep(1)
 
-    # Initialize queue
-    in_q = queue.Queue()
-    
+    # Initialize queues
+    pic_q = queue.LifoQueue(5)
+    command_q = queue.Queue()
     # Inizialize grid anf gridmovement
-    grid = nav.grid.Grid(8,8)
-    movement = nav.gridMovement.GridMovement(grid, in_q)
-
-    # Initialize command
-    commands = Command(in_q, ser)
+    grid = Grid(8,8)
+    movement = GridMovement(grid, ser)
+    # Initialize VideoThread
+    vt = VideoThread(pic_q, objectifier)
+    vt.start()
     
-    # #Example usage
-    for _ in range(4):
-        frame = take_picture(camera)
-        processed_frame, classes, boxes, scores = objectifier.predict(frame)
-        object_stats = get_data(processed_frame, classes, boxes, scores)
-        print(object_stats)
-        for stat in object_stats:
-            if stat[0] > 1 and stat[0] < 9:
-                movement.map(stat)
-
-        in_q.push(['turn', (rotl, 90)])
-        commands.execute()
-        movement.facing = movement.facing - 90
-        movement.trim_facing()
-
-    movement.find_path()
-    movement.follow_path()
-    commands.execute()      
+    # Setup GPIO
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(BUTTONPIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(LEDPIN, GPIO.OUT, initial=GPIO.LOW)
     
-    cv2.waitKey(0)
-        
+    # Keep track of movements after approach is called
+    approach_movement_list = queue.LifoQueue()
+
+    wait_for_button(GPIO)
+    time.sleep(2)
+    
+    log.info("Starting round")
+    
+    begin_round(movement, pic_q)
+
+    log.info("I will try and map the mothership")
+    map_mothership(movement, pic_q, log)
+    log.info("Mothership is located in the following tiles: ", grid.mothership)
+
+    mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, log, GPIO)
+    log.debug("Mothership angle: {}, Distance: {}, Side_angle: {}".format(mothership_angle, dist, side_angle))
+
+    log.info("Going home")
+    go_home(movement, pic_q)
+    
+    # This should be the coordinate of the side
+    # Could not figure out how to get that.
+    # Need sleep
+
+    targs = [(4,7)]
+    for item in targs:
+        movement.set_goal(item)
+        follow_path(movement, pic_q)
+        approach(movement, pic_q)
+        #go_home(movement, pic_q)
+        print("Access point is: ",movement.get_access_point())
+        movement.set_goal(movement.get_access_point())
+        follow_path(movement, pic_q, True)
+        movement.turn(-1*mothership_angle)
+        movement.move(fwd, dist)
+        movement.turn(-1*side_angle)
+        movement.drop()
+   
+    vt.join()
     #camera.close()
 
 if __name__ == '__main__':
