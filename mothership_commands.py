@@ -7,8 +7,8 @@ __status__ = "Development"
 from get_stats_from_image import get_data
 from misc import follow_path, get_sensor_data, go_home, blink_led_twice
 from get_stats_from_image import corrected_angle, two_blocks, mothership_angle, \
-mothership_side_close_distance
-from constants import fwd, rev, rotl, rotr, strl, strr
+mothership_side_close_distance, get_block_info
+from constants import fwd, rev, strl, strr
 import time, math
 
 """
@@ -406,6 +406,8 @@ def mothership_side_angle(movement, pic_q, side_move_distance, serial, GPIO):
     movement.cam_down()
     time.sleep(2)
     # Get the closest two blocks from the camera
+
+    # TODO
     blocks_in_mothership = two_blocks(pic_q)
 
     # Checks current location, left and right for the two blocks inside the mothership
@@ -456,16 +458,24 @@ def mothership_side_angle(movement, pic_q, side_move_distance, serial, GPIO):
     print('---------------Angle could not be detected--------------')
     return False
 
-def mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q):
-    # Get to the mothership
-    movement.turn(-1*angle_from_access)
-    movement.move(fwd, distance_from_access)
-    movement.turn(-1*mothership_orient)
-    
-    movement.drop()
-    
-    movement.turn(mothership_orient)
-    movement.move(rev, distance_from_access)
-    movement.pickup()
-    movement.turn(angle_from_access)
-    
+def drop_right_spot(target_id, pic_q, movement):
+    movement.cam_up()
+
+    time.sleep(3)
+
+    blocks_located = two_blocks(pic_q)
+
+    if len(blocks_located) is not 0:
+        for blocks in blocks_located:
+            if blocks[0] == target_id:
+                angle = 90 - blocks[1]
+                distance = blocks[2]
+
+                # sin(theta) = opposite / hypotenuse
+                distance_to_streff = distance * math.sin(abs(angle))
+                if angle < 0:
+                    movement.move(strl, distance_to_streff)
+                else:
+                    movement.move(strr, distance_to_streff)
+    else:
+        # None of the obstacles detected
