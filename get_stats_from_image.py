@@ -184,7 +184,7 @@ def mothership_side_close_distance(pic_q):
     result.append([100, 100])
     
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.3:
+        if scores[0][i] > 0.2:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300
@@ -207,6 +207,7 @@ def mothership_side_close_distance(pic_q):
                 angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
                 result.append([inches, angle])
     result = sorted(result, key=itemgetter(0))
+    print(result)
     # Return the closest side
     return result[0]
 

@@ -42,7 +42,7 @@ float camera_degree_ratio = 1.20;
 float distance = (60 * PI)/ 25.4;
 float steps_per_inch = 3200 / distance;
 float steps_per_inch_strafe = 3200 / (56 * PI) / 25.4;
-float steps_per_degree = 30;
+float steps_per_degree = 29.87;
 float straight = 0.980;
 float arc180 = .3;
 float start_dis = .25;
@@ -52,6 +52,10 @@ float threshold = 300;
 // removed turn_offset and tile_dist; not used anymore 
 
 int sensorpin = A1;
+float calscaleRight = 325694.0;
+float calpowerRight = -1.796;
+float calscaleLeft = 26334.0;
+float calpowerLeft = -1.371;
 float calscale = 59994.0;
 float calpower = -1.494;
 

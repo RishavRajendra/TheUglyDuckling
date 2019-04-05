@@ -173,21 +173,21 @@ void send_sensor_data(){
   for (int i = 0; i < 5; i++){
     val1 = analogRead(fwdLookLeft);
     val2 = analogRead(fwdLookRight);
-    val1 = calscale * pow(val1, calpower);
-    val2 = calscale * pow(val2, calpower);
   }
   float sum1 = 0;
   float sum2 = 0;
   for (int i = 0; i<5; i++){
     val1 = analogRead(fwdLookLeft);
     val2 = analogRead(fwdLookRight);
-    val1 = calscale * pow(val1, calpower);
-    val2 = calscale * pow(val2, calpower);
     sum1 += val1;
     sum2 += val2;
+    delay(50);
   }
-  int avg1 = sum1/5;
-  int avg2 = sum2/5;
+ 
+  sum1 = sum1/5;
+  sum2 = sum2/5;
+  int avg1 = calscaleLeft * pow(sum1, calpowerLeft);
+  int avg2 = calscaleRight * pow(sum2, calpowerRight);
   Serial.write(avg1);
   Serial.write(avg2);
   
