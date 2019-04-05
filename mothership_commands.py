@@ -37,15 +37,15 @@ def verify_obj(movement, pic_q, obj):
     return movement.is_mothership()
     
 def locate_obj(movement, pic_q, obj):
-    movement.turn(45)
+    movement.turn(25)
     if verify_obj(movement, pic_q, obj):
         return True 
     
-    movement.turn(-45)
+    movement.turn(-25)
     if verify_obj(movement, pic_q, obj):
         return True
     
-    movement.turn(-45)
+    movement.turn(-25)
     if verify_obj(movement, pic_q, obj):
         return True
             
@@ -55,7 +55,19 @@ def locate_obj(movement, pic_q, obj):
 Generate guesses as to where the side might be based on slope location
 """
 def generate_guesses(slope):
-    sx,sy = slope[0], slope[1]
+    tx,ty = slope[0], slope[1]
+    c = 1 if tx > 4 else -1
+    d = 1 if ty > 4 else -1
+
+    if tx == 4:
+        return [(tx + 1, ty+d),(tx -1, ty + d)]
+    elif ty == 4:
+        return [(tx + c, ty+1),(tx +c, ty - 1)]
+    else:
+        return [(tx + c, ty),(tx, ty + d)]
+        
+def generate_access_points(side):
+    tx,ty = side[0], side[1]
     c = 1 if tx > 4 else -1
     d = 1 if ty > 4 else -1
 
@@ -147,16 +159,15 @@ def map_by_slope(movement, pic_q):
             
             guesses = generate_guesses(slope)
                         
-            else:
                 
-                for guess in guesses:
-                    movement.grid.sides.clear()
-                    movement.grid.sides.append(guess)
-                    map_by_side(movement, pic_q)
-                    # we break if mothership has anything in it - we only add to mothership 
-                    # list if map by side was a success
-                    if movement.grid.mothership:
-                        break
+            for guess in guesses:
+                movement.grid.sides.clear()
+                movement.grid.sides.append(guess)
+                map_by_side(movement, pic_q)
+                # we break if mothership has anything in it - we only add to mothership 
+                # list if map by side was a success
+                if movement.grid.mothership:
+                    break
 
         else:
             # map by slope again

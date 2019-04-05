@@ -142,7 +142,7 @@ class GridMovement:
 
 
 	def map(self,obj, angle, dist):
-		if abs(angle) > 40:
+		if (obj< 8) and abs(angle) > 40:
 			return
 		offset = 6
 		cam_offset = 2.5
