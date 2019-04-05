@@ -13,7 +13,7 @@ void setup() {
   drop();
   //  pickup();
   cam_up();
-  //  mov(strr, 15, 500);
+  mov(fwd, 15, 1500);
   //  edgeAlign(); //reverse align to edge 3 times by Ceraso
 }
 

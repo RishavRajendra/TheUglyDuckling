@@ -6,6 +6,7 @@ __status__ = "Development"
 
 from get_stats_from_image import get_data
 from constants import LEDPIN, BUTTONPIN
+from targetApproach import approach
 import time
 
 def wait_for_button(GPIO):
@@ -161,4 +162,14 @@ def go_home(movement, pic_q):
     if not movement.goal == movement.current:
         movement.path.clear()
         movement.set_goal((4,4))
-        follow_path(movement, pic_q, True)   
+        follow_path(movement, pic_q, True) 
+
+"""
+You forced my hand Layfette
+"""
+def kill_object():
+	# approach
+	# back_dat_ass_up()
+	# spin 180
+	# drop
+	pass  
