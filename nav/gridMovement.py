@@ -110,7 +110,10 @@ class GridMovement:
 
 	# Face a tile connected to current tile
 	def face(self, obj):
-		result = (obj[0] - self.current[0], obj[1] - self.current[1])
+		x,y = obj[0] - self.current[0], obj[1] - self.current[1]
+		x = x/abs(x) if not x==0 else 0
+		y = y/abs(y) if not y==0 else 0
+		result = (x,y)
 		result = self.translate_dir(result)
 		degrees = self.movement[result][2]
 		self.turn(degrees)
