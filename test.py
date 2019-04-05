@@ -3,7 +3,25 @@ from nav.grid import Grid
 import queue, serial, time, math
 import json
 from constants import strr,strl, fwd
-from misc import get_sensor_data
+# from misc import get_sensor_data, closest_point
+
+def closest_point(list, current):
+    closest_point = None
+    prev_dist = 0
+    # get x and y of current
+    cx, cy = current[0], current[1]
+
+    for point in list:
+        # get x ang y of point
+        px,py = point[0], point[1]
+
+        dist = abs(cx-px) + abs(cy-py)
+        
+        if closest_point == None or prev_dist > dist:
+            closest_point = point
+            prev_dist = dist
+
+    return closest_point
 
 def corrected_angle(angle, dist):
     angle = 180 - angle
@@ -34,7 +52,9 @@ ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
 time.sleep(1)
 q = queue.Queue()
 grid = Grid(8,8)
-#movement = GridMovement(grid, ser)
+movement = GridMovement(grid, ser)
 #map_JSON('mar1.json', movement)
 
-get_sensor_data(ser)
+points = [(6,6),(1,1),(5,5)]
+
+print(closest_point(points, movement.current))

@@ -52,6 +52,21 @@ def locate_obj(movement, pic_q, obj):
     return False
 
 """
+Generate guesses as to where the side might be based on slope location
+"""
+def generate_guesses(slope):
+    sx,sy = slope[0], slope[1]
+    c = 1 if tx > 4 else -1
+    d = 1 if ty > 4 else -1
+
+    if tx == 4:
+        return [(tx + 1, ty+d),(tx -1, ty + d)]
+    elif ty == 4:
+        return [(tx + c, ty+1),(tx +c, ty - 1)]
+    else:
+        return [(tx + c, ty),(tx, ty + d)]
+
+"""
 Mapping mothership by side because we detected a side
 """
 def map_by_side(movement, pic_q):
@@ -120,23 +135,24 @@ def map_by_slope(movement, pic_q):
         print("Previous slope location was: ", prev_slope)
         print("Current slope location is: ", current)
 
+        if movement.grid.sides:
+                map_by_side(movement, pic_q, log)
+                return
         # if it's in the correct location
         if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
             # create two guesses to map by side from
             slope = movement.grid.slopes[0]
             # we try to map by side for both possibilities
             tx, ty = slope[0], slope[1]
-
-            c = 1 if tx > 4 else -1
-            d = 1 if ty > 4 else -1
-            guesses = [(tx + c, ty),(tx, ty + d)]
-            print("Guesses are: ", guesses)
             
-            if movement.grid.sides:
-                map_by_side(movement, pic_q)
+            guesses = generate_guesses(slope)
+            
+            log.debug("Guesses are: ", guesses)
+            
             else:
                 
                 for guess in guesses:
+                    movement.grid.sides.clear()
                     movement.grid.sides.append(guess)
                     map_by_side(movement, pic_q)
                     # we break if mothership has anything in it - we only add to mothership 
@@ -157,6 +173,10 @@ def map_by_slope(movement, pic_q):
         print("Previous slope location was: ", prev_slope)
         print("Current slope location is: ", current)
 
+        if movement.grid.sides:
+                map_by_side(movement, pic_q, log)
+                return
+
         # if it's in the correct location
         if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
             # create two guesses to map by side from
@@ -164,14 +184,13 @@ def map_by_slope(movement, pic_q):
             # we try to map by side for both possibilities
             tx, ty = slope[0], slope[1]
 
-            c = 1 if tx > 4 else -1
-            d = 1 if ty > 4 else -1
-            guesses = [(tx + c, ty),(tx, ty + d)]
+            guesses = generate_guesses(slope)
             
             if movement.grid.sides:
                 map_by_side(movement,pic_q)
             else:
                 for guess in guesses:
+                    movement.grid.sides.clear()
                     movement.grid.sides.append(guess)
                     map_by_side(movement, pic_q)
                     # we break if mothership has anything in it - we only add to mothership 
@@ -183,15 +202,20 @@ def map_by_slope(movement, pic_q):
             map_by_slope(movement, pic_q)
     # else go home - you're drunk - try again later
     else:
-        print("Mapping Failed")
+
+        if movement.grid.sides:
+                map_by_side(movement, pic_q, log)
+                return
+        log.info("Mapping Failed")
         go_home(movement, pic_q)
 
 def map_mothership(movement, pic_q):
     #movement.drop()
     if movement.grid.sides:
-        map_by_side(movement, pic_q)
-    else:
-        map_by_slope(movement, pic_q)
+
+        map_by_side(movement, pic_q, log)
+    elif movement.grid.slopes:
+        map_by_slope(movement, pic_q, log)
     #movement.reset_servo()
 
 # Two mid-range IR sensors mounted in the front of the robot facing forward

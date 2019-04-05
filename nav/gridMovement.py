@@ -330,10 +330,14 @@ class GridMovement:
 	"""
 	def is_mothership(self):
 		byteArr = b'\x09' + b'\x00' + b'\x00' + b'\x00'
-		self.serial.write(byteArr)
-		time.sleep(1)
-		i = int.from_bytes(self.serial.read(1),'little')
-		return True if i == 1 else False
+		for _ in range(5):
+			self.serial.write(byteArr)
+			time.sleep(.5)
+		for _ in range(5):
+			i = int.from_bytes(self.serial.read(1),'little')
+			if not i == 1:
+				return False
+		return True 
 		
 	"""
 	Calls edgAlign() from the Arduino Mega 2560
