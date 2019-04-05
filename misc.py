@@ -138,22 +138,24 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
     movement.find_path(include_goal)
     while movement.path:
     		
-    		# check if object in last space that we want to move in.
-    		if len(movement.path) == 1 and include_goal:
-    			# if object is obstacle
-    			if movement.path[0] in movement.grid.obstacles:
-    				old_goal = (movement.goal[0],movement.goal[1])
-    				# check if obstacle in way
-    				kill_object(movement, pic_q)
-    				movement.grid.obstacles.remove(old_goal)
-    				movement.set_goal()
-    				movement.find_path(include_goal)
+    	# check if object in last space that we want to move in.
+    	if len(movement.path) == 1 and include_goal:
+    		# if object is obstacle
+   			if movement.path[0] in movement.grid.obstacles:
+   				old_goal = (movement.goal[0],movement.goal[1])
+   				# check if obstacle in way
+   				kill_object(movement, pic_q)
+   				movement.grid.obstacles.remove(old_goal)
+    			movement.set_goal(old_goal)
+    			movement.find_path(include_goal)
     			
-    			# if object is target
-    			elif movement.path[0] in movement.grid.targets:
-    				# move target to another area and update the location
-    				old_goal = (movement.goal[0],movement.goal[1])
-    				relocate_target(movement, pic_q)
+    		# if object is target
+    		elif movement.path[0] in movement.grid.targets:
+    			# move target to another area and update the location
+    			old_goal = (movement.goal[0],movement.goal[1])
+   				relocate_target(movement, pic_q)
+   				movement.set_goal(old_goal)
+   				movement.find_path(include_goal)
 
         print(movement.path)
         movement.follow_next_step()
