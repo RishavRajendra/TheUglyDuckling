@@ -135,145 +135,6 @@ def map_by_slope(movement, pic_q):
             if movement.grid.mothership:
                 return
 
-
-"""
-def map_by_side(movement, pic_q):
-    print("Checking side")
-    # Move to initial mapped side or updated side
-    movement.set_goal(movement.grid.sides[0])
-    follow_path(movement, pic_q)
-    prev_side = movement.grid.sides[0]
-    # Verify location
-    if verify_obj(movement, pic_q, 8):
-        print("Side Verified")
-        # remap side now that we're closer
-        
-        
-        current = movement.grid.sides[0]
-        print('Side location adjusted')
-        print("Previous side location was: {}".format(prev_side))
-        print("Current side location is: {}".format(current))
-
-        # If it was in the correct location
-        if prev_side[0] == current[0] and prev_side[1] == current[1]:
-            # we can map all the other pieces and current location is access point
-            print("Success! Now work on the logic for placing the other pieces")
-            movement.map_mothership(prev_side)
-            # approach mothership
-        else:
-            # map by side again
-            map_by_side(movement, pic_q)
-        
-    # else if we locate it.
-    elif locate_obj(movement, pic_q, 8):
-        # remap side now that we're closer
-    
-        current = movement.grid.sides[0]
-        print('Side location adjusted')
-        print("Previous side location was: {}".format(prev_side))
-        print("Current side location is: {}".format(current))
-
-        # If it was in the correct location
-        if prev_side[0] == current[0] and prev_side[1] == current[1]:
-            # we can map all the other pieces and current location is access point
-            movement.map_mothership(prev_side)
-            # approach mothership
-        else:
-            # map by side again
-            map_by_side(movement, pic_q)
-
-    # else go home - you're drunk - try again later
-    else:
-        print("Going Home")
-        go_home(movement, pic_q)  
-"""        
-"""
-Mapping mothership by slope because we didn't find a side
-"""
-"""
-def map_by_slope(movement, pic_q):
-    print("Checking slope")
-    # Move to initial mapped slope or updated slope
-    movement.set_goal(movement.grid.slopes[0])
-    follow_path(movement, pic_q)
-    prev_slope = movement.goal
-    # Verify the slope's location
-    if verify_obj(movement, pic_q, 9):
-        current = movement.grid.slopes[0]
-        print('Slope location adjusted')
-        print("Previous slope location was: ", prev_slope)
-        print("Current slope location is: ", current)
-
-        if movement.grid.sides:
-                map_by_side(movement, pic_q)
-                return
-        # if it's in the correct location
-        if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
-            # create two guesses to map by side from
-            slope = movement.grid.slopes[0]
-            # we try to map by side for both possibilities
-            tx, ty = slope[0], slope[1]
-            
-            guesses = generate_guesses(slope)
-                        
-                
-            for guess in guesses:
-                movement.grid.sides.clear()
-                movement.grid.sides.append(guess)
-                map_by_side(movement, pic_q)
-                # we break if mothership has anything in it - we only add to mothership 
-                # list if map by side was a success
-                if movement.grid.mothership:
-                    break
-
-        else:
-            # map by slope again
-            map_by_slope(movement, pic_q)
-
-    # Else if we locate the slope
-    elif locate_obj(movement, pic_q, 9):
-        # remap side now that we're closer
-        
-        current = movement.grid.slopes[0]
-        print('Slope location adjusted')
-        print("Previous slope location was: ", prev_slope)
-        print("Current slope location is: ", current)
-
-        if movement.grid.sides:
-                map_by_side(movement, pic_q)
-                return
-
-        # if it's in the correct location
-        if prev_slope[0] == current[0] and prev_slope[1] == current[1]:
-            # create two guesses to map by side from
-            slope = movement.grid.slopes[0]
-            # we try to map by side for both possibilities
-            tx, ty = slope[0], slope[1]
-
-            guesses = generate_guesses(slope)
-            
-            if movement.grid.sides:
-                map_by_side(movement,pic_q)
-            else:
-                for guess in guesses:
-                    movement.grid.sides.clear()
-                    movement.grid.sides.append(guess)
-                    map_by_side(movement, pic_q)
-                    # we break if mothership has anything in it - we only add to mothership 
-                    # list if map by side was a success
-                    if movement.grid.mothership:
-                        break
-        else:
-            # map by slope again
-            map_by_slope(movement, pic_q)
-    # else go home - you're drunk - try again later
-    else:
-
-        if movement.grid.sides:
-                map_by_side(movement, pic_q)
-                return
-        go_home(movement, pic_q)
-"""
 def map_mothership(movement, pic_q):
     #movement.drop()
     if movement.grid.sides:
@@ -456,6 +317,9 @@ def mothership_side_angle(movement, pic_q, side_move_distance, serial, GPIO):
     print('---------------Angle could not be detected--------------')
     return False
 
+"""
+You can rewrite this with movement.get_mothership_angle(), movement.get_side_angle(), and  movement.get_access_dist()
+"""
 def mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q):
     # Get to the mothership
     movement.turn(-1*angle_from_access)
@@ -469,3 +333,13 @@ def mothership_drop(distance_from_access, angle_from_access, mothership_orient, 
     movement.pickup()
     movement.turn(angle_from_access)
     
+"""
+Assumes we're already in access point. Goes to the other side of the mothership
+"""
+
+def approach_other_side(movement, pic_q):
+    # approaches the access point's side
+    movement.turn(-1*movement.get_mothership_angle())
+    movement.move(fwd, movement.get_access_dist()-2)
+    movement.turn(-1*movement.get_side_angle())
+    # determine which direction is safest to attempt to go around

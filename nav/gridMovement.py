@@ -48,7 +48,9 @@ class GridMovement:
 		self.access_point = {"point": None,
 												 "side_angle": None,
 												 "side_point": None,
-												 "letters": None}
+												 "letters": None,
+												 "mothership_angle": None,
+												 "dist": None}
 		
 	
 	def set_goal(self, goal):
@@ -363,6 +365,12 @@ class GridMovement:
 	def get_access_point_letters(self):
 		return self.access_point["letters"]
 
+	def get_mothership_angle(self):
+		return self.access_point["mothership_angle"]
+
+	def get_access_dist(self):
+		return self.access_point["dist"]
+
 	def set_access_point(self, point):
 		self.access_point["point"] = point
 
@@ -374,3 +382,9 @@ class GridMovement:
 
 	def set_access_letters(self, letters):
 		self.access_point["letters"] = letters
+
+	def set_mothership_angle(self, angle):
+		self.access_point["mothership_angle"] = angle
+
+	def set_access_dist(self, dist):
+		self.access_point["dist"] = dist
