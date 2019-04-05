@@ -119,17 +119,21 @@ def map(movement, pic_q, beginning=True):
         print(obj_type, angle, dist)
         if obj_type == 9:
             dist = dist + 3
-            movement.map(obj_type, angle, dist)
+        movement.map(obj_type, angle, dist)
     # experimental
+    """
     if movement.is_mothership():
     	movement.map(8, 0, 10):
-
+		"""
+		
 """
 Change Log
     [0.0.1]
         --- Added parameter to allow including goal in path
 """
 def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
+    if movement.goal == movement.current:
+    	return
     movement.find_path(include_goal)
     while movement.path:
         print(movement.path)
