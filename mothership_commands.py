@@ -84,8 +84,8 @@ Mapping mothership by side because we detected a side
 
 def map_by_side(movement, pic_q):
     print("Checking side")
-    sx,sy = movement.grid.side[0][0], movement.grid.side[0][1]
-    access_points = generate_access_points(movement.grid.side[0])
+    sx,sy = movement.grid.sides[0][0], movement.grid.sides[0][1]
+    access_points = generate_access_points(movement.grid.sides[0])
 
     for point in access_points:
         px,py = point[0], point[1]
@@ -93,10 +93,11 @@ def map_by_side(movement, pic_q):
         movement.set_goal(point)
         follow_path(movement, pic_q, True)
 
-        movement.face(sx,sy)
+        movement.face((sx,sy))
 
         if verify_obj(movement, pic_q, 8):
             print("Side verified")
+            print((sx,sy))
             movement.set_goal((sx,sy))
             follow_path(movement, pic_q)
             movement.map_mothership((sx,sy))
