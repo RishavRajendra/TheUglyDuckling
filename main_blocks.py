@@ -15,7 +15,7 @@ from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
 from nav.gridMovement import GridMovement
 from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, \
-begin_round, go_home, back_dat_ass_up, map_JSON
+begin_round, go_home, back_dat_ass_up, map_JSON, closest_point, kill_block
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from datetime import datetime
@@ -63,12 +63,12 @@ def main():
     time.sleep(2)
     
     print("Starting round")
-    """
+    
     # map the targets from json file
-    map_JSON(mar1.json,movement)
+    map_JSON(mars1.json,movement)
     # now set the maximum amount of obstacles based on amount of targets 
     grid.set_obstacles_max()
-    """
+    
     begin_round(movement, pic_q)
 
     print("I will try and map the mothership")
@@ -86,7 +86,32 @@ def main():
 
     print("Going home")
     go_home(movement, pic_q)
-
+    
+    while grid.targets:
+        movement.current_target = closest_point(grid.targets, movement.current)
+        movement.set_goal(movement.current_target)
+        approach(movement, pic_q)
+        checks = check_pick_up(movement, pic_q)
+        if checks[0]:
+            targetId = checks[1]
+            grid.targets.remove(movement.current_target)
+            kill_block(movement, pic_q)
+        else:
+            approach(movement, pic_q)
+            checks = check_pick_up(movement, pic_q)
+                if checks[0]:
+                    targetId = checks[1]
+                    grid.targets.remove(movement.current)
+                    kill_block(movement, pic_q)
+        if not checks[0]:
+            movement.drop()
+            back_dat_ass_up(movement, pic_q)
+        go_home(movement,pic_q)
+    
+    print("Round over")
+    wait_for_button(GPIO)
+        
+    """
     targs = [(4,7), (4, 0)]
     for item in targs:
         movement.set_goal(item)
@@ -105,8 +130,9 @@ def main():
         block_id = 2
         
         print("Going to drop it")
-        mothership_drop(dist, mothership_angle, side_angle, block_id, movement, serial, pic_q)
+        mothership_drop(dist, mothership_angle, side_angle, block_id, movement, ser, pic_q, GPIO)
         go_home(movement, pic_q)
+    """
     vt.join()
     #camera.close()
 

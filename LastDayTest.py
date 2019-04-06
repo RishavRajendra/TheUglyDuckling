@@ -10,10 +10,10 @@ import numpy as np
 import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import fwd, rev, BUTTONPIN, LEDPIN
+from constants import fwd, rev, BUTTONPIN, LEDPIN, CONTACT_PIN
 from get_stats_from_image import get_data, get_midpoint, mothership_angle, corrected_angle
 from targetApproach import approach, check_pick_up
-from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
+from mothership_commands import map_mothership, approach_mothership_side, mothership_drop, verify_obj
 from nav.gridMovement import GridMovement
 from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, \
 begin_round, go_home, back_dat_ass_up
@@ -54,6 +54,7 @@ def main():
     # Setup GPIO
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(BUTTONPIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(CONTACT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(LEDPIN, GPIO.OUT, initial=GPIO.LOW)
     
     # Keep track of movements after approach is called
@@ -61,14 +62,22 @@ def main():
 
     wait_for_button(GPIO)
     time.sleep(2)
+    #verify_obj(movement,pic_q, 8)
+    #print('here')
+    """
+    mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, GPIO)
+    if side_angle > 45:
+        side_angle = abs(90-side_angle)
+    block_id = 2
+    mothership_drop(dist, mothership_angle, side_angle, block_id, movement, ser, pic_q, GPIO)
+    """
+    print("Starting round")
     
-    #print("Starting round")
-    
-    #begin_round(movement, pic_q)
+    begin_round(movement, pic_q)
 
-    #print("I will try and map the mothership")
-    #map_mothership(movement, pic_q)
-    #print("Mothership is located in the following tiles: ", grid.mothership)
+    print("I will try and map the mothership")
+    map_mothership(movement, pic_q)
+    print("Mothership is located in the following tiles: ", grid.mothership)
 
     
     mothership_angle, dist, side_angle = approach_mothership_side(movement, pic_q, ser, GPIO)

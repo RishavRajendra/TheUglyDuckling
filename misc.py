@@ -269,6 +269,14 @@ def kill_object(movement,pic_q):
 	movement.drop()
 	
 """
+Damn it
+"""
+def kill_block(movement, pic_q):
+	back_dat_ass_up(movement, pic_q)
+	movement.turn(180)
+	movement.drop()
+	
+"""
 Use JSON taken from flashdrive
 """
 def map_JSON(filename, movement):

@@ -260,7 +260,7 @@ def two_blocks(pic_q):
     result = []
     
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.3:
+        if scores[0][i] > 0.15:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300

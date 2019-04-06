@@ -193,6 +193,11 @@ def approach_mothership_side_helper(camera_distance, distance_from_sensor, angle
         
     movement.move(fwd, distance_to_move)
     
+    i = 0
+    while GPIO.input(CONTACT_PIN) is not 0 and i <= 5:
+        movement.move(fwd, 1)
+    
+    movement.move(rev, 2)
     # Get the angle of the mothership. Found not found on first try, move left and right one inch
     side_angle = mothership_side_angle(movement, pic_q, 1, serial, GPIO)
             
@@ -209,7 +214,11 @@ def approach_mothership_side_helper(camera_distance, distance_from_sensor, angle
     if side_angle is False:
         # After the second try, give up for now
         side_angle = 0
-
+    
+    if i >1: 
+        movement.move(rev, i-2)
+    else:
+        movement.move(rev, i)
     # Reverse movements
     movement.move(rev, distance_to_move)
     # Side should only be detected once
@@ -297,8 +306,8 @@ def mothership_side_angle(movement, pic_q, side_move_distance, serial, GPIO):
             movement.move(action[0], action[1])
             time.sleep(3)   # Give the camera time to catch up
             blocks_in_mothership = two_blocks(pic_q) # Take another picture after moving
-            if len(blocks_in_mothership) > 1:
-                #Get angle of the two blocks w.r.t to front of the robot
+            if len(blocks_in_mothership) > 1 and blocks_in_mothership[0][0] is not blocks_in_mothership[1][0]:
+                #Get angle of the two blocks w.r.t to front of the robo
                 side_angle = math.ceil(mothership_angle([blocks_in_mothership[0][3], blocks_in_mothership[1][3]])*1.18)
 
                 # Show indication that angle has been detected
