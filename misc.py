@@ -90,7 +90,7 @@ def back_dat_ass_up(movement, pic_q):
 	print("Closest align point is: ", point)
 
 	movement.set_goal(point)
-	follow_path(movement, pic_q, True)
+	follow_path(movement, pic_q, True,False)
 
 	px, py = point[0], point[1]
 
@@ -138,7 +138,7 @@ Change Log
     [0.0.1]
         --- Added parameter to allow including goal in path
 """
-def follow_path(movement, pic_q, include_goal=False, usless_tag=True, map_as_we_go=True):
+def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
 	# if we are alreadywhere we want to be then we return
 	if movement.goal == movement.current:
 		return
@@ -257,7 +257,7 @@ def go_home(movement, pic_q):
     if not movement.goal == movement.current:
         movement.path.clear()
         movement.set_goal((4,4))
-        follow_path(movement, pic_q, True) 
+        follow_path(movement, pic_q, True, False) 
 
 """
 You forced my hand Layfette
