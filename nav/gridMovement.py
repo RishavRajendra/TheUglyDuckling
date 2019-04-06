@@ -147,6 +147,8 @@ class GridMovement:
 
 
 	def map(self,obj, angle, dist):
+		if dist < 0:
+			return
 		if (obj< 8) and abs(angle) > 40:
 			return
 		offset = 6
@@ -380,7 +382,7 @@ class GridMovement:
 	def set_side_angle(self, angle):
 		self.access_point["side_angle"] = angle
 
-	def set_access_letters(self, letters):
+	def set_access_point_letters(self, letters):
 		self.access_point["letters"] = letters
 
 	def set_mothership_angle(self, angle):

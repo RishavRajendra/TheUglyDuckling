@@ -18,7 +18,7 @@ else change goal and return False
 def verify_obj(movement, pic_q, obj):
     time.sleep(3)
     object_stats = get_data(pic_q)
-
+    try_again = False
     for stats in object_stats:
         if stats[0] == obj:
             o_type = stats[0]
@@ -31,7 +31,30 @@ def verify_obj(movement, pic_q, obj):
                 movement.grid.sides.clear()
             movement.map(o_type, angle, dist)
             return True
-    
+        elif stats[0] == 9 and obj == 8:
+            o_type = stats[0]
+            angle = stats[1]
+            dist = stats[2]
+            if dist < 0:
+            try_again = True
+    if try_again:
+        time.sleep(3)
+        object_stats = get_data(pic_q)
+        try_again = False
+        for stats in object_stats:
+            if stats[0] == obj:
+                o_type = stats[0]
+                angle = stats[1]
+                dist = stats[2]
+                if obj == 9:
+                    movement.grid.slopes.clear()
+                    dist = dist + 3
+                if obj == 8:
+                    movement.grid.sides.clear()
+                movement.map(o_type, angle, dist)
+                return True
+    return False
+            
     # If we can't verify it through imaging then
     # we use the sensors
     return movement.is_mothership()
