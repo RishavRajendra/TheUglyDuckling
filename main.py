@@ -9,7 +9,7 @@ import numpy as np
 import RPi.GPIO as GPIO
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from constants import fwd, rev, BUTTONPIN, LEDPIN
+from constants import fwd, rev, BUTTONPIN, LEDPIN, CONTACT_PIN
 from get_stats_from_image import get_data, get_midpoint, mothership_angle, corrected_angle
 from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
@@ -53,6 +53,7 @@ def main():
     # Setup GPIO
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(BUTTONPIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(CONTACT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(LEDPIN, GPIO.OUT, initial=GPIO.LOW)
     
     # Keep track of movements after approach is called

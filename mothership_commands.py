@@ -5,10 +5,10 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
-from misc import follow_path, get_sensor_data, go_home, blink_led_twice
+from misc import follow_path, get_sensor_data, go_home, blink_led_twice, wait_for_contact
 from get_stats_from_image import corrected_angle, two_blocks, mothership_angle, \
-mothership_side_close_distance, get_block_info
-from constants import fwd, rev, strl, strr
+mothership_side_close_distance
+from constants import fwd, rev, strl, strr, CONTACT_PIN
 import time, math
 
 """
@@ -319,6 +319,28 @@ def mothership_side_angle(movement, pic_q, side_move_distance, serial, GPIO):
     print('---------------Angle could not be detected--------------')
     return False
 
+def drop_right_spot_helper(movement, blocks_located, target_id):
+    for blocks in blocks_located:
+        if blocks[0] == target_id:
+            angle = 90 - blocks[1]
+            distance = blocks[2]
+
+            # sin(theta) = opposite / hypotenuse
+            distance_to_streff = distance * math.sin(abs(angle))
+            if angle < 0:
+                movement.move(strl, distance_to_streff -1)
+            else:
+                movement.move(strr, distance_to_streff -1)
+
+    # If the target id is not in the located blocks, move w.r.t what is detected
+    for blocks in blocks_located:
+        diff = abs(blocks[0] - target_id)
+        if diff <= 2:
+            # One drop point is 3 inches wide
+            distance_to_streff = (3*diff) - 1
+        else:
+            print("NOT ON THE RIGHT SIDE YOU IDIOT")
+
 def drop_right_spot(target_id, pic_q, movement):
     movement.cam_up()
 
@@ -327,28 +349,36 @@ def drop_right_spot(target_id, pic_q, movement):
     blocks_located = two_blocks(pic_q)
 
     if len(blocks_located) is not 0:
-        for blocks in blocks_located:
-            if blocks[0] == target_id:
-                angle = 90 - blocks[1]
-                distance = blocks[2]
-
-                # sin(theta) = opposite / hypotenuse
-                distance_to_streff = distance * math.sin(abs(angle))
-                if angle < 0:
-                    movement.move(strl, distance_to_streff)
-                else:
-                    movement.move(strr, distance_to_streff)
+        drop_right_spot_helper(movement, blocks_located, target_id)
     else:
+        i = 0
         # None of the obstacles detected
-        pass
+        for _ in range(5):
+            i = i + 1
+            movement.move(rev, 1)
+            time.sleep(2)
+            blocks_located = two_blocks(pic_q)
+            if len(blocks_located) is not 0:
+                drop_right_spot_helper(movement, blocks_located, target_id)
+                break
+
+        movement.move(fwd, i)
+
 """
 You can rewrite this with movement.get_mothership_angle(), movement.get_side_angle(), and  movement.get_access_dist()
 """
-def mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q):
+def mothership_drop(distance_from_access, angle_from_access, mothership_orient, block_id, movement, serial, pic_q, GPIO):
     # Get to the mothership
     movement.turn(-1*angle_from_access)
     movement.move(fwd, distance_from_access)
     movement.turn(-1*mothership_orient)
+
+    drop_right_spot(block_id, pic_q, movement)
+
+    i = 0
+    while GPIO.input(CONTACT_PIN) is not 0 and i <= 5:
+        movement.move(fwd, 1)
+        i = i + 1
     
     movement.drop()
     
@@ -398,7 +428,7 @@ def rev_other_side(movement, pic_q):
     cx,cy = movement.current[0], movement.current[1]
 
     # determine what direction to come back from
-     if movement.facing == 90:
+    if movement.facing == 90:
         sign = 1 if cx > 4 else -1
     elif movement.facing == 180:
         sign = 1 if cy > 4 else -1
@@ -420,4 +450,3 @@ def rev_other_side(movement, pic_q):
     movement.turn(movement.get_side_angle())
     movement.move(rev, movement.get_access_dist()-2)
     movement.turn(movement.get_mothership_angle())
->>>>>>> 9ce9f73a5fc43ee4d69eb34758a5416df3977f64
