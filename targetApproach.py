@@ -14,12 +14,12 @@ def check_pick_up(movement, pic_q):
     return [success, target_id]
 
 def move_to_target(movement, angle, distance):
-    movement.turn(angle)
+    #movement.turn(angle)
     movement.move(fwd, distance)
 
 def move_back_from_target(movement, angle, distance):
     movement.move(rev, distance)
-    movement.turn(angle)
+    #movement.turn(-1*angle)
 
 """
 DONE: Refine pick_up. Take care of edge cases.
@@ -40,6 +40,7 @@ def pick_up(movement, pic_q):
         if midpoint[0] > 125 and midpoint[0] < 230 and midpoint[1] > 255:
             movement.pickup()
         else:
+            print("HERE")
             correctedAngle = corrected_angle(angle, inches, False)
             movement.turn(-correctedAngle)
 
@@ -60,6 +61,7 @@ def pick_up(movement, pic_q):
 
 # Moves the robot close to the target
 def approach_helper(angle, distance, pic_q, movement):
+    movement.cam_up()
     movement.reset_servo()
     adjustedAngle = corrected_angle(angle, distance)
     # move towards the target
@@ -121,7 +123,9 @@ def approach(movement, pic_q):
                     time.sleep(2)
                     target_id, angle, inches = get_closest_target(pic_q)
                     if target_id is not 0 and inches < 14:
+                        movement.move(rev, 4)
                         approach_helper(angle, inches, pic_q, movement)
+                        movement.move(fwd, 4)
                         movement.turn(-1*action)
                         blockFound = True
                         movement.cam_up()
@@ -129,7 +133,9 @@ def approach(movement, pic_q):
                     movement.turn(-1*action)
                     movement.cam_up()
             else:
+                movement.move(rev, 4)
                 approach_helper(angle, inches, pic_q, movement)
+                movement.move(fwd, 4)
                 movement.cam_up()
     else:
         # call helper function which moves the robot

@@ -169,6 +169,7 @@ def approach_mothership_side_helper(camera_distance, distance_from_sensor, angle
         distance_to_move = ((camera_distance + distance_from_sensor)/2) - 1
         
     movement.move(fwd, distance_to_move)
+    
     # Get the angle of the mothership. Found not found on first try, move left and right one inch
     side_angle = mothership_side_angle(movement, pic_q, 1, serial, GPIO)
             
@@ -202,7 +203,12 @@ Gets close the the mothership and calls mothership side angle
 def approach_mothership_side(movement, pic_q, serial, GPIO):
     time.sleep(3)  # Let camera catch up
     initial_camera_distance, initial_angle = mothership_side_close_distance(pic_q) # Grab picture data
+    
+    while initial_camera_distance is not -1:
+        initial_camera_distance, initial_angle = mothership_side_close_distance(pic_q) # Grab picture data
+    
     print("Camera Distance: {}, angle: {}".format(initial_camera_distance, initial_angle))
+    blink_led_twice(GPIO)
     
     if initial_camera_distance is not 100:
         movement.turn(-corrected_angle(initial_angle, initial_camera_distance))
@@ -211,30 +217,11 @@ def approach_mothership_side(movement, pic_q, serial, GPIO):
         distance_from_sensor = sensor_distance(serial)
         print('Distance from sensor: {}'.format(distance_from_sensor))
 
-        # If the difference of sensor distance and camera distance is greater that 5,
-        # Something is wrong
-        print(abs(distance_from_sensor - initial_camera_distance))
-        if abs(distance_from_sensor - initial_camera_distance) <= 5:
-            print("-------------BEST CASE-------------")
-            print("Mothership sensor validation passed")
-            
-            side_angle = approach_mothership_side_helper(initial_camera_distance, distance_from_sensor, initial_angle, pic_q, serial, movement, GPIO)
-            movement.turn(corrected_angle(initial_angle, initial_camera_distance))
-            
-            return [corrected_angle(initial_angle, initial_camera_distance),int((distance_from_sensor+initial_camera_distance)/2),side_angle]
-        else:
-            print("Mothership sensor validation Failed")
-            print("-----------WORST CASE----------")
-            
-            # Just rely on sensors if everything else fails
-            side_angle = approach_mothership_side_helper(0, distance_from_sensor, initial_angle, pic_q, serial, movement, GPIO)
-            movement.turn(corrected_angle(initial_angle, initial_camera_distance))
-            
-            return [corrected_angle(initial_angle, initial_camera_distance),int((distance_from_sensor+initial_camera_distance)/2),side_angle]
-                    
+        # Just rely on sensors if everything else fails
+        side_angle = approach_mothership_side_helper(0, distance_from_sensor, initial_angle, pic_q, serial, movement, GPIO)
         movement.turn(corrected_angle(initial_angle, initial_camera_distance))
-        # WORST WORST CASE: Side angle is 0
-        return [corrected_angle(initial_angle, initial_camera_distance),int((distance_from_sensor+initial_camera_distance)/2),0]
+            
+        return [corrected_angle(initial_angle, initial_camera_distance),int((distance_from_sensor+initial_camera_distance)/2),side_angle]
     else:
         # TODO: Handle edge cases
         print("Nothing Detected in approach")
@@ -248,6 +235,10 @@ def approach_mothership_side(movement, pic_q, serial, GPIO):
         print('Distance from sensor: {}'.format(distance_from_sensor))
 
         camera_distance, angle = mothership_side_close_distance(pic_q) # Grab picture data
+        while camera_distance is not -1:
+            camera_distance, angle = mothership_side_close_distance(pic_q) # Grab picture data
+        print("Camera Distance: {}, angle: {}".format(initial_camera_distance, initial_angle))
+        blink_led_twice(GPIO)
         if camera_distance is not 100:
             if abs(distance_from_sensor - camera_distance) <= 5:
                 print("--------------Test Again-------------")

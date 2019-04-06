@@ -56,6 +56,8 @@ def get_distance(object_type, height_of_object_pixels):
     if object_type == 2:
         return int(((MOTHERSHIP_SIDE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels)/PIXEL_PER_MM))/10)
     if object_type == 3:
+        if height_of_object_pixels > 60:
+            return -1
         return int(((MOTHERSHIP_SLOPE_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
     if object_type == 4:
         return int(((CORNER_HEIGHT*FOCAL_LENGTH)/((height_of_object_pixels-ERROR_VAL)/PIXEL_PER_MM))/10)
@@ -69,7 +71,7 @@ def get_data(pic_q):
     processed_frame, classes, boxes, scores = pic_q.get()
     result = []
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.3:
+        if scores[0][i] > 0.15:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300
@@ -222,7 +224,7 @@ def mothership_side_close_distance(pic_q):
     result.append([100, 100])
     
     for i, b in enumerate(boxes[0]):
-        if scores[0][i] > 0.2:
+        if scores[0][i] > 0.15:
             inches = 0
             #extract pixel coordinates of detected objects
             ymin = boxes[0][i][0]*300
@@ -240,8 +242,11 @@ def mothership_side_close_distance(pic_q):
             """
             classes 1 to 6 are the six target blocks
             """
-            if classes[0][i] == 8:
-                inches = get_distance(5, height_of_object_pixels)
+            if classes[0][i] == 8 or classes[0][i] == 9:
+                if classes[0][i] == 8:
+                    inches = get_distance(5, height_of_object_pixels)
+                else:
+                    inches = get_distance(3, height_of_object_pixels)
                 angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
                 result.append([inches, angle])
     result = sorted(result, key=itemgetter(0))

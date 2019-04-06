@@ -162,7 +162,7 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
 				movement.find_path()
 	# After following the path face the goal
 	if not movement.goal == movement.current:
-		movement.face(goal)
+		movement.face(movement.goal)
 	# Now that we've followed the path
 	# if we're including the goal we can go to it now
 	if include_goal:

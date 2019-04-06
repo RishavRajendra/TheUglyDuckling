@@ -11,9 +11,9 @@ void setup() {
   ud_bot();
   Serial.begin(9600);
   drop();
+//  turn(rotl, 90, 1000,0);
   //  pickup();
   cam_up();
-  mov(fwd, 15, 1500);
   //  edgeAlign(); //reverse align to edge 3 times by Ceraso
 }
 
@@ -43,7 +43,7 @@ void runCommand() {
     byte data3 = queue.pop();
 
     if (flag == 0) {
-      mov(data1, data2, 400);
+      mov(data1, data2, 500);
     }
     else if (flag == 1) {
       turn(data1, data2, 700, data3);
@@ -198,12 +198,22 @@ void send_sensor_data(){
 //Move using inches
 void mov(byte dir, float dist, long del) {
   PORTL = dir;
-  float stepf = dist * steps_per_inch;
+  float stepf = dist;
+//  Serial.println(stepf);
+  if (dir == strl || dir == strr){
+    stepf *= steps_per_inch_strafe;  
+  }
+  else{
+    stepf *= steps_per_inch;
+  }
   long steps = stepf;
-  for (long i = 0; i < steps; i++) {
+//  Serial.println(steps);
+  long i;
+  for ( i = 0; i < steps; i++) {
     delayMicroseconds(del);
     PORTL ^= motion;
   }
+//  Serial.println(i);
 }
 
 //Grid movement - 12 inches per call
