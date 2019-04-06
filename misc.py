@@ -5,7 +5,7 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
-from constants import LEDPIN, BUTTONPIN, fwd, rev
+from constants import LEDPIN, BUTTONPIN, CONTACT_PIN, fwd, rev
 from targetApproach import approach, approach_obstacle
 import time
 
@@ -15,6 +15,12 @@ def wait_for_button(GPIO):
     while GPIO.input(BUTTONPIN) is not 0:
         pass
     GPIO.output(LEDPIN, GPIO.LOW)
+
+def wait_for_contact(GPIO):
+	print("Waiting for contact")
+	while GPIO.input(CONTACT_PIN) is not 0:
+		pass
+	print("THERE IS CONTACT")
 
 def blink_led_twice(GPIO):
     GPIO.output(LEDPIN, GPIO.HIGH)
@@ -133,27 +139,74 @@ Change Log
         --- Added parameter to allow including goal in path
 """
 def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
+	# if we are alreadywhere we want to be then we return
+	if movement.goal == movement.current:
+		return
+	# find path without include goal. If we are including goal
+	# we will add it as the last move
+	movement.find_path()
+
+	# now we execute the damn thing
+	while movement.path:
+		print(movement.path)
+		movement.follow_next_step()
+		if map_as_we_go:
+			map(movement, pic_q)
+		# we're mapping as we go by default so after each move we
+		# check if there is a blocked tile in our path
+		for move in movement.path:
+			# if we find the path is blocked then we generate a new
+			# one and keep going
+			if not movement.grid.passable(move):
+				movement.path.clear()
+				movement.find_path()
+	# After following the path face the goal
+	if not movement.goal == movement.current:
+		movement.face(goal)
+	# Now that we've followed the path
+	# if we're including the goal we can go to it now
+	if include_goal:
+		movement.find_path(include_goal)
+		# check if an object is in that last space
+		if movement.path[0] in movement.grid.obstacles:
+			old_goal = (movement.goal[0], movement.goal[1])
+			# kill the damn thing
+			kill_object(movement, pic_q)
+			movement.grid.obstacles.remove(old_goal)
+			movement.set_goal(old_goal)
+			movement.find_path()
+		# if target in the way move target to new location
+		elif movement.path[0] in movement.grid.targets:
+			old_goal = (movement.goal[0], movement.goal[1])
+			relocate_target(movement, pic_q)
+			movement.set_goal(old_goal)
+			movement.find_path()
+		movement.follow_next_step()
+"""
+def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
     if movement.goal == movement.current:
     	return
     movement.find_path(include_goal)
     while movement.path:
     		
-    		# check if object in last space that we want to move in.
-    		if len(movement.path) == 1 and include_goal:
-    			# if object is obstacle
-    			if movement.path[0] in movement.grid.obstacles:
-    				old_goal = (movement.goal[0],movement.goal[1])
-    				# check if obstacle in way
-    				kill_object(movement, pic_q)
-    				movement.grid.obstacles.remove(old_goal)
-    				movement.set_goal()
-    				movement.find_path(include_goal)
+    	# check if object in last space that we want to move in.
+    	if len(movement.path) == 1 and include_goal:
+    		# if object is obstacle
+   			if movement.path[0] in movement.grid.obstacles:
+   				old_goal = (movement.goal[0],movement.goal[1])
+   				# check if obstacle in way
+   				kill_object(movement, pic_q)
+   				movement.grid.obstacles.remove(old_goal)
+    			movement.set_goal(old_goal)
+    			movement.find_path(include_goal)
     			
-    			# if object is target
-    			elif movement.path[0] in movement.grid.targets:
-    				# move target to another area and update the location
-    				old_goal = (movement.goal[0],movement.goal[1])
-    				relocate_target(movement, pic_q)
+    		# if object is target
+    		elif movement.path[0] in movement.grid.targets:
+    			# move target to another area and update the location
+    			old_goal = (movement.goal[0],movement.goal[1])
+   				relocate_target(movement, pic_q)
+   				movement.set_goal(old_goal)
+   				movement.find_path(include_goal)
 
         print(movement.path)
         movement.follow_next_step()
@@ -165,7 +218,7 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
                 movement.find_path(include_goal)
     if not movement.goal == movement.current:
         movement.face(movement.goal)
-
+"""
 # relocate a target block and update the targets list
 def relocate_target(movement, pic_q):
 	cx,cy = movement.current[0], movement.current[1]
