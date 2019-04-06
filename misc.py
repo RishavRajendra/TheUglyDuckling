@@ -268,3 +268,14 @@ def kill_object():
 	movement.turn(180)
 	movement.drop()
 	
+"""
+Use JSON taken from flashdrive
+"""
+def map_JSON(filename, movement):
+    with open(filename, encoding='utf-8') as data_file:
+      data = json.loads(data_file.read())
+    size = data['size']
+    x_arr = data['x coords']
+    y_arr = data['y coords']
+    for i in range(size):
+      movement.map_target((x_arr[i], y_arr[i]))

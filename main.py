@@ -15,7 +15,7 @@ from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
 from nav.gridMovement import GridMovement
 from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, \
-begin_round, go_home, back_dat_ass_up
+begin_round, go_home, back_dat_ass_up, map_JSON
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from datetime import datetime
@@ -63,6 +63,11 @@ def main():
     time.sleep(2)
     
     print("Starting round")
+
+    # map the targets from json file
+    map_JSON(mar1.json,movement)
+    # now set the maximum amount of obstacles based on amount of targets 
+    grid.set_obstacles_max()
     
     begin_round(movement, pic_q)
 
