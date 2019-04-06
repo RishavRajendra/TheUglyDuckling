@@ -296,3 +296,15 @@ def go_backside(movement, pic_q, access, point):
 	movement.set_goal(access)
 	follow_path(movement, pic_q, True)
 	movement.face(point)
+
+def r2_back_drop(movement, pic_q, A_block=True):
+	go_backside(movement, pic_q, (2,7), (3,7))
+	movement.move(fwd, 4)
+	movement.turn(-20)#Test this
+	if A_block:
+		movement.move(strl, 3)
+	movement.drop()
+	if A_block:
+		movement.move(strr, 3)
+	movement.turn(20)
+	movement.move(rev, 4)
