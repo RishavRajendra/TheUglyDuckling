@@ -63,12 +63,12 @@ def main():
     time.sleep(2)
     
     print("Starting round")
-
+    """
     # map the targets from json file
     map_JSON(mar1.json,movement)
     # now set the maximum amount of obstacles based on amount of targets 
     grid.set_obstacles_max()
-    
+    """
     begin_round(movement, pic_q)
 
     print("I will try and map the mothership")

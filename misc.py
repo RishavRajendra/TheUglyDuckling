@@ -262,7 +262,7 @@ def go_home(movement, pic_q):
 """
 You forced my hand Layfette
 """
-def kill_object():
+def kill_object(movement,pic_q):
 	approach_obstacle(movement, pic_q)
 	back_dat_ass_up(movement, pic_q)
 	movement.turn(180)

@@ -36,7 +36,7 @@ def verify_obj(movement, pic_q, obj):
             angle = stats[1]
             dist = stats[2]
             if dist < 0:
-            try_again = True
+                try_again = True
     if try_again:
         time.sleep(3)
         object_stats = get_data(pic_q)
