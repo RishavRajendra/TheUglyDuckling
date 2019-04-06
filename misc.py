@@ -5,7 +5,7 @@ __license__ = "MIT"
 __status__ = "Development"
 
 from get_stats_from_image import get_data
-from constants import LEDPIN, BUTTONPIN, fwd, rev
+from constants import LEDPIN, BUTTONPIN, CONTACT_PIN, fwd, rev
 from targetApproach import approach, approach_obstacle
 import time
 
@@ -15,6 +15,12 @@ def wait_for_button(GPIO):
     while GPIO.input(BUTTONPIN) is not 0:
         pass
     GPIO.output(LEDPIN, GPIO.LOW)
+
+def wait_for_contact(GPIO):
+	print("Waiting for contact")
+	while GPIO.input(CONTACT_PIN) is not 0:
+		pass
+	print("THERE IS CONTACT")
 
 def blink_led_twice(GPIO):
     GPIO.output(LEDPIN, GPIO.HIGH)

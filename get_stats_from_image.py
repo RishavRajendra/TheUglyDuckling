@@ -307,3 +307,34 @@ def corrected_angle(angle, dist, cam_up=True):
         return math.floor(angle_c) * sign
     
     return math.floor(angle_b) * sign
+
+"""
+def get_block_info(pic_q, target_id):
+    processed_frame, classes, boxes, scores = pic_q.get()
+    result = []
+    result.append(0, 0, 1000, 0)
+
+    for i, b in enumerate(boxes[0]):
+        if scores[0][i] > 0.3:
+            inches = 0
+            #extract pixel coordinates of detected objects
+            ymin = boxes[0][i][0]*300
+            xmin = boxes[0][i][1]*300
+            ymax = boxes[0][i][2]*300
+            xmax = boxes[0][i][3]*300
+
+            # Calculate mid_pount of the detected object
+            mid_x = (xmax + xmin) / 2
+            mid_y = (ymax + ymin) / 2
+            
+            # Calculate height of the object located for distance measurements
+            height_of_object_pixels = ymax - ymin
+
+            if classes[0][i] == target_id:
+                inches = get_distance(1, height_of_object_pixels)
+                angle = get_angle(processed_frame, xmin, ymin, xmax, ymax)
+                result.append([int(classes[0][i]), angle, inches, (int(mid_x),int(mid_y))])
+    # Sort by distance
+    result = sorted(result, key=itemgetter(2))
+    return result[0]
+"""
