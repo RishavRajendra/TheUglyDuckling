@@ -341,7 +341,7 @@ def drop_right_spot_helper(movement, blocks_located, target_id):
         else:
             print("NOT ON THE RIGHT SIDE YOU IDIOT")
 
-def drop_right_spot(target_id, pic_q, movement):
+def drop_right_spot(target_id, pic_q, movement, GPIO):
     movement.cam_up()
 
     time.sleep(3)
@@ -364,6 +364,20 @@ def drop_right_spot(target_id, pic_q, movement):
 
         movement.move(fwd, i)
 
+    i = 0
+    while GPIO.input(CONTACT_PIN) is not 0 and i <= 5:
+        movement.move(fwd, 1)
+        i = i + 1
+    
+    movement.drop()
+
+    movement.move(rev, i)
+    
+    movement.turn(mothership_orient)
+    movement.move(rev, distance_from_access)
+    movement.pickup()
+    movement.turn(angle_from_access)
+
 """
 You can rewrite this with movement.get_mothership_angle(), movement.get_side_angle(), and  movement.get_access_dist()
 """
@@ -373,19 +387,7 @@ def mothership_drop(distance_from_access, angle_from_access, mothership_orient, 
     movement.move(fwd, distance_from_access)
     movement.turn(-1*mothership_orient)
 
-    drop_right_spot(block_id, pic_q, movement)
-
-    i = 0
-    while GPIO.input(CONTACT_PIN) is not 0 and i <= 5:
-        movement.move(fwd, 1)
-        i = i + 1
-    
-    movement.drop()
-    
-    movement.turn(mothership_orient)
-    movement.move(rev, distance_from_access)
-    movement.pickup()
-    movement.turn(angle_from_access)
+    drop_right_spot(block_id, pic_q, movement, GPIO)
     
 """
 Assumes we're already in access point. Goes to the other side of the mothership
