@@ -11,14 +11,25 @@ mothership_side_close_distance
 from constants import fwd, rev, strl, strr, CONTACT_PIN
 import time, math
 
+def lowest_cam_dist(pic_q):
+    time.sleep(2)
+    object_stats = get_data(pic_q)
+    lowest_dist = None 
+    for stats in object_stats:
+        dist = stats[2]
+        if dist < lowest_dist or lowest_dist == None:
+            lowest_dist = dist
+    return lowest_dist, object_stats
 """
 Return true if obj is in our field of vision
 else change goal and return False
 """
 def verify_obj(movement, pic_q, obj):
     time.sleep(3)
-    object_stats = get_data(pic_q)
-    try_again = False
+    lowest_dist,object_stats = lowest_dist(pic_q)
+    while lowest_dist is -1:
+        lowest_dist,object_stats = lowest_dist(pic_q)
+
     for stats in object_stats:
         if stats[0] == obj:
             o_type = stats[0]
@@ -31,29 +42,6 @@ def verify_obj(movement, pic_q, obj):
                 movement.grid.sides.clear()
             movement.map(o_type, angle, dist)
             return True
-        elif stats[0] == 9 and obj == 8:
-            o_type = stats[0]
-            angle = stats[1]
-            dist = stats[2]
-            if dist < 0:
-                try_again = True
-    if try_again:
-        time.sleep(3)
-        object_stats = get_data(pic_q)
-        try_again = False
-        for stats in object_stats:
-            if stats[0] == obj:
-                o_type = stats[0]
-                angle = stats[1]
-                dist = stats[2]
-                if obj == 9:
-                    movement.grid.slopes.clear()
-                    dist = dist + 3
-                if obj == 8:
-                    movement.grid.sides.clear()
-                movement.map(o_type, angle, dist)
-                return True
-    return False
             
     # If we can't verify it through imaging then
     # we use the sensors
