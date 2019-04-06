@@ -138,7 +138,7 @@ Change Log
     [0.0.1]
         --- Added parameter to allow including goal in path
 """
-def follow_path(movement, pic_q, include_goal=False, map_as_we_go=False):
+def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
 	# if we are alreadywhere we want to be then we return
 	if movement.goal == movement.current:
 		return
@@ -150,16 +150,16 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=False):
 	while movement.path:
 		print(movement.path)
 		movement.follow_next_step()
-		# if map_as_we_go:
-		# 	map(movement, pic_q)
-		# # we're mapping as we go by default so after each move we
-		# # check if there is a blocked tile in our path
-		# for move in movement.path:
-		# 	# if we find the path is blocked then we generate a new
-		# 	# one and keep going
-		# 	if not movement.grid.passable(move):
-		# 		movement.path.clear()
-		# 		movement.find_path()
+		if map_as_we_go:
+			map(movement, pic_q)
+		# we're mapping as we go by default so after each move we
+		# check if there is a blocked tile in our path
+		for move in movement.path:
+			# if we find the path is blocked then we generate a new
+			# one and keep going
+			if not movement.grid.passable(move):
+				movement.path.clear()
+				movement.find_path()
 	# After following the path face the goal
 	if not movement.goal == movement.current:
 		movement.face(movement.goal)

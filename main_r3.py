@@ -15,7 +15,7 @@ from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
 from nav.gridMovement import GridMovement
 from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, \
-begin_round, go_home, back_dat_ass_up, map_JSON, closest_point, kill_block
+begin_round, go_home, back_dat_ass_up, map_JSON, closest_point, 
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from datetime import datetime
@@ -73,24 +73,26 @@ def main():
 
     # print("I will try and map the mothership")
     # MOTHERSHIP
-    grid.mothership.extend([(),(),(),()])
-    movement.set_access_point(())
-    # SIDE POINT
-    movement.set_side_point(())
-    #OBSTACLES
-    grid.obstacles.extend([])
-    #TARGETS
-    grid.targets = [(),(),(),()]
+    # grid.mothership.extend([(),(),(),()])
+    # movement.set_access_point(())
+    # # SIDE POINT
+    # movement.set_side_point(())
+    # #OBSTACLES
+    # grid.obstacles.extend([(),(),(),(),()])
+    # #TARGETS
+    # grid.targets = [(),(),(),()]
     while grid.targets:
         movement.current_target = closest_point(grid.targets, movement.current)
         movement.set_goal(movement.current_target)
-        follow_path(movement, pic_q,False,False)
+        follow_path(movement, pic_q,False)
         approach(movement, pic_q)
+        back_dat_ass_up(movement, pic_q)
+        movement.turn(180)
+        movement.drop()
         grid.target.remove(movement.current_target)
-        # back_dat_ass_up(movement, pic_q)
-        movement.set_goal(movement.get_access_point())
-        follow_path(movement, pic_q, True, False)
-        movement.face(movement.get_side_point())
+        # movement.set_goal(movement.get_access_point())
+        # follow_path(movement, pic_q, True)
+        # movement.face(movement.get_side_point())
         # drop code here
         # mothership_drop(dist, mothership_angle, side_angle, block_id, movement, serial, pic_q)
 
