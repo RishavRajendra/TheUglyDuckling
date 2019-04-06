@@ -56,5 +56,8 @@ movement = GridMovement(grid, ser)
 #map_JSON('mar1.json', movement)
 
 #get_sensor_data(ser)
-movement.move(fwd, 6)
+# movement.move(fwd, 6)
+movement.set_goal((4,4))
+movement.find_path()
+print(movement.path)
 
