@@ -135,6 +135,7 @@ def map_by_slope(movement, pic_q):
         movement.grid.sides.append(movement.grid.slopes[0])
         map_by_side(movement, pic_q)
         return
+
     else:
         sx,sy = movement.grid.slopes[0][0], movement.grid.slopes[0][1]
         guesses = generate_guesses(movement.grid.slopes[0])
@@ -145,6 +146,7 @@ def map_by_slope(movement, pic_q):
             map_by_side(movement, pic_q)
             if movement.grid.mothership:
                 return
+
 
 def map_mothership(movement, pic_q):
     #movement.drop()

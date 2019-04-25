@@ -123,7 +123,7 @@ def map(movement, pic_q):
         if obj_type == 9:
             dist = dist + 3
         movement.map(obj_type, angle, dist)
-		
+
 """
 Change Log
     [0.0.1]
