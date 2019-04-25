@@ -31,6 +31,7 @@ class Grid:
 		(x, y) = id
 		return 0 <= x < self.width and 0 <= y < self.height
 
+	# Returns given id if it is not blocked
 	def passable(self, id):
 		blocked = []
 		blocked.extend(self.obstacles)

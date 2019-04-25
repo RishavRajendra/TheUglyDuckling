@@ -15,7 +15,7 @@ from targetApproach import approach, check_pick_up
 from mothership_commands import map_mothership, approach_mothership_side, mothership_drop
 from nav.gridMovement import GridMovement
 from misc import wait_for_button, get_sensor_data, align_corner, map, follow_path, \
-begin_round, go_home, back_dat_ass_up, map_JSON
+begin_round, go_home, correct_alignment, map_JSON
 from nav.grid import Grid
 import queue, threading, serial, time, math
 from datetime import datetime
@@ -62,13 +62,19 @@ def main():
     wait_for_button(GPIO)
     time.sleep(2)
     
+    #
+    # RUN ROUND
+    #
+
     print("Starting round")
-    """
+
+    begin_round(movement, pic_q)
+
     # map the targets from json file
     map_JSON(mar1.json,movement)
     # now set the maximum amount of obstacles based on amount of targets 
     grid.set_obstacles_max()
-    """
+    
     begin_round(movement, pic_q)
 
     print("I will try and map the mothership")
@@ -87,28 +93,40 @@ def main():
     print("Going home")
     go_home(movement, pic_q)
 
-    targs = [(4,7), (4, 0)]
-    for item in targs:
-        movement.set_goal(item)
+    while grid.targets:
+        # find closest target and set it as the goal
+        movement.current_target = closest_point(grid.targets, movement.current)
+        movement.set_goal(movement.current_target)
         follow_path(movement, pic_q)
+
+        # Once we reach the target we attempt to pick it up
         approach(movement, pic_q)
         success, target_id = check_pick_up(movement, pic_q)
         print("Success: {}, Target Id: {}".format(success, target_id))
-        back_dat_ass_up(movement, pic_q)
+
+        if not success:
+            go_home(movement, pic_q)
+            
+        else:
+            grid.targets.remove(movement.current_target)
+            # We would correct alignment here if errors were fixed
+        
+            # Move to mothership and drop target
+            print("Access point is: ",movement.get_access_point())
+            movement.set_goal(movement.get_access_point())
+            follow_path(movement, pic_q, True)
+            movement.face(movement.get_side_point())
+            print("Going to drop it")
+            mothership_drop(dist, mothership_angle, side_angle, target_id, movement, serial, pic_q)
+        
         go_home(movement, pic_q)
-        
-        print("Access point is: ",movement.get_access_point())
-        movement.set_goal(movement.get_access_point())
-        follow_path(movement, pic_q, True)
-        movement.face(movement.get_side_point())
-        
-        block_id = 2
-        
-        print("Going to drop it")
-        mothership_drop(dist, mothership_angle, side_angle, block_id, movement, serial, pic_q)
-        go_home(movement, pic_q)
+
+    # Once all targets are delivered, go home and turn on finishing light
+    go_home(movement, pic_q)
+    wait_for_button(GPIO)
+    
+    # close video thread
     vt.join()
-    #camera.close()
 
 if __name__ == '__main__':
     main()

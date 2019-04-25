@@ -44,10 +44,6 @@ def get_sensor_data(serial):
     right = int.from_bytes(serial.read(1),'little')
     return left, right
     
-# TODO
-def align_corner(serial):
-	pass
-
 """
 Visits given point and returns true if it is an empty space
 """
@@ -83,8 +79,8 @@ def closest_point(list, current):
 """
 Uses edge_align to straighten out our x and y angles
 """
-
-def back_dat_ass_up(movement, pic_q):
+# Cannot currently use as the timers necessary interfere with servo timers.
+def correct_alignment(movement, pic_q):
 	
 	point = closest_point(movement.grid.edges, movement.current)
 	print("Closest align point is: ", point)
@@ -114,7 +110,7 @@ Change log
         --- Changed sleep from 2 to 1.5; lowest fps is .75 so sleeping
         --- for 1.5 seconds is the minimum delay that guarantees fresh video data
 """
-def map(movement, pic_q, beginning=True):
+def map(movement, pic_q):
     movement.cam_up()
     print(movement.facing)
     time.sleep(3)
@@ -127,11 +123,6 @@ def map(movement, pic_q, beginning=True):
         if obj_type == 9:
             dist = dist + 3
         movement.map(obj_type, angle, dist)
-    # experimental
-    """
-    if movement.is_mothership():
-    	movement.map(8, 0, 10):
-		"""
 		
 """
 Change Log
@@ -139,14 +130,14 @@ Change Log
         --- Added parameter to allow including goal in path
 """
 def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
-	# if we are alreadywhere we want to be then we return
+	# if we are already where we want to be then we return
 	if movement.goal == movement.current:
 		return
 	# find path without include goal. If we are including goal
 	# we will add it as the last move
 	movement.find_path()
 
-	# now we execute the damn thing
+	# now we execute the path
 	while movement.path:
 		print(movement.path)
 		movement.follow_next_step()
@@ -182,43 +173,7 @@ def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
 			movement.set_goal(old_goal)
 			movement.find_path()
 		movement.follow_next_step()
-"""
-def follow_path(movement, pic_q, include_goal=False, map_as_we_go=True):
-    if movement.goal == movement.current:
-    	return
-    movement.find_path(include_goal)
-    while movement.path:
-    		
-    	# check if object in last space that we want to move in.
-    	if len(movement.path) == 1 and include_goal:
-    		# if object is obstacle
-   			if movement.path[0] in movement.grid.obstacles:
-   				old_goal = (movement.goal[0],movement.goal[1])
-   				# check if obstacle in way
-   				kill_object(movement, pic_q)
-   				movement.grid.obstacles.remove(old_goal)
-    			movement.set_goal(old_goal)
-    			movement.find_path(include_goal)
-    			
-    		# if object is target
-    		elif movement.path[0] in movement.grid.targets:
-    			# move target to another area and update the location
-    			old_goal = (movement.goal[0],movement.goal[1])
-   				relocate_target(movement, pic_q)
-   				movement.set_goal(old_goal)
-   				movement.find_path(include_goal)
 
-        print(movement.path)
-        movement.follow_next_step()
-        if map_as_we_go:
-        	map(movement, pic_q)
-        for move in movement.path:
-            if not movement.grid.passable(move):
-                movement.path.clear()
-                movement.find_path(include_goal)
-    if not movement.goal == movement.current:
-        movement.face(movement.goal)
-"""
 # relocate a target block and update the targets list
 def relocate_target(movement, pic_q):
 	cx,cy = movement.current[0], movement.current[1]
@@ -260,21 +215,15 @@ def go_home(movement, pic_q):
         follow_path(movement, pic_q, True, False) 
 
 """
-You forced my hand Layfette
+You forced my hand Layfette.
+Remove object in the way of the mothership
 """
 def kill_object(movement,pic_q):
 	approach_obstacle(movement, pic_q)
-	back_dat_ass_up(movement, pic_q)
+	correct_alignment(movement, pic_q)
 	movement.turn(180)
 	movement.drop()
 	
-"""
-Damn it
-"""
-def kill_block(movement, pic_q):
-	back_dat_ass_up(movement, pic_q)
-	movement.turn(180)
-	movement.drop()
 	
 """
 Use JSON taken from flashdrive
@@ -287,24 +236,3 @@ def map_JSON(filename, movement):
     y_arr = data['y coords']
     for i in range(size):
       movement.map_target((x_arr[i], y_arr[i]))
-
-"""
-Go to the backside of the ship and face it
-"""
-
-def go_backside(movement, pic_q, access, point):
-	movement.set_goal(access)
-	follow_path(movement, pic_q, True)
-	movement.face(point)
-
-def r2_back_drop(movement, pic_q, A_block=True):
-	go_backside(movement, pic_q, (2,7), (3,7))
-	movement.move(fwd, 4)
-	movement.turn(-20)#Test this
-	if A_block:
-		movement.move(strl, 3)
-	movement.drop()
-	if A_block:
-		movement.move(strr, 3)
-	movement.turn(20)
-	movement.move(rev, 4)
