@@ -26,6 +26,9 @@ We are releasing all the labeled images we trained the final detection model wit
 
 - [Wiring Diagram](https://drive.google.com/open?id=1XskO3ay8X36u8H7wVuCARx5W_eBhFH4U)
 
+### MR. W Motor Controller Board by [Wade Rivero](https://www.linkedin.com/in/wade-rivero-60ab64101/)
+![alt text](https://github.com/RishavRajendra/TheUglyDuckling/blob/master/pictures/MrWboard.png)
+
 ### Execution
 
 0. Compile and upload the arduino code
